@@ -205,11 +205,11 @@ export default function App(){
     ctx.restore();
   };
 
-  // --- PC keyboard -------------------------------------------------
+  // --- PC keyboard
   useEffect(() => {
     const down = (e) => {
-      if(e.code === 'Space') { // Espace = Play/Pause si un fichier est chargé
-        if(midiData){ e.preventDefault(); togglePlay(); }
+      if (e.code === 'Space') {
+        if (midiData) { e.preventDefault(); togglePlay(); }
         return;
       }
       if (e.repeat) return;
@@ -220,6 +220,10 @@ export default function App(){
       kbdSet.current.add(midi);
       synthRef.current.triggerAttack(note);
       highlight(midi, true);
+      setLabelByMidi(prev => ({
+        ...prev,
+        [midi]: (e.key && e.key.length === 1) ? e.key.toUpperCase() : prev[midi]
+      }));
     };
     const up = (e) => {
       const note = PC_MAP[e.code];
@@ -231,28 +235,11 @@ export default function App(){
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+    };
   }, []);
-
-  // --- Web MIDI ----------------------------------------------------
-  useEffect(()=>{
-    if(!navigator.requestMIDIAccess) return;
-    navigator.requestMIDIAccess().then(acc=>{
-      acc.inputs.forEach(inp=>{
-        inp.onmidimessage = ({data}) => {
-          const [st, note, vel] = data;
-          const cmd = st & 0xf0;
-          if(cmd === 0x90 && vel){
-            synthRef.current.triggerAttack(m2n(note), undefined, vel/127);
-            highlight(note, true);
-          } else if(cmd === 0x80 || (cmd === 0x90 && !vel)){
-            synthRef.current.triggerRelease(m2n(note));
-            highlight(note, false);
-          }
-        };
-      });
-    });
-  },[]);
 
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
@@ -261,32 +248,7 @@ export default function App(){
   const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
   const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
-  // labels desktop -------------------------------------------------
-  // --- labels selon disposition clavier PC -----------------------------
-  const [labelByMidi,setLabelByMidi] = useState({});
-  useEffect(()=>{
-    (async()=>{
-      const map={};
-      try{
-        if(navigator.keyboard?.getLayoutMap){
-          const layout=await navigator.keyboard.getLayoutMap();
-          for(const [code,note] of Object.entries(PC_MAP)){
-            const char=(layout.get(code)||code.slice(3)).toUpperCase();
-            map[n2m(note)]=char;
-          }
-        } else {
-          for(const [code,note] of Object.entries(PC_MAP)){
-            map[n2m(note)] = code.slice(3);
-          }
-        }
-      } catch {
-        for(const [code,note] of Object.entries(PC_MAP)){
-          map[n2m(note)] = code.slice(3);
-        }
-      }
-      setLabelByMidi(map);
-    })();
-  },[]);
+  
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
