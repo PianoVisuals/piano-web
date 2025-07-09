@@ -15,7 +15,7 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 */
 
 // ===== Thèmes ===========================================================
-const THEMES = { = {
+const THEMES = {
   "Classic":   {bg:"#111", barW:"rgba(0,150,255,0.6)", barB:"rgba(0,200,150,0.6)", actW:"#f9c74f", actB:"#f8961e"},
   "Night":     {bg:"#000", barW:"rgba(120,120,255,0.7)", barB:"rgba(180,0,255,0.7)", actW:"#ffe066", actB:"#ff79c6"},
   "Candy":     {bg:"#222", barW:"rgba(255,105,180,0.7)", barB:"rgba(255,182,193,0.7)", actW:"#ff69b4", actB:"#ff1493"},
