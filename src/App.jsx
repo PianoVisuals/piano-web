@@ -261,8 +261,25 @@ export default function App(){
   const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
   const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
-  // labels desktop -------------------------------------------------
-  const labelByMidi=useMemo(()=>{const o={};for(const [c,n]of Object.entries(PC_MAP))o[n2m(n)]=c==="Semicolon"?";":c.slice(3);return o;},[]);
+  // Détection QWERTY vs AZERTY --------------------------------------------
+const isAzerty = navigator.language.startsWith("fr");
+
+// Tableaux code physique → caractère
+const QWERTY_LABELS = {}; for (const code of Object.keys(PC_MAP)) {
+  QWERTY_LABELS[code] = code === "Semicolon" ? ";" : code.slice(3).toLowerCase();
+}
+const AZERTY_LABELS = { ...QWERTY_LABELS, KeyA: "q", KeyQ: "a", KeyZ: "w", KeyW: "z", KeyM: ";", Semicolon: "m" };
+
+// map midi → lettre affichée selon la disposition détectée
+const labelByMidi = useMemo(() => {
+  const map = {};
+  const labels = isAzerty ? AZERTY_LABELS : QWERTY_LABELS;
+  for (const [code, note] of Object.entries(PC_MAP)) {
+    const midi = n2m(note);
+    map[midi] = labels[code] || '';
+  }
+  return map;
+}, [isAzerty]);
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
