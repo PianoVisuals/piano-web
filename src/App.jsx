@@ -3,17 +3,19 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 
+// === AdSense -------------------------------------------------------------
+const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si différent
+
+// ========================================================================
+
 /*
   Piano Web – + Import MIDI, barre de progression et barres qui tombent
   --------------------------------------------------------------------
-  Fonctionnalités ajoutées par rapport à la dernière version :
-  • Bouton « Importer MIDI » : lit le fichier et planifie la lecture
-  • Barre de progression (type range) pour scruber
-  • Canvas superposé qui affiche les « barres qui tombent » synchronisées
+  …
 */
 
 // ===== Thèmes ===========================================================
-const THEMES = {
+const THEMES = { = {
   "Classic":   {bg:"#111", barW:"rgba(0,150,255,0.6)", barB:"rgba(0,200,150,0.6)", actW:"#f9c74f", actB:"#f8961e"},
   "Night":     {bg:"#000", barW:"rgba(120,120,255,0.7)", barB:"rgba(180,0,255,0.7)", actW:"#ffe066", actB:"#ff79c6"},
   "Candy":     {bg:"#222", barW:"rgba(255,105,180,0.7)", barB:"rgba(255,182,193,0.7)", actW:"#ff69b4", actB:"#ff1493"},
@@ -101,6 +103,15 @@ export default function App(){
     const c = THEMES[theme];
     Object.entries({bg:c.bg,"bar-w":c.barW,"bar-b":c.barB,"act-w":c.actW,"act-b":c.actB}).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
   },[theme]);
+
+  // inject AdSense auto‑ads once -----------------------------------
+  useEffect(()=>{
+    if(!window.adsbygoogle && !document.querySelector(`script[data-ad-client='${ADSENSE_ID}']`)){
+      const s=document.createElement('script');
+      s.src=`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}`;
+      s.async=true; s.crossOrigin="anonymous"; s.dataset.adClient=ADSENSE_ID; document.head.appendChild(s);
+    }
+  },[]);
 
   // create synth ---------------------------------------------------
   useEffect(()=>{Tone.start();synthRef.current?.dispose();synthRef.current=makeSampler(instrument).toDestination();synthRef.current.volume.value=Tone.gainToDb(volume/100);
