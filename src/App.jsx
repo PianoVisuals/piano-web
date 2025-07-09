@@ -268,25 +268,25 @@ export default function App(){
     (async()=>{
       const map={};
       try{
-        if(navigator.keyboard && navigator.keyboard.getLayoutMap){
+        if(navigator.keyboard?.getLayoutMap){
           const layout=await navigator.keyboard.getLayoutMap();
           for(const [code,note] of Object.entries(PC_MAP)){
             const char=(layout.get(code)||code.slice(3)).toUpperCase();
             map[n2m(note)]=char;
           }
-        }else{
+        } else {
           for(const [code,note] of Object.entries(PC_MAP)){
             map[n2m(note)] = code.slice(3);
           }
         }
-      }catch(_){
+      } catch {
         for(const [code,note] of Object.entries(PC_MAP)){
           map[n2m(note)] = code.slice(3);
         }
       }
       setLabelByMidi(map);
     })();
-  },[]);for(const [c,n]of Object.entries(PC_MAP))o[n2m(n)]=c==="Semicolon"?";":c.slice(3);return o;},[]);
+  },[]);(const [c,n]of Object.entries(PC_MAP))o[n2m(n)]=c==="Semicolon"?";":c.slice(3);return o;},[]);
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
