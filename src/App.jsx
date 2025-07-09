@@ -262,7 +262,31 @@ export default function App(){
   const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
   // labels desktop -------------------------------------------------
-  const labelByMidi=useMemo(()=>{const o={};for(const [c,n]of Object.entries(PC_MAP))o[n2m(n)]=c==="Semicolon"?";":c.slice(3);return o;},[]);
+  // --- labels selon disposition clavier PC -----------------------------
+  const [labelByMidi,setLabelByMidi] = useState({});
+  useEffect(()=>{
+    (async()=>{
+      const map={};
+      try{
+        if(navigator.keyboard && navigator.keyboard.getLayoutMap){
+          const layout=await navigator.keyboard.getLayoutMap();
+          for(const [code,note] of Object.entries(PC_MAP)){
+            const char=(layout.get(code)||code.slice(3)).toUpperCase();
+            map[n2m(note)]=char;
+          }
+        }else{
+          for(const [code,note] of Object.entries(PC_MAP)){
+            map[n2m(note)] = code.slice(3);
+          }
+        }
+      }catch(_){
+        for(const [code,note] of Object.entries(PC_MAP)){
+          map[n2m(note)] = code.slice(3);
+        }
+      }
+      setLabelByMidi(map);
+    })();
+  },[]);for(const [c,n]of Object.entries(PC_MAP))o[n2m(n)]=c==="Semicolon"?";":c.slice(3);return o;},[]);
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
