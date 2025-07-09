@@ -286,7 +286,8 @@ export default function App(){
       }
       setLabelByMidi(map);
     })();
-  },[]);(const [c,n]of Object.entries(PC_MAP))o[n2m(n)]=c==="Semicolon"?";":c.slice(3);return o;},[]);
+  },[]);
+  useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
