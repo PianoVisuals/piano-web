@@ -424,6 +424,55 @@ export default function App(){
     ctx.rect(0, 0, W, keysY);
     ctx.clip();
 
+    const activeMidis = [
+      ...kbdSet.current,                           // PC
+      ...Array.from(pointerMap.current.values())   // tactile
+    ];
+
+    // 2) Si aucune musique n’est chargée et qu’il y a des touches actives…
+    if (!midiData && activeMidis.length > 0) {
+      activeMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi='${midi}']`);
+        if (!keyEl) return;
+        const rect = keyEl.getBoundingClientRect();
+
+        // largeur ajustée 90%
+        const wAdj = rect.width * 0.9;
+        const xAdj = rect.left + (rect.width - wAdj) / 2;
+
+        // hauteur : du bas de l’écran (top du clavier) jusqu'en haut
+        const yBottom = rect.top;
+        const barHeight = yBottom;
+        const yTop = 0;
+
+        // dégradé opaque du thème vers transparent en haut
+        const col = getComputedStyle(document.documentElement).getPropertyValue(
+          WHITE.includes(midi % 12) ? "--bar-w" : "--bar-b"
+        );
+        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+        grad.addColorStop(0, col);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+
+        // ombre portée
+        ctx.shadowColor = col;
+        ctx.shadowBlur  = 8;
+        ctx.globalAlpha = 0.8;
+    
+        // dessine la barre montante
+        ctx.fillStyle = grad;
+        ctx.fillRect(xAdj, yTop, wAdj, barHeight);
+
+        // reset
+        ctx.shadowBlur  = 0;
+        ctx.globalAlpha = 1;
+      });
+
+      // on restaure et on quitte avant la boucle MIDI habituelle
+      ctx.restore();
+      return;
+    }
+
+
 
     if (!midiData && activeMidis.length) {
       // on dessine une barre montante pour chaque note active
