@@ -400,11 +400,6 @@ export default function App(){
 
   const drawBars = () => {
     if (!canvasRef.current || !midiData) return;
-    // récupérer la liste des MIDI actifs en pressions clavier ou tactile
-    const activeMidis = [
-      ...kbdSet.current,                                  // clavier PC
-      ...Array.from(pointerMap.current.values())         // tactile / souris
-    ];
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
