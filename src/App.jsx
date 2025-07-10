@@ -165,40 +165,6 @@ export default function App(){
   };
 
 
-
-  const clearAllHighlights = () => {
-    // retire la classe active de toutes les touches
-    document
-      .querySelectorAll('.active')
-      .forEach(el => el.classList.remove('active'));
-
-    // vide le set de notes appuyées
-    kbdSet.current.clear();
-  
-    // stoppe le transport si besoin
-    Tone.Transport.stop();
-    setPlaying(false);
-  };
-
-
-  useEffect(() => {
-    const onBlur = () => clearAllHighlights();
-    window.addEventListener('blur', onBlur);
-    return () => window.removeEventListener('blur', onBlur);
-  }, []);
-
-
-
-
-
-  useEffect(() => {
-    // à la fin du morceau, Transport émet 'stop'
-    const onStop = () => clearAllHighlights();
-    Tone.Transport.on('stop', onStop);
-    return () => Tone.Transport.off('stop', onStop);
-  }, []);
-
-
   // ouvrir la pop-up
   const openLibrary = () => setShowLibrary(true);
   // fermer la pop-up
