@@ -183,20 +183,12 @@ export default function App(){
   }, []);
 
   useEffect(() => {
-    const onStop = () => {
-      // pour chaque note active, triggerRelease + retirer la classe
-      kbdSet.current.forEach(midi => {
-        synthRef.current.triggerRelease(m2n(midi));
-        highlight(midi, false);
-      });
-      kbdSet.current.clear();
+    const clearOnVisChange = () => {
+      clearAllActive();
     };
-
-    Tone.Transport.on("stop", onStop);
-
-    return () => {
-      Tone.Transport.off("stop", onStop);
-    };
+    document.addEventListener("visibilitychange", clearOnVisChange);
+    return () =>
+      document.removeEventListener("visibilitychange", clearOnVisChange);
   }, []);
 
 
