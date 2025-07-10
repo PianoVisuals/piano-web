@@ -222,7 +222,7 @@ export default function App(){
   const pianoRef=useRef(null); const canvasRef=useRef(null);
   const synthRef=useRef(null); const partRef=useRef(null);
   const pointerMap=useRef(new Map()); const kbdSet=useRef(new Set());
-
+  const [isBarCollapsed, setIsBarCollapsed] = useState(false);
   const [instrument,setInstrument]=useState("Grand Piano");
   const [theme,setTheme]=useState("Classic");
   const [volume,setVolume]=useState(100);
@@ -773,11 +773,7 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
 
-  @media (orientation: landscape) and (pointer: coarse) {
-    .top {
-      display: none !important;
-    }
-  }
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -809,7 +805,16 @@ const labelByMidi = useMemo(() => {
       </div>
     </div>
   )}
-  <div className="top">
+
+  <button
+    className="toggle-bar"
+    onClick={() => setIsBarCollapsed(b => !b)}
+    aria-label={isBarCollapsed ? "Show options" : "Hide options"}
+  >
+    {isBarCollapsed ? "⯈" : "⯇"}
+  </button>
+
+  <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
       <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
