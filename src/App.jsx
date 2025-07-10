@@ -578,6 +578,18 @@ const labelByMidi = useMemo(() => {
 
   return(<>
  <style>{`
+
+  :root {
+    /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
+    --act-w-r: 249;
+    --act-w-g: 199;
+    --act-w-b: 79;
+
+    --act-b-r: 248;
+    --act-b-g: 150;
+    --act-b-b: 30;
+  }
+
   html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
   .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
   select,input[type=range]{background:#222;color:#fff;border:1px solid #444;}
@@ -591,13 +603,27 @@ const labelByMidi = useMemo(() => {
   .white:first-child{border-left:none;}
   .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
   .active.white {
-    background: var(--act-w, #f9c74f);
-    box-shadow: 0 2px 12px rgba(249, 199, 79, 0.8);
+    /* dégradé vertical : couleur de base en bas → plus clair en haut */
+    background: linear-gradient(
+      to top,
+      var(--act-w) 0%,
+      rgba(255, 255, 255, 0.5) 100%
+    );
+    /* ombre plus large et diffuse, assortie à la couleur du thème */
+    box-shadow:
+      0 4px 16px rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.6),
+      inset 0 0 8px rgba(255, 255, 255, 0.3);
   }
 
   .active.black {
-    background: var(--act-b, #f8961e);
-    box-shadow: 0 2px 12px rgba(248, 150, 30, 0.8);
+    background: linear-gradient(
+      to top,
+      var(--act-b) 0%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+    box-shadow:
+      0 4px 16px rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.6),
+      inset 0 0 6px rgba(255, 255, 255, 0.2);
   }
   .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
