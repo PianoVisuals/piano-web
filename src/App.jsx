@@ -773,6 +773,40 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
 
+  /* 1) Bouton toggle, masqué par défaut */
+  .toggle-bar {
+    display: none;
+    position: fixed;
+    top: 0.25rem;
+    left: 0.25rem;
+    background: var(--bg);
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    z-index: 4;
+    padding: 0.25rem;
+    border-radius: 4px;
+  }
+
+  /* 2) En paysage mobile, on affiche le toggle */
+  @media (orientation: landscape) and (pointer: coarse) {
+    .toggle-bar {
+      display: block;
+    }
+    /* par défaut on cache la barre si isBarCollapsed = true */
+    .top.collapsed {
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    .top {
+      transition: transform 0.3s ease;
+    }
+    /* pour que la flèche soit toujours visible */
+    .top.collapsed + .toggle-bar,
+    .toggle-bar {
+      z-index: 5;
+    }
+  }
 
 `}</style>
   {showLibrary && (
