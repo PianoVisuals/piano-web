@@ -419,15 +419,11 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
   .library-menu .close {
-    position: absolute; 
-    top: 0.25rem;      
-    left: 0.25rem;     /* <-- ici on ancre en haut à gauche */
-    right: auto;      
-    background: transparent;
-    border: none;
-    color: #aaa;
-    font-size: 1.2rem;
-    cursor: pointer;
+    position: absolute !important;
+    top: 0.5rem !important;
+    left: 0.5rem !important;
+    right: auto !important;
+    z-index: 20 !important;
   }
 
 `}</style>
