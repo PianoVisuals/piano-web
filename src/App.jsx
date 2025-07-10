@@ -172,6 +172,42 @@ export default function App(){
 
 
 
+  useEffect(() => {
+    const onStop = () => {
+      // pour chaque note active, triggerRelease + retirer la classe
+      kbdSet.current.forEach(midi => {
+        synthRef.current.triggerRelease(m2n(midi));
+        highlight(midi, false);
+      });
+      kbdSet.current.clear();
+    };
+
+    Tone.Transport.on("stop", onStop);
+
+    return () => {
+      Tone.Transport.off("stop", onStop);
+    };
+  }, []);
+
+
+
+  useEffect(() => {
+    const onBlur = () => {
+      // pareil : release toutes les notes en cours
+      kbdSet.current.forEach(midi => {
+        synthRef.current.triggerRelease(m2n(midi));
+        highlight(midi, false);
+      });
+      kbdSet.current.clear();
+    };
+
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
+
+
   // appliquer thème -------------------------------------------------
   useEffect(()=>{
     const c = THEMES[theme];
