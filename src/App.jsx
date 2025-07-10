@@ -400,6 +400,12 @@ export default function App(){
 
   const drawBars = () => {
     if (!canvasRef.current || !midiData) return;
+    // récupérer la liste des MIDI actifs en pressions clavier ou tactile
+    const activeMidis = [
+      ...kbdSet.current,                                  // clavier PC
+      ...Array.from(pointerMap.current.values())         // tactile / souris
+    ];
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const W = canvas.width = window.innerWidth;
@@ -417,6 +423,39 @@ export default function App(){
     ctx.beginPath();              // masque : on ne dessine pas sous le clavier
     ctx.rect(0, 0, W, keysY);
     ctx.clip();
+
+
+    if (!midiData && activeMidis.length) {
+      // on dessine une barre montante pour chaque note active
+      activeMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi='${midi}']`);
+        if (!keyEl) return;
+        const rect = keyEl.getBoundingClientRect();
+        const barWidth = rect.width * 0.9;           // même ajustement largeur
+        const x = rect.left + (rect.width - barWidth)/2;
+        const yBottom = keyEl.getBoundingClientRect().top;
+        const barHeight = yBottom;                   // tout jusqu'en haut
+
+        // dégradé simple du bas (couleur thème) → transparent en haut
+        const grad = ctx.createLinearGradient(0, 0, 0, yBottom);
+        grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue("--act-w"));
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, 0, barWidth, yBottom);
+
+        // ombre légère
+        ctx.shadowColor = getComputedStyle(document.documentElement).getPropertyValue("--act-w");
+        ctx.shadowBlur  = 8;
+        ctx.fillRect(x, 0, barWidth, yBottom);
+        ctx.shadowBlur  = 0;
+      });
+
+      ctx.restore();
+      return;
+    }
+
+
 
     midiData.tracks.forEach(tr => {
       tr.notes.forEach(n => {
