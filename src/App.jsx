@@ -446,29 +446,35 @@ const labelByMidi = useMemo(() => {
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
 
 
+   /* widget About intégré dans .top */
+  .details.about {
+    /* rien à fixer en position : il héritera du flow dans .top */
+  }
   .about {
-    position: fixed;
-    bottom: 0.5rem;
-    right: 0.5rem;
-    font-size: 1.2rem;
-    user-select: none;
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;        /* espace à gauche si besoin */
   }
   .about summary {
     list-style: none;
     cursor: pointer;
+    font-size: 1.2rem;
   }
   .about summary::-webkit-details-marker {
-    display: none; /* masque le chevron par défaut */
+    display: none;
   }
   .about-content {
-    display: none;
+    position: absolute;         /* superpose le contenu */
+    top: 2.5rem;                /* juste en dessous de la barre */
+    right: 1rem;                /* aligné à droite de la barre */
     background: #222;
     color: #ddd;
     padding: 0.75rem;
     border-radius: 6px;
-    max-width: 200px;
+    max-width: 250px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.8);
-    margin-top: 0.5rem;
+    display: none;
+    z-index: 20;
   }
   .about[open] .about-content {
     display: block;
