@@ -605,13 +605,33 @@ const labelByMidi = useMemo(() => {
     <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
-        <h4>About Piano Visuals</h4>
+        <h4>About This Site</h4>
+
         <p>
-          Piano Visuals is a browser-based piano built with React & Tone.js.<br/>
-          Upload or select a MIDI, customize theme & instrument,<br/>
-          and play directly from your browser.
+          Piano Visuals is an interactive web application developed to give musicians
+          and hobbyists a seamless virtual piano experience in their browser. Built
+          with React and Tone.js, it allows you to play, record, and visualize MIDI
+          files with customizable themes, instruments, and playback speed. Whether you
+          import your own composition or choose from a curated set of demo tracks, the
+          falling-note animation provides real-time feedback and an engaging learning
+          environment.
         </p>
-      
+
+        <p>
+          In addition to touch and keyboard input, Piano Visuals natively supports
+          USB-MIDI controllers—simply connect your device and start playing. The UI
+          adapts responsively to desktops, tablets, and mobile phones, ensuring that
+          every user enjoys a full-screen piano layout without awkward scrolling or
+          clipping. Volume control, sustain toggle, and speed adjustment (0.25× to
+          2×) help you practice at your own pace.
+        </p>
+
+        <p>
+          This project is open-source and continuously improved. Contributions,
+          feedback, and bug reports are welcome on the GitHub repository. For any
+          questions or feature requests, feel free to reach out via email at
+          you@example.com.
+        </p>
       </div>
     </details>
   </div>
