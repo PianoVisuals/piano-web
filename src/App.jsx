@@ -3,6 +3,27 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 
+
+// nom des fichiers .mid que tu as mis dans public/demos/
+const DEMOS = [
+  "Winter - Vivaldi.mid",
+  "Lacrimosa - Mozart.mid",
+  "Clair de Lune - Debussy.mid",
+  "Moonlight Sonata - Beethoven.mid",
+  "Prelude n15 op28 \"Raindrop\" - Chopin.mid",
+  "Serenade - Schubert.mid",
+  "Gravity Falls Opening Theme Song.mid",
+  "Vogel im Käfig - Attack on Titan.mid",
+  "Rush E.mid",
+  "Lilium - Elfen Lied.mid",
+  "Alone - SOMA.mid",
+  "Harmonious - Ender Lilies.mid",
+  "Secunda - The Elder Scrolls V.mid",
+  "Lumière - Clair Obscur Expedition 33.mid"
+
+];
+
+
 // === AdSense -------------------------------------------------------------
 const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si différent
 
@@ -16,11 +37,13 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 
 // ===== Thèmes ===========================================================
 const THEMES = {
-  "Classic":   {bg:"#111", barW:"rgba(0,150,255,0.6)", barB:"rgba(0,200,150,0.6)", actW:"#f9c74f", actB:"#f8961e"},
+  "Classic":   {bg:"#111", barW:"rgba(0,150,255,0.6)", barB:"rgba(0,200,150,0.6)", actW:"#3faff9", actB:"#3b89bc"},
   "Night":     {bg:"#000", barW:"rgba(120,120,255,0.7)", barB:"rgba(180,0,255,0.7)", actW:"#b799f9", actB:"#ca84e0"},
   "Candy":     {bg:"#222", barW:"rgba(255,105,180,0.7)", barB:"rgba(255,182,193,0.7)", actW:"#f9acf5", actB:"#f988e6"},
   "Retro":     {bg:"#282828", barW:"rgba(255,165,0,0.7)", barB:"rgba(0,255,170,0.7)", actW:"#ffd166", actB:"#06d6a0"},
   "Neon":      {bg:"#050912", barW:"rgba(57,255,20,0.8)", barB:"rgba(0,255,255,0.8)", actW:"#39ff14", actB:"#00e5ff"},
+  "Hell":      {bg:"#4d2525", barW:"rgba(40, 15, 15,0.8)", barB:"rgba(0, 0, 0,0.8)", actW:"#871414", actB:"#5e1d1d"},
+  "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
 };
 
 // ===== Constantes clavier ================================================= =================================================
@@ -68,20 +91,131 @@ setCSSVars();
 // ===== Instruments SoundFont =============================================
 const BASE = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
 const INSTR = {
-  "Grand Piano": "acoustic_grand_piano",
-  "Harpsichord": "harpsichord",
-  "Harp": "orchestral_harp",
-  "Banjo": "banjo",
-  "Violin": "violin",
-  "Cello": "cello",
-  "Flute": "flute",
-  "Trumpet": "trumpet",
-  "Guitar": "acoustic_guitar_steel",
-  "Organ": "church_organ",
+  "Grand Piano":            "acoustic_grand_piano",
+  "Bright Piano":           "bright_acoustic_piano",
+  "Electric Piano 1":       "electric_piano_1",
+  "Electric Piano 2":       "electric_piano_2",
+  "Honky Tonk":             "honkytonk_piano",
+  "EPiano Rhodes":          "electric_piano_1",
+  "Harpsichord":            "harpsichord",
+  "Clavinet":               "clavinet",
+
+  "Celesta":                "celesta",
+  "Glockenspiel":           "glockenspiel",
+  "Music Box":              "music_box",
+  "Vibraphone":             "vibraphone",
+  "Marimba":                "marimba",
+  "Xylophone":              "xylophone",
+
+  "Tubular Bells":          "tubular_bells",
+  "Dulcimer":               "dulcimer",
+
+  "Drawbar Organ":          "drawbar_organ",
+  "Percussive Organ":       "percussive_organ",
+  "Rock Organ":             "rock_organ",
+  "Church Organ":           "church_organ",
+
+  "Accordion":              "accordion",
+  "Harmonica":              "harmonica",
+
+  "Acoustic Guitar (nylon)":    "acoustic_guitar_nylon",
+  "Acoustic Guitar (steel)":    "acoustic_guitar_steel",
+  "Electric Guitar (jazz)":     "electric_guitar_jazz",
+  "Electric Guitar (clean)":    "electric_guitar_clean",
+  "Electric Guitar (muted)":    "electric_guitar_muted",
+  "Overdriven Guitar":          "overdriven_guitar",
+  "Distortion Guitar":          "distortion_guitar",
+  "Guitar Harmonics":           "guitar_harmonics",
+
+  "Acoustic Bass":              "acoustic_bass",
+  "Electric Bass (finger)":     "electric_bass_finger",
+  "Electric Bass (pick)":       "electric_bass_pick",
+  "Fretless Bass":              "fretless_bass",
+  "Slap Bass 1":                "slap_bass_1",
+  "Slap Bass 2":                "slap_bass_2",
+  "Synth Bass 1":               "synth_bass_1",
+  "Synth Bass 2":               "synth_bass_2",
+
+  "Violin":                     "violin",
+  "Viola":                      "viola",
+  "Cello":                      "cello",
+  "Contrabass":                 "contrabass",
+  "Tremolo Strings":            "tremolo_strings",
+  "Pizzicato Strings":          "pizzicato_strings",
+
+  "Orchestral Harp":            "orchestral_harp",
+  "Timpani":                    "timpani",
+
+  "String Ensemble 1":          "string_ensemble_1",
+  "String Ensemble 2":          "string_ensemble_2",
+
+  "Synth Strings 1":            "synth_strings_1",
+  "Synth Strings 2":            "synth_strings_2",
+
+  "Choir Aahs":                 "choir_aahs",
+  "Voice Oohs":                 "voice_oohs",
+  "Synth Choir":                "synth_choir",
+
+  "Trumpet":                    "trumpet",
+  "Trombone":                   "trombone",
+  "Tuba":                       "tuba",
+  "Muted Trumpet":              "muted_trumpet",
+  "French Horn":                "french_horn",
+
+  "Soprano Sax":                "soprano_sax",
+  "Alto Sax":                   "alto_sax",
+  "Tenor Sax":                  "tenor_sax",
+  "Baritone Sax":               "baritone_sax",
+
+  "Oboe":                       "oboe",
+  "English Horn":               "english_horn",
+  "Bassoon":                    "bassoon",
+  "Clarinet":                   "clarinet",
+
+  "Piccolo":                    "piccolo",
+  "Flute":                      "flute",
+  "Recorder":                   "recorder",
+  "Pan Flute":                  "pan_flute",
+  "Blown Bottle":               "blown_bottle",
+
+  "Shakuhachi":                 "shakuhachi",
+  "Whistle":                    "whistle",
+  "Ocarina":                     "ocarina",
+
+  "Lead 1 (square)":           "lead_1_square",
+  "Lead 2 (sawtooth)":         "lead_2_sawtooth",
+  "Pad 1 (new age)":           "pad_1_new_age",
+  "Pad 2 (warm)":              "pad_2_warm",
+  "FX 1 (rain)":               "fx_1_rain",
+  "FX 2 (soundtrack)":         "fx_2_soundtrack"
 };
+
 const URLS = { C3: "C3.mp3", G3: "G3.mp3", C4: "C4.mp3", G4: "G4.mp3", C5: "C5.mp3", G5: "G5.mp3" };
 const LONG_REL = 30; // sustain release seconds
 const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
+
+
+/**
+ * Charge un fichier MIDI de la bibliothèque et le joue
+ * @param {string} name  Nom du fichier dans public/demos/
+ */
+async function loadDemo(name) {
+  try {
+    const res = await fetch(`/demos/${encodeURIComponent(name)}`);
+    const arr = await res.arrayBuffer();
+    const midi = new Midi(arr);
+    setMidiData(midi);              // met à jour l’état midiData
+    setDuration(midi.duration + LEAD);
+    preparePart(midi);              // ta fonction existante
+    closeLibrary();                 // ferme la fenêtre
+  }
+  catch(err) {
+    console.error("Erreur loadDemo:", err);
+    alert("Impossible de charger le MIDI : " + name);
+  }
+}
+
+
 
 export default function App(){
   // refs & state ----------------------------------------------------
@@ -100,15 +234,80 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
-
+  const fileInputRef = useRef(null);
   // pour afficher/masquer la pop-up de choix
   const [showLibrary, setShowLibrary] = useState(false);
+  const aboutRef = useRef(null);
+
+  const loadDemo = async (name) => {
+    try {
+      const res = await fetch(`/demos/${encodeURIComponent(name)}`);
+      const arr = await res.arrayBuffer();
+      const midi = new Midi(arr);
+      setMidiData(midi);
+      setDuration(midi.duration + LEAD);
+      preparePart(midi);
+      closeLibrary();
+    } catch (err) {
+      console.error("Erreur loadDemo:", err);
+      alert("Impossible de charger le MIDI : " + name);
+    }
+  };
+
+
+  useEffect(() => {
+    const onClickOutside = e => {
+      if (aboutRef.current && !aboutRef.current.contains(e.target)) {
+        aboutRef.current.open = false;
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
   // ouvrir la pop-up
   const openLibrary = () => setShowLibrary(true);
   // fermer la pop-up
   const closeLibrary = () => setShowLibrary(false);
 
+  // quand l’onglet devient invisible, on coupe tout
+  useEffect(() => {
+    const onVisChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // uniquement relâcher toutes les notes
+        clearAllActive();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => document.removeEventListener('visibilitychange', onVisChange);
+  }, []);
+
+  useEffect(() => {
+    const clearOnVisChange = () => {
+      clearAllActive();
+    };
+    document.addEventListener("visibilitychange", clearOnVisChange);
+    return () =>
+      document.removeEventListener("visibilitychange", clearOnVisChange);
+  }, []);
+
+
+
+  useEffect(() => {
+    const onBlur = () => {
+      // pareil : release toutes les notes en cours
+      kbdSet.current.forEach(midi => {
+        synthRef.current.triggerRelease(m2n(midi));
+        highlight(midi, false);
+      });
+      kbdSet.current.clear();
+    };
+
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
 
 
   // appliquer thème -------------------------------------------------
@@ -142,6 +341,21 @@ export default function App(){
     preparePart(midi);
   };
 
+
+  const clearAllActive = () => {
+    // désactive visuellement + soniquement chaque note “allumée”
+    document.querySelectorAll('.active').forEach(el => {
+      const midi = +el.getAttribute('data-midi');
+      // son
+      synthRef.current.triggerRelease(m2n(midi));
+      // visuel
+      el.classList.remove('active');
+    });
+    // reset du set clavier (pc)
+    kbdSet.current.clear();
+  };
+
+
   const preparePart = (midi) => {
     partRef.current?.dispose();
     const events = [];
@@ -157,7 +371,16 @@ export default function App(){
     partRef.current.start(0);
     Tone.Transport.seconds = 0;
     setProgress(0);
+    Tone.Transport.schedule(() => {
+        clearAllActive();
+        Tone.Transport.stop();
+        setPlaying(false);
+      }, midi.duration + LEAD + 0.05)
   };
+
+
+
+
 
   // play / pause --------------------------------------------------- ---------------------------------------------------
   const togglePlay=()=>{if(!midiData)return;if(!playing){Tone.Transport.start("+0.1");setPlaying(true);}else{Tone.Transport.pause();setPlaying(false);} };
@@ -176,24 +399,130 @@ export default function App(){
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
 
   const drawBars = () => {
-    if (!canvasRef.current || !midiData) return;
+    if (!canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const W = canvas.width = window.innerWidth;
     const H = canvas.height = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
 
-    // Position dynamique du haut du clavier (portrait vs paysage)
-    const pianoRect = pianoRef.current?.getBoundingClientRect();
-    const keysY = pianoRect ? pianoRect.top : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
-    const path = keysY;              // distance totale que les barres doivent parcourir
+  // Position dynamique du haut du clavier
+  const pianoRect = pianoRef.current?.getBoundingClientRect();
+  const keysY = pianoRect
+    ? pianoRect.top
+    : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, W, keysY);
+  ctx.clip();
 
-    const t = Tone.Transport.seconds;
+  // ——— NO MIDI CHARGÉ : dessine les barres montantes pour chaque touche active ———
+  if (!midiData) {
+    // récupère les MIDI actuellement appuyés (PC & tactile)
+    const activeMidis = [
+      ...kbdSet.current,
+      ...Array.from(pointerMap.current.values())
+    ];
+    if (activeMidis.length) {
+      activeMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi='${midi}']`);
+        if (!keyEl) return;
+        const rect = keyEl.getBoundingClientRect();
 
-    ctx.save();
-    ctx.beginPath();              // masque : on ne dessine pas sous le clavier
-    ctx.rect(0, 0, W, keysY);
-    ctx.clip();
+        // largeur réduite et centrée
+        const barWidth = rect.width * 0.9;
+        const x = rect.left + (rect.width - barWidth) / 2;
+
+        // hauteur = distance piano -> haut de l'écran
+        const yBottom = rect.top;
+        const yTop = 0;
+
+        // dégradé du bas (couleur active) vers transparent en haut
+        const actColor = getComputedStyle(document.documentElement).getPropertyValue("--act-w");
+        const grad = ctx.createLinearGradient(0, yBottom, 0, yTop);
+        grad.addColorStop(0, actColor);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+
+        // dessine la barre
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, yTop, barWidth, yBottom);
+
+        // ajoute une ombre diffuse
+        ctx.shadowColor = actColor;
+        ctx.shadowBlur  = 8;
+        ctx.fillRect(x, yTop, barWidth, yBottom);
+        ctx.shadowBlur  = 0;
+      });
+    }
+    ctx.restore();
+    return; // on sort, pas de barre “normale”
+  }
+
+  // ——— CAS MIDI CHARGÉ : ton code original pour les barres qui tombent ———
+  const t = Tone.Transport.seconds;
+  const path = keysY;
+
+  midiData.tracks.forEach(tr => {
+    tr.notes.forEach(n => {
+      const impact = n.time + LEAD;
+      const remaining = impact - t;
+      if (remaining < -n.duration || remaining > LEAD) return;
+
+      const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
+      if (!keyEl) return;
+      const rect = keyEl.getBoundingClientRect();
+
+      // ajustement de largeur
+      const barWidth = rect.width * 0.9;
+      const x = rect.left + (rect.width - barWidth) / 2;
+
+      // position verticale
+      const yBottom = (1 - remaining / LEAD) * path;
+      const barHeight = n.duration * (path / LEAD);
+      const yTop = yBottom - barHeight;
+      const y1 = yTop + barHeight;
+
+      // création du dégradé
+      const baseW = getComputedStyle(document.documentElement).getPropertyValue("--bar-w");
+      const baseB = getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+      const isWhite = WHITE.includes(n.midi % 12);
+      const col = isWhite ? baseW : baseB;
+      const grad = ctx.createLinearGradient(0, yTop, 0, y1);
+      grad.addColorStop(0, col);
+      grad.addColorStop(1, "rgba(255,255,255,0.2)");
+
+      // ombre et opacité
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
+      ctx.shadowBlur  = 6;
+      ctx.globalAlpha = 0.9;
+
+      // coins arrondis
+      const radius = Math.min(barWidth, 8);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, yTop);
+      ctx.lineTo(x + barWidth - radius, yTop);
+      ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
+      ctx.lineTo(x + barWidth, y1 - radius);
+      ctx.quadraticCurveTo(x + barWidth, y1, x + barWidth - radius, y1);
+      ctx.lineTo(x + radius, y1);
+      ctx.quadraticCurveTo(x, y1, x, y1 - radius);
+      ctx.lineTo(x, yTop + radius);
+      ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
+      ctx.closePath();
+
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // reset
+      ctx.shadowBlur  = 0;
+      ctx.globalAlpha = 1;
+    });
+  });
+
+  ctx.restore();
+};
+
+
 
     midiData.tracks.forEach(tr => {
       tr.notes.forEach(n => {
@@ -207,16 +536,66 @@ export default function App(){
         const barWidth = rect.width;
         const x = rect.left;
 
+
+        // Réduire la largeur de 10% (ou remplace 0.9 par 0.95 pour 5%, etc.)
+        const wAdj = barWidth * 0.9;
+        // Recentrer horizontalement
+        const xAdj = x + (barWidth - wAdj) / 2;
+
         const yBottom = (1 - remaining / LEAD) * path;
         const barHeight = n.duration * (path / LEAD);
         const yTop = yBottom - barHeight;
 
-        ctx.fillStyle = WHITE.includes(n.midi % 12) ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w") : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-        ctx.fillRect(x, yTop, barWidth, barHeight);
-      });
-    });
-    ctx.restore();
-  };
+        // === à l’intérieur de midiData.tracks.forEach ===
+
+        // choix des couleurs de base
+        const baseW = getComputedStyle(document.documentElement).getPropertyValue("--bar-w");
+        const baseB = getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+        const isWhiteNote = WHITE.includes(n.midi % 12);
+
+        // coordonnées
+        const x0 = xAdj;
+        const y0 = yTop;
+        const w0 = wAdj;
+        const h0 = barHeight;
+        const y1 = y0 + h0;
+
+        // 1) créer un dégradé vertical de la couleur vers un ton plus clair
+        const grad = ctx.createLinearGradient(0, y0, 0, y1);
+        const col = isWhiteNote ? baseW : baseB;
+        grad.addColorStop(0, col);
+        grad.addColorStop(1, "rgba(255,255,255,0.2)");
+
+        // 2) ombre portée
+        ctx.shadowColor = "rgba(0,0,0,0.4)";
+        ctx.shadowBlur  = 6;
+        ctx.globalAlpha = 0.9;
+
+        // 3) coins arrondis
+        const radius = Math.min(w0, 8);
+        ctx.beginPath();
+        ctx.moveTo(x0 + radius, y0);
+        ctx.lineTo(x0 + w0 - radius, y0);
+        ctx.quadraticCurveTo(x0 + w0, y0, x0 + w0, y0 + radius);
+        ctx.lineTo(x0 + w0, y1 - radius);
+        ctx.quadraticCurveTo(x0 + w0, y1, x0 + w0 - radius, y1);
+        ctx.lineTo(x0 + radius, y1);
+        ctx.quadraticCurveTo(x0, y1, x0, y1 - radius);
+        ctx.lineTo(x0, y0 + radius);
+        ctx.quadraticCurveTo(x0, y0, x0 + radius, y0);
+        ctx.closePath();
+
+        // remplissage
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // 4) reset pour ne pas impacter les prochains dessins
+        ctx.shadowBlur  = 0;
+        ctx.globalAlpha = 1;
+              });
+            });
+            ctx.restore();
+          };
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
@@ -304,24 +683,179 @@ const labelByMidi = useMemo(() => {
   const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
 
   return(<>
-  <style>{`
-    html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
-    .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
-    select,input[type=range]{background:#222;color:#fff;border:1px solid #444;}
-    input[type=range].prog{width:180px;}
-    .piano{display:flex;justify-content:center;position:fixed;left:0;right:0;height:var(--white-h);bottom:0;overflow:hidden;}
-    @media(orientation:portrait) and (pointer:coarse){
-      .piano{top:66vh;bottom:auto;}
-      .top{top:calc(66vh + var(--white-h));bottom:auto;}
-    }
-    .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
-    .white:first-child{border-left:none;}
-    .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
-    .active.white{background:var(--act-w,#f9c74f);}
-    .active.black{background:var(--act-b,#f8961e);}
-    .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
-    canvas{position:fixed;left:0;top:0;pointer-events:none;}
-  `}</style>
+ <style>{`
+
+  :root {
+    /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
+    --act-w-r: 249;
+    --act-w-g: 199;
+    --act-w-b: 79;
+
+    --act-b-r: 248;
+    --act-b-g: 150;
+    --act-b-b: 30;
+  }
+
+  html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
+  .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
+  select,input[type=range]{background:#222;color:#fff;border:1px solid #444;}
+  input[type=range].prog{width:180px;}
+  .piano{display:flex;justify-content:center;position:fixed;left:0;right:0;height:var(--white-h);bottom:0;overflow:hidden;}
+  @media(orientation:portrait) and (pointer:coarse){
+    .piano{top:66vh;bottom:auto;}
+    .top{top:calc(66vh + var(--white-h));bottom:auto;}
+  }
+  .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
+  .white:first-child{border-left:none;}
+  .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
+  /* Active White Keys */
+  .active.white {
+    /* du thème en bas → blanc mélangé à 40% en haut */
+    background: linear-gradient(
+      to top,
+      var(--act-w) 0%,
+      color-mix(in srgb, white 40%, var(--act-w)) 100%
+    ) !important;
+
+    /* lueur dynamique comme avant */
+    box-shadow:
+      0 0 12px var(--act-w),
+      inset 0 0 4px rgba(255,255,255,0.3) !important;
+  }
+
+  /* Active Black Keys */
+  .active.black {
+    background: linear-gradient(
+      to top,
+      var(--act-b) 0%,
+      color-mix(in srgb, white 20%, var(--act-b)) 100%
+    ) !important;
+
+    box-shadow:
+      0 0 12px var(--act-b),
+      inset 0 0 4px rgba(255,255,255,0.2) !important;
+  }
+  .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
+  canvas{position:fixed;left:0;top:0;pointer-events:none;}
+
+
+   /* widget About intégré dans .top */
+  .details.about {
+    /* rien à fixer en position : il héritera du flow dans .top */
+  }
+  .about {
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;        /* espace à gauche si besoin */
+  }
+  .about summary {
+    list-style: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+  }
+  .about summary::-webkit-details-marker {
+    display: none;
+  }
+  .about-content {
+    position: absolute;         /* superpose le contenu */
+    top: 2.5rem;                /* juste en dessous de la barre */
+    right: 1rem;                /* aligné à droite de la barre */
+    background: #222;
+    color: #ddd;
+    padding: 0.75rem;
+    border-radius: 6px;
+    max-width: 250px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    display: none;
+    z-index: 20;
+  }
+  .about[open] .about-content {
+    display: block;
+  }
+  .about-content h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .about-content p {
+    margin: 0.25rem 0;
+    font-size: 0.85rem;
+  }
+  .about-content a {
+    color: #4da6ff;
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+
+
+
+  /* ——— Styles pour la fenêtre Import/Librairie ——— */
+  .library-overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+  }
+  .library-menu {
+    position: relative;   /* <-- impératif ! */
+    background:#222;
+    padding:1rem;
+    border-radius:6px;
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+    width:90%;
+    max-width:320px;
+  }
+  .library-menu h3 {
+    margin:0 0 0.5rem;
+    color:#fff;
+    text-align:center;
+  }
+  .library-menu button,
+  .library-menu select {
+    width:100%;
+    font-size:1rem;
+    padding:0.5rem;
+    background:#333;
+    border:1px solid #555;
+    color:#fff;
+  }
+
+
+`}</style>
+  {showLibrary && (
+    <div className="library-overlay" onClick={closeLibrary}>
+      <div className="library-menu" onClick={e => e.stopPropagation()}>
+
+        {/* 2) Titre */}
+        <h3>Upload or Select</h3>
+
+        {/* 3) Upload file */}
+        <button onClick={() => fileInputRef.current.click()}>
+          Upload MIDI File
+        </button>
+
+        {/* 4) Sélecteur de la bibliothèque */}
+        <select
+          defaultValue=""
+          onChange={e => {
+            loadDemo(e.target.value);
+            closeLibrary();
+          }}
+        >
+          <option value="" disabled>Select a Song...</option>
+          {DEMOS.map(name => (
+            <option key={name} value={name}>
+              {name.replace(/\.mid$/, "")}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  )}
   <div className="top">
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
@@ -330,14 +864,61 @@ const labelByMidi = useMemo(() => {
     <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
     <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
       <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
-    <label>Vol <input type="range" min="0" max="150" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
+    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
     <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
-    <input type="file" accept=".mid" onChange={handleFile} />
+    {/* Bouton principal : Charger (importer ou choisir) */}
+    <button onClick={openLibrary}>
+      Load…
+    </button>
+
+    {/* input caché pour import manuel */}
+    <input
+      type="file"
+      accept=".mid"
+      hidden
+      ref={fileInputRef}
+      onChange={e => {
+        handleFile(e.target.files[0]);
+        closeLibrary();
+      }}
+    />
+
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
+
+    <details className="about" ref={aboutRef}>
+      <summary>ⓘ</summary>
+      <div className="about-content">
+        <h4>About This Site</h4>
+
+        <p>
+          Piano Visuals brings a realistic virtual piano right into your browser. Built
+          with React and Tone.js, it supports touch, computer keyboard, and USB-MIDI
+          controllers for an authentic playing experience. You can import your own
+          MIDI files or choose from a growing library of demo songs, instantly
+          visualizing each note as it lights up on the full-screen keyboard.
+        </p>
+
+        <p>
+          The responsive design adapts seamlessly to desktops, tablets, and mobile
+          devices in both landscape and portrait modes. Volume and sustain controls
+          let you shape your sound, while customizable themes and instrument voices
+          (piano, harpsichord, banjo, violin, etc.) allow for endless creative
+          exploration.
+        </p>
+
+        <p>
+          We update the site regularly with new demo tracks, improved sound
+          libraries, and performance optimizations. Whether you’re learning to read
+          music, practicing for a recital, or just having fun, Piano Visuals aims to
+          make playing and studying piano more accessible than ever.
+        </p>
+      </div>
+    </details>
   </div>
 
   <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
+  
   </>);
 }
