@@ -147,7 +147,7 @@ export default function App(){
   const fileInputRef = useRef(null);
   // pour afficher/masquer la pop-up de choix
   const [showLibrary, setShowLibrary] = useState(false);
-
+  const aboutRef = useRef(null);
 
   const loadDemo = async (name) => {
     try {
@@ -164,6 +164,16 @@ export default function App(){
     }
   };
 
+
+  useEffect(() => {
+    const onClickOutside = e => {
+      if (aboutRef.current && !aboutRef.current.contains(e.target)) {
+        aboutRef.current.open = false;
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
   // ouvrir la pop-up
   const openLibrary = () => setShowLibrary(true);
@@ -592,7 +602,7 @@ const labelByMidi = useMemo(() => {
 
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
 
-    <details className="about">
+    <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
         <h4>About Piano Visuals</h4>
