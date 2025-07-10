@@ -602,25 +602,29 @@ const labelByMidi = useMemo(() => {
   .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
   .white:first-child{border-left:none;}
   .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
+  /* ——— Active White Keys ——— */
   .active.white {
-    /* dégradé vertical : couleur de base en bas → plus clair en haut */
+    /* dégradé vertical opaque : couleur active en bas → plus clair en haut */
     background: linear-gradient(
       to top,
       var(--act-w) 0%,
-      rgba(255, 255, 255, 0.5) 100%
+      rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.7) 100%
     );
-    /* ombre plus large et diffuse, assortie à la couleur du thème */
+    /* lueur dynamique autour + léger reflet interne blanc */
     box-shadow:
       0 4px 16px rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.6),
       inset 0 0 8px rgba(255, 255, 255, 0.3);
   }
 
+  /* ——— Active Black Keys ——— */
   .active.black {
+    /* dégradé opaque basé sur la couleur de thème */
     background: linear-gradient(
       to top,
       var(--act-b) 0%,
-      rgba(255, 255, 255, 0.3) 100%
+      rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.7) 100%
     );
+    /* même lueur dynamique que pour les blanches */
     box-shadow:
       0 4px 16px rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.6),
       inset 0 0 6px rgba(255, 255, 255, 0.2);
