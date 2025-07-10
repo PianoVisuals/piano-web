@@ -6,20 +6,21 @@ import { Midi } from "@tonejs/midi";
 
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
-  "Lilium - Elfen Lied.mid",
-  "Gravity Falls Opening Theme Song.mid",
+  "Winter - Vivaldi.mid",
   "Lacrimosa - Mozart.mid",
   "Clair de Lune - Debussy.mid",
   "Moonlight Sonata - Beethoven.mid",
-  "Winter - Vivaldi.mid",
   "Prelude n15 op28 \"Raindrop\" - Chopin.mid",
-  "Alone - SOMA.mid",
-  "Harmonious - Ender Lilies.mid",
   "Serenade - Schubert.mid",
-  "Secunda - The Elder Scrolls V.mid",
+  "Gravity Falls Opening Theme Song.mid",
   "Vogel im Käfig - Attack on Titan.mid",
   "Rush E.mid",
+  "Lilium - Elfen Lied.mid",
+  "Alone - SOMA.mid",
+  "Harmonious - Ender Lilies.mid",
+  "Secunda - The Elder Scrolls V.mid",
   "Lumière - Clair Obscur Expedition 33.mid"
+
 ];
 
 
@@ -418,15 +419,17 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
   .library-menu .close {
-    position:absolute;
-    top:0.25rem;
-    right:0.25rem;
-    background:transparent;
-    border:none;
-    color:#aaa;
-    font-size:1.2rem;
-    cursor:pointer;
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;    /* ← on passe de right à left */
+    right: auto;      /* ← on désactive right */
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
   }
+
 `}</style>
 
   <div className="top">
