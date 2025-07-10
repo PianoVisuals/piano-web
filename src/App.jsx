@@ -486,7 +486,24 @@ const labelByMidi = useMemo(() => {
     text-decoration: none;
     font-size: 0.85rem;
   }
-
+  .top {
+    position: relative;
+    z-index: 3;
+  }
+  .about {
+    position: fixed;
+    z-index: 5;         /* au-dessus de .top */
+    top: 0.5rem;        /* par défaut, en haut */
+    right: 0.5rem;
+  }
+  /* Sur téléphone portrait, on descend en bas */
+  @media (orientation:portrait) and (pointer:coarse) {
+    .about {
+      top: auto;
+      bottom: 0.5rem;
+      right: 0.5rem;
+    }
+  }
 
 
   /* ——— Styles pour la fenêtre Import/Librairie ——— */
@@ -593,7 +610,7 @@ const labelByMidi = useMemo(() => {
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   <details className="about">
-    <summary>ℹ️</summary>
+    <summary>I</summary>
     <div className="about-content">
       <h4>À propos de Piano Visuals</h4>
       <p>
