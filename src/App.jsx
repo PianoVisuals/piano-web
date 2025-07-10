@@ -445,6 +445,50 @@ const labelByMidi = useMemo(() => {
   .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
 
+
+  .about {
+    position: fixed;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    font-size: 1.2rem;
+    user-select: none;
+  }
+  .about summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .about summary::-webkit-details-marker {
+    display: none; /* masque le chevron par défaut */
+  }
+  .about-content {
+    display: none;
+    background: #222;
+    color: #ddd;
+    padding: 0.75rem;
+    border-radius: 6px;
+    max-width: 200px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    margin-top: 0.5rem;
+  }
+  .about[open] .about-content {
+    display: block;
+  }
+  .about-content h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .about-content p {
+    margin: 0.25rem 0;
+    font-size: 0.85rem;
+  }
+  .about-content a {
+    color: #4da6ff;
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+
+
+
   /* ——— Styles pour la fenêtre Import/Librairie ——— */
   .library-overlay {
     position:fixed;
@@ -548,5 +592,19 @@ const labelByMidi = useMemo(() => {
   <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
+  <details className="about">
+    <summary>ℹ️</summary>
+    <div className="about-content">
+      <h4>À propos de Piano Visuals</h4>
+      <p>
+        Piano Visuals est un piano en ligne créé avec React et Tone.js.  
+        Importez ou choisissez un fichier MIDI, customizez l’instrument et le thème,  
+        et jouez directement depuis votre navigateur.
+      </p>
+      <p>
+        &copy; 2025 Ton Nom – <a href="mailto:toi@exemple.com">Contact</a>
+      </p>
+    </div>
+  </details>
   </>);
 }
