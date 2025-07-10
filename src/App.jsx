@@ -434,14 +434,18 @@ const labelByMidi = useMemo(() => {
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
+        {/* 1) Bouton Fermer en tout premier */}
+        <button className="close" onClick={closeLibrary}>✕</button>
+
+        {/* 2) Titre */}
         <h3>Upload or Select</h3>
 
-        <button onClick={() => {
-          fileInputRef.current.click();
-        }}>
+        {/* 3) Upload file */}
+        <button onClick={() => fileInputRef.current.click()}>
           Upload MIDI File
         </button>
 
+        {/* 4) Sélecteur de la bibliothèque */}
         <select
           defaultValue=""
           onChange={e => {
@@ -456,12 +460,11 @@ const labelByMidi = useMemo(() => {
             </option>
           ))}
         </select>
-
-        <button className="close" onClick={closeLibrary}>✕</button>
       </div>
     </div>
   )}
   <div className="top">
+
 
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
