@@ -345,13 +345,17 @@ export default function App(){
   useEffect(()=>{if(synthRef.current){synthRef.current.volume.value=Tone.gainToDb(volume/100);synthRef.current.release = sustain ? LONG_REL : 1;}},[volume,sustain]);
 
   // MIDI import ----------------------------------------------------
-  const handleFile = async (e) => {
-    const file = e.target.files[0];
+  const handleFile = async (eOrFile) => {
+    // si on a un File en direct, on l’utilise, sinon on prend e.target.files[0]
+    const file = eOrFile instanceof File
+      ? eOrFile
+      : (eOrFile.target && eOrFile.target.files[0]);
     if (!file) return;
+  
     const arr = await file.arrayBuffer();
     const midi = new Midi(arr);
     setMidiData(midi);
-    setDuration(midi.duration + LEAD); // include lead silence
+    setDuration(midi.duration + LEAD);
     preparePart(midi);
   };
 
@@ -817,7 +821,9 @@ const labelByMidi = useMemo(() => {
         <h3>Upload or Select</h3>
 
         {/* 3) Upload file */}
-        <button onClick={() => fileInputRef.current.click()}>
+        <button onClick={() => {
+          fileInputRef.current.click();
+        }}>
           Upload MIDI File
         </button>
 
@@ -873,7 +879,7 @@ const labelByMidi = useMemo(() => {
       hidden
       ref={fileInputRef}
       onChange={e => {
-        handleFile(e.target.files[0]);
+        handleFile(e);      // passe bien l’Event
         closeLibrary();
       }}
     />
