@@ -663,4 +663,23 @@ const labelByMidi = useMemo(() => {
     </div>
   </details>
 </div>
-}
+
+ </div>   {/* fin de <div className="top"> */}
+
+  {/* ——— Canvas pour les falling bars ——— */}
+  <canvas ref={canvasRef}></canvas>
+
+  {/* ——— Le clavier visuel ——— */}
+  <div
+    className="piano"
+    ref={pianoRef}
+    onPointerDown={pDown}
+    onPointerMove={pMove}
+    onPointerUp={pUp}
+    onPointerCancel={pUp}
+  >
+    {keys}
+  </div>
+  
+</>     {/* fermeture du fragment React */}
+);      {/* fin du return */}
