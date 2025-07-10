@@ -405,7 +405,12 @@ export default function App(){
     const arr = await file.arrayBuffer();
     const midi = new Midi(arr);
     setMidiData(midi);
-    setDuration(midi.duration + LEAD); // include lead silence
+
+    // ← IMPORTANT : on repasse au mode Normal
+    setMode("normal");
+    setGameState("idle");
+
+    setDuration(midi.duration + LEAD);
     preparePart(midi);
   };
 
