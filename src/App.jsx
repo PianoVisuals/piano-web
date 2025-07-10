@@ -406,121 +406,121 @@ export default function App(){
     const H = canvas.height = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
 
-  // Position dynamique du haut du clavier
-  const pianoRect = pianoRef.current?.getBoundingClientRect();
-  const keysY = pianoRect
-    ? pianoRect.top
-    : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, 0, W, keysY);
-  ctx.clip();
+    // Position dynamique du haut du clavier
+    const pianoRect = pianoRef.current?.getBoundingClientRect();
+    const keysY = pianoRect
+      ? pianoRect.top
+      : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, W, keysY);
+    ctx.clip();
 
-  // ——— NO MIDI CHARGÉ : dessine les barres montantes pour chaque touche active ———
-  if (!midiData) {
-    // récupère les MIDI actuellement appuyés (PC & tactile)
-    const activeMidis = [
-      ...kbdSet.current,
-      ...Array.from(pointerMap.current.values())
-    ];
-    if (activeMidis.length) {
-      activeMidis.forEach(midi => {
-        const keyEl = document.querySelector(`[data-midi='${midi}']`);
+    // ——— NO MIDI CHARGÉ : dessine les barres montantes pour chaque touche active ———
+    if (!midiData) {
+      // récupère les MIDI actuellement appuyés (PC & tactile)
+      const activeMidis = [
+        ...kbdSet.current,
+        ...Array.from(pointerMap.current.values())
+      ];
+      if (activeMidis.length) {
+        activeMidis.forEach(midi => {
+          const keyEl = document.querySelector(`[data-midi='${midi}']`);
+          if (!keyEl) return;
+          const rect = keyEl.getBoundingClientRect();
+
+          // largeur réduite et centrée
+          const barWidth = rect.width * 0.9;
+          const x = rect.left + (rect.width - barWidth) / 2;
+
+          // hauteur = distance piano -> haut de l'écran
+          const yBottom = rect.top;
+          const yTop = 0;
+
+          // dégradé du bas (couleur active) vers transparent en haut
+          const actColor = getComputedStyle(document.documentElement).getPropertyValue("--act-w");
+          const grad = ctx.createLinearGradient(0, yBottom, 0, yTop);
+          grad.addColorStop(0, actColor);
+          grad.addColorStop(1, "rgba(255,255,255,0)");
+
+          // dessine la barre
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, yTop, barWidth, yBottom);
+
+          // ajoute une ombre diffuse
+          ctx.shadowColor = actColor;
+          ctx.shadowBlur  = 8;
+          ctx.fillRect(x, yTop, barWidth, yBottom);
+          ctx.shadowBlur  = 0;
+        });
+      }
+      ctx.restore();
+      return; // on sort, pas de barre “normale”
+    }
+
+    // ——— CAS MIDI CHARGÉ : ton code original pour les barres qui tombent ———
+    const t = Tone.Transport.seconds;
+    const path = keysY;
+
+    midiData.tracks.forEach(tr => {
+      tr.notes.forEach(n => {
+        const impact = n.time + LEAD;
+        const remaining = impact - t;
+        if (remaining < -n.duration || remaining > LEAD) return;
+
+        const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
 
-        // largeur réduite et centrée
+        // ajustement de largeur
         const barWidth = rect.width * 0.9;
         const x = rect.left + (rect.width - barWidth) / 2;
 
-        // hauteur = distance piano -> haut de l'écran
-        const yBottom = rect.top;
-        const yTop = 0;
+        // position verticale
+        const yBottom = (1 - remaining / LEAD) * path;
+        const barHeight = n.duration * (path / LEAD);
+        const yTop = yBottom - barHeight;
+        const y1 = yTop + barHeight;
 
-        // dégradé du bas (couleur active) vers transparent en haut
-        const actColor = getComputedStyle(document.documentElement).getPropertyValue("--act-w");
-        const grad = ctx.createLinearGradient(0, yBottom, 0, yTop);
-        grad.addColorStop(0, actColor);
-        grad.addColorStop(1, "rgba(255,255,255,0)");
+        // création du dégradé
+        const baseW = getComputedStyle(document.documentElement).getPropertyValue("--bar-w");
+        const baseB = getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+        const isWhite = WHITE.includes(n.midi % 12);
+        const col = isWhite ? baseW : baseB;
+        const grad = ctx.createLinearGradient(0, yTop, 0, y1);
+        grad.addColorStop(0, col);
+        grad.addColorStop(1, "rgba(255,255,255,0.2)");
 
-        // dessine la barre
+        // ombre et opacité
+        ctx.shadowColor = "rgba(0,0,0,0.4)";
+        ctx.shadowBlur  = 6;
+        ctx.globalAlpha = 0.9;
+
+        // coins arrondis
+        const radius = Math.min(barWidth, 8);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, yTop);
+        ctx.lineTo(x + barWidth - radius, yTop);
+        ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
+        ctx.lineTo(x + barWidth, y1 - radius);
+        ctx.quadraticCurveTo(x + barWidth, y1, x + barWidth - radius, y1);
+        ctx.lineTo(x + radius, y1);
+        ctx.quadraticCurveTo(x, y1, x, y1 - radius);
+        ctx.lineTo(x, yTop + radius);
+        ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
+        ctx.closePath();
+
         ctx.fillStyle = grad;
-        ctx.fillRect(x, yTop, barWidth, yBottom);
+        ctx.fill();
 
-        // ajoute une ombre diffuse
-        ctx.shadowColor = actColor;
-        ctx.shadowBlur  = 8;
-        ctx.fillRect(x, yTop, barWidth, yBottom);
+        // reset
         ctx.shadowBlur  = 0;
+        ctx.globalAlpha = 1;
       });
-    }
-    ctx.restore();
-    return; // on sort, pas de barre “normale”
-  }
-
-  // ——— CAS MIDI CHARGÉ : ton code original pour les barres qui tombent ———
-  const t = Tone.Transport.seconds;
-  const path = keysY;
-
-  midiData.tracks.forEach(tr => {
-    tr.notes.forEach(n => {
-      const impact = n.time + LEAD;
-      const remaining = impact - t;
-      if (remaining < -n.duration || remaining > LEAD) return;
-
-      const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
-      if (!keyEl) return;
-      const rect = keyEl.getBoundingClientRect();
-
-      // ajustement de largeur
-      const barWidth = rect.width * 0.9;
-      const x = rect.left + (rect.width - barWidth) / 2;
-
-      // position verticale
-      const yBottom = (1 - remaining / LEAD) * path;
-      const barHeight = n.duration * (path / LEAD);
-      const yTop = yBottom - barHeight;
-      const y1 = yTop + barHeight;
-
-      // création du dégradé
-      const baseW = getComputedStyle(document.documentElement).getPropertyValue("--bar-w");
-      const baseB = getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-      const isWhite = WHITE.includes(n.midi % 12);
-      const col = isWhite ? baseW : baseB;
-      const grad = ctx.createLinearGradient(0, yTop, 0, y1);
-      grad.addColorStop(0, col);
-      grad.addColorStop(1, "rgba(255,255,255,0.2)");
-
-      // ombre et opacité
-      ctx.shadowColor = "rgba(0,0,0,0.4)";
-      ctx.shadowBlur  = 6;
-      ctx.globalAlpha = 0.9;
-
-      // coins arrondis
-      const radius = Math.min(barWidth, 8);
-      ctx.beginPath();
-      ctx.moveTo(x + radius, yTop);
-      ctx.lineTo(x + barWidth - radius, yTop);
-      ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
-      ctx.lineTo(x + barWidth, y1 - radius);
-      ctx.quadraticCurveTo(x + barWidth, y1, x + barWidth - radius, y1);
-      ctx.lineTo(x + radius, y1);
-      ctx.quadraticCurveTo(x, y1, x, y1 - radius);
-      ctx.lineTo(x, yTop + radius);
-      ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
-      ctx.closePath();
-
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // reset
-      ctx.shadowBlur  = 0;
-      ctx.globalAlpha = 1;
     });
-  });
 
-  ctx.restore();
-};
+    ctx.restore();
+  };
 
 
 
@@ -921,4 +921,3 @@ const labelByMidi = useMemo(() => {
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   
   </>);
-}
