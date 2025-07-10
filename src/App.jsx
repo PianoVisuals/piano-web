@@ -3,6 +3,26 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 
+
+// nom des fichiers .mid que tu as mis dans public/demos/
+const DEMOS = [
+  "Lilium - Elfen Lied.mid",
+  "Gravity Falls Opening Theme Song.mid",
+  "Lacrimosa - Mozart.mid",
+  "Clair de Lune - Debussy.mid",
+  "Moonlight Sonata - Beethoven.mid",
+  "Winter - Vivaldi.mid",
+  "Prelude n15 op28 \"Raindrop\" - Chopin.mid",
+  "Alone - SOMA.mid",
+  "Harmonious - Ender Lilies.mid",
+  "Serenade - Schubert.mid",
+  "Secunda - The Elder Scrolls V.mid",
+  "Vogel im Käfig - Attack on Titan.mid",
+  "Rush E.mid",
+  "Lumière - Clair Obscur Expedition 33.mid"
+];
+
+
 // === AdSense -------------------------------------------------------------
 const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si différent
 
@@ -83,6 +103,29 @@ const URLS = { C3: "C3.mp3", G3: "G3.mp3", C4: "C4.mp3", G4: "G4.mp3", C5: "C5.m
 const LONG_REL = 30; // sustain release seconds
 const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
 
+
+/**
+ * Charge un fichier MIDI de la bibliothèque et le joue
+ * @param {string} name  Nom du fichier dans public/demos/
+ */
+async function loadDemo(name) {
+  try {
+    const res = await fetch(`/demos/${encodeURIComponent(name)}`);
+    const arr = await res.arrayBuffer();
+    const midi = new Midi(arr);
+    setMidiData(midi);              // met à jour l’état midiData
+    setDuration(midi.duration + LEAD);
+    preparePart(midi);              // ta fonction existante
+    closeLibrary();                 // ferme la fenêtre
+  }
+  catch(err) {
+    console.error("Erreur loadDemo:", err);
+    alert("Impossible de charger le MIDI : " + name);
+  }
+}
+
+
+
 export default function App(){
   // refs & state ----------------------------------------------------
   const pianoRef=useRef(null); const canvasRef=useRef(null);
@@ -103,6 +146,23 @@ export default function App(){
   const fileInputRef = useRef(null);
   // pour afficher/masquer la pop-up de choix
   const [showLibrary, setShowLibrary] = useState(false);
+
+
+  const loadDemo = async (name) => {
+    try {
+      const res = await fetch(`/demos/${encodeURIComponent(name)}`);
+      const arr = await res.arrayBuffer();
+      const midi = new Midi(arr);
+      setMidiData(midi);
+      setDuration(midi.duration + LEAD);
+      preparePart(midi);
+      closeLibrary();
+    } catch (err) {
+      console.error("Erreur loadDemo:", err);
+      alert("Impossible de charger le MIDI : " + name);
+    }
+  };
+
 
   // ouvrir la pop-up
   const openLibrary = () => setShowLibrary(true);
