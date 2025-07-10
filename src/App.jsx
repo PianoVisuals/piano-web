@@ -43,7 +43,7 @@ const THEMES = {
   "Retro":     {bg:"#282828", barW:"rgba(255,165,0,0.7)", barB:"rgba(0,255,170,0.7)", actW:"#ffd166", actB:"#06d6a0"},
   "Neon":      {bg:"#050912", barW:"rgba(57,255,20,0.8)", barB:"rgba(0,255,255,0.8)", actW:"#39ff14", actB:"#00e5ff"},
   "Hell":      {bg:"#4d2525", barW:"rgba(40, 15, 15,0.8)", barB:"rgba(0, 0, 0,0.8)", actW:"#871414", actB:"#5e1d1d"},
-  "Heaven":      {bg:"#9e9677", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
+  "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
 };
 
 // ===== Constantes clavier ================================================= =================================================
@@ -91,17 +91,105 @@ setCSSVars();
 // ===== Instruments SoundFont =============================================
 const BASE = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
 const INSTR = {
-  "Grand Piano": "acoustic_grand_piano",
-  "Harpsichord": "harpsichord",
-  "Harp": "orchestral_harp",
-  "Banjo": "banjo",
-  "Violin": "violin",
-  "Cello": "cello",
-  "Flute": "flute",
-  "Trumpet": "trumpet",
-  "Guitar": "acoustic_guitar_steel",
-  "Organ": "church_organ",
+  "Grand Piano":            "acoustic_grand_piano",
+  "Bright Piano":           "bright_acoustic_piano",
+  "Electric Piano 1":       "electric_piano_1",
+  "Electric Piano 2":       "electric_piano_2",
+  "Honky Tonk":             "honkytonk_piano",
+  "EPiano Rhodes":          "electric_piano_1",
+  "Harpsichord":            "harpsichord",
+  "Clavinet":               "clavinet",
+
+  "Celesta":                "celesta",
+  "Glockenspiel":           "glockenspiel",
+  "Music Box":              "music_box",
+  "Vibraphone":             "vibraphone",
+  "Marimba":                "marimba",
+  "Xylophone":              "xylophone",
+
+  "Tubular Bells":          "tubular_bells",
+  "Dulcimer":               "dulcimer",
+
+  "Drawbar Organ":          "drawbar_organ",
+  "Percussive Organ":       "percussive_organ",
+  "Rock Organ":             "rock_organ",
+  "Church Organ":           "church_organ",
+
+  "Accordion":              "accordion",
+  "Harmonica":              "harmonica",
+
+  "Acoustic Guitar (nylon)":    "acoustic_guitar_nylon",
+  "Acoustic Guitar (steel)":    "acoustic_guitar_steel",
+  "Electric Guitar (jazz)":     "electric_guitar_jazz",
+  "Electric Guitar (clean)":    "electric_guitar_clean",
+  "Electric Guitar (muted)":    "electric_guitar_muted",
+  "Overdriven Guitar":          "overdriven_guitar",
+  "Distortion Guitar":          "distortion_guitar",
+  "Guitar Harmonics":           "guitar_harmonics",
+
+  "Acoustic Bass":              "acoustic_bass",
+  "Electric Bass (finger)":     "electric_bass_finger",
+  "Electric Bass (pick)":       "electric_bass_pick",
+  "Fretless Bass":              "fretless_bass",
+  "Slap Bass 1":                "slap_bass_1",
+  "Slap Bass 2":                "slap_bass_2",
+  "Synth Bass 1":               "synth_bass_1",
+  "Synth Bass 2":               "synth_bass_2",
+
+  "Violin":                     "violin",
+  "Viola":                      "viola",
+  "Cello":                      "cello",
+  "Contrabass":                 "contrabass",
+  "Tremolo Strings":            "tremolo_strings",
+  "Pizzicato Strings":          "pizzicato_strings",
+
+  "Orchestral Harp":            "orchestral_harp",
+  "Timpani":                    "timpani",
+
+  "String Ensemble 1":          "string_ensemble_1",
+  "String Ensemble 2":          "string_ensemble_2",
+
+  "Synth Strings 1":            "synth_strings_1",
+  "Synth Strings 2":            "synth_strings_2",
+
+  "Choir Aahs":                 "choir_aahs",
+  "Voice Oohs":                 "voice_oohs",
+  "Synth Choir":                "synth_choir",
+
+  "Trumpet":                    "trumpet",
+  "Trombone":                   "trombone",
+  "Tuba":                       "tuba",
+  "Muted Trumpet":              "muted_trumpet",
+  "French Horn":                "french_horn",
+
+  "Soprano Sax":                "soprano_sax",
+  "Alto Sax":                   "alto_sax",
+  "Tenor Sax":                  "tenor_sax",
+  "Baritone Sax":               "baritone_sax",
+
+  "Oboe":                       "oboe",
+  "English Horn":               "english_horn",
+  "Bassoon":                    "bassoon",
+  "Clarinet":                   "clarinet",
+
+  "Piccolo":                    "piccolo",
+  "Flute":                      "flute",
+  "Recorder":                   "recorder",
+  "Pan Flute":                  "pan_flute",
+  "Blown Bottle":               "blown_bottle",
+
+  "Shakuhachi":                 "shakuhachi",
+  "Whistle":                    "whistle",
+  "Ocarina":                     "ocarina",
+
+  "Lead 1 (square)":           "lead_1_square",
+  "Lead 2 (sawtooth)":         "lead_2_sawtooth",
+  "Pad 1 (new age)":           "pad_1_new_age",
+  "Pad 2 (warm)":              "pad_2_warm",
+  "FX 1 (rain)":               "fx_1_rain",
+  "FX 2 (soundtrack)":         "fx_2_soundtrack"
 };
+
 const URLS = { C3: "C3.mp3", G3: "G3.mp3", C4: "C4.mp3", G4: "G4.mp3", C5: "C5.mp3", G5: "G5.mp3" };
 const LONG_REL = 30; // sustain release seconds
 const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
