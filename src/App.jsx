@@ -430,6 +430,12 @@ export default function App(){
         const barWidth = rect.width;
         const x = rect.left;
 
+
+        // Réduire la largeur de 10% (ou remplace 0.9 par 0.95 pour 5%, etc.)
+        const wAdj = barWidth * 0.9;
+        // Recentrer horizontalement
+        const xAdj = x + (barWidth - wAdj) / 2;
+
         const yBottom = (1 - remaining / LEAD) * path;
         const barHeight = n.duration * (path / LEAD);
         const yTop = yBottom - barHeight;
@@ -442,9 +448,9 @@ export default function App(){
         const isWhiteNote = WHITE.includes(n.midi % 12);
 
         // coordonnées
-        const x0 = rect.left;
+        const x0 = xAdj;
         const y0 = yTop;
-        const w0 = barWidth;
+        const w0 = wAdj;
         const h0 = barHeight;
         const y1 = y0 + h0;
 
