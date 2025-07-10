@@ -232,6 +232,9 @@ export default function App(){
   const [playing,setPlaying]=useState(false);
   const [progress,setProgress]=useState(0);
 
+  const [gameState, setGameState]     = useState("idle");      // "idle" | "countdown" | "playing"
+  const [displayCountdown, setDisplayCountdown] = useState(3);
+
   const [mode, setMode] = useState("normal");           // "normal" ou "game"
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [gameTrack, setGameTrack]     = useState("");   // id du fichier sans .mid
@@ -240,23 +243,44 @@ export default function App(){
 
 
   async function startGame(id) {
-    // 1) fetch le .mid
+    // 1) fetch + parse MIDI comme avant
     const resp = await fetch(`/game/${id}.mid`);
     const arrayBuffer = await resp.arrayBuffer();
-    // 2) parse
     const midi = new Midi(arrayBuffer);
-    // 3) extrait time + midi → beatMap
     const events = [];
     midi.tracks.forEach(track =>
-      track.notes.forEach(n =>
-        events.push({ time: n.time, midi: n.midi })
-      )
+      track.notes.forEach(n => events.push({ time: n.time, midi: n.midi }))
     );
-    events.sort((a, b) => a.time - b.time);
+    events.sort((a,b)=>a.time-b.time);
     setBeatMap(events);
-    // 4) passe en mode game
+
+    // 2) passe en mode game
     setMode("game");
+
+    // 3) lance le compte-à-rebours
+    setDisplayCountdown(3);
+    setGameState("countdown");
   }
+
+
+  useEffect(() => {
+    if (gameState !== "countdown") return;
+    let t = 3;
+    setDisplayCountdown(t);
+    const iv = setInterval(() => {
+      t--;
+      setDisplayCountdown(t);
+      if (t <= 0) {
+        clearInterval(iv);
+        // 4) une fois 0 : on démarre le Transport et on passe en "playing"
+        Tone.Transport.seconds = 0;
+        Tone.Transport.start();
+        setGameState("playing");
+      }
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [gameState]);
+
 
 
   // état connexion MIDI
@@ -462,7 +486,7 @@ export default function App(){
     ctx.rect(0, 0, W, keysY);
     ctx.clip();
 
-    if (mode === "game" && beatMap.length > 0) {
+    if (mode === "game" && gameState === "playing" && beatMap.length > 0) {
       beatMap.forEach(n => {
         const impact   = n.time + LEAD;
         const remaining= impact - Tone.Transport.seconds;
@@ -891,6 +915,19 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
 
+  .countdown-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6rem;
+    color: #fff;
+    background: rgba(0,0,0,0.6);
+    z-index: 30;
+    pointer-events: none;
+  }
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -1029,6 +1066,11 @@ const labelByMidi = useMemo(() => {
   <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
+  {mode === "game" && gameState === "countdown" && (
+    <div className="countdown-overlay">
+      {displayCountdown > 0 ? displayCountdown : "Go !"}
+    </div>
+  )}
   
   </>);
 }
