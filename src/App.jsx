@@ -845,7 +845,7 @@ const labelByMidi = useMemo(() => {
     onClick={() => setIsBarCollapsed(b => !b)}
     aria-label={isBarCollapsed ? "Show options" : "Hide options"}
   >
-    {isBarCollapsed ? "⯈" : "⯇"}
+    {isBarCollapsed ? ">" : "<"}
   </button>
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
