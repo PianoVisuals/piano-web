@@ -602,32 +602,24 @@ const labelByMidi = useMemo(() => {
   .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
   .white:first-child{border-left:none;}
   .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
-  /* ——— Active White Keys ——— */
+  /* Active White Keys */
   .active.white {
-    /* dégradé vertical opaque : couleur active en bas → plus clair en haut */
-    background: linear-gradient(
-      to top,
-      var(--act-w) 0%,
-      rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.7) 100%
-    );
-    /* lueur dynamique autour + léger reflet interne blanc */
+    /* Couleur pleine, pas de transparence */
+    background: var(--act-w) !important;
+    /* Lueur externe assortie, et un reflet interne léger */
     box-shadow:
-      0 4px 16px rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.6),
-      inset 0 0 8px rgba(255, 255, 255, 0.3);
+      0 0 12px var(--act-w) ,  /* lueur diffuse */
+      inset 0 0 4px rgba(255,255,255,0.4) !important;
   }
 
-  /* ——— Active Black Keys ——— */
+  /* Active Black Keys */
   .active.black {
-    /* dégradé opaque basé sur la couleur de thème */
-    background: linear-gradient(
-      to top,
-      var(--act-b) 0%,
-      rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.7) 100%
-    );
-    /* même lueur dynamique que pour les blanches */
+    /* Idem : couleur pleine */
+    background: var(--act-b) !important;
+    /* Lueur assortie */
     box-shadow:
-      0 4px 16px rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.6),
-      inset 0 0 6px rgba(255, 255, 255, 0.2);
+      0 0 12px var(--act-b) ,  
+      inset 0 0 4px rgba(255,255,255,0.2) !important;
   }
   .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
