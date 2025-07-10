@@ -313,8 +313,8 @@ const labelByMidi = useMemo(() => {
   `}</style>
   <div className="top">
     {/* indicateur MIDI */}
-    <div className="midi-status" title={midiConnected?"MIDI piano connected":"No MIDI piano detected"}>
-      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" width={24} height={24}/>
+    <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
+      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
     </div>
     <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
     <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
