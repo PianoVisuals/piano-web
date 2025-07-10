@@ -239,6 +239,20 @@ export default function App(){
   const [showLibrary, setShowLibrary] = useState(false);
   const aboutRef = useRef(null);
 
+  // réinitialise l'état pour revenir à l'écran vide
+  const unloadMidi = () => {
+    // stoppe le transport si nécessaire
+    Tone.Transport.stop();
+    setPlaying(false);
+    // vide les données MIDI
+    setMidiData(null);
+    // remet la barre de progression à zéro
+    setProgress(0);
+    // relâche toutes les touches en cas de restes bloquées
+    clearAllActive();
+  };
+
+
   const loadDemo = async (name) => {
     try {
       const res = await fetch(`/demos/${encodeURIComponent(name)}`);
@@ -804,6 +818,9 @@ const labelByMidi = useMemo(() => {
     {/* Bouton principal : Charger (importer ou choisir) */}
     <button onClick={openLibrary}>
       Load…
+    </button>
+    <button onClick={unloadMidi} disabled={!midiData}>
+        Clear
     </button>
 
     {/* input caché pour import manuel */}
