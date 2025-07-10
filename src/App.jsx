@@ -14,6 +14,7 @@ const DEMOS = [
   "Serenade - Schubert.mid",
   "Gravity Falls Opening Theme Song.mid",
   "Vogel im Käfig - Attack on Titan.mid",
+  "Bad Apple!!.mid",
   "Rush E.mid",
   "Lilium - Elfen Lied.mid",
   "Alone - SOMA.mid",
