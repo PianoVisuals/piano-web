@@ -172,18 +172,15 @@ export default function App(){
 
   // quand l’onglet devient invisible, on coupe tout
   useEffect(() => {
-    const onVis = () => {
+    const onVisChange = () => {
       if (document.visibilityState === 'hidden') {
+        // uniquement relâcher toutes les notes
         clearAllActive();
-        if (playing) {
-          Tone.Transport.pause();
-          setPlaying(false);
-        }
       }
     };
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
-  }, [playing]);
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => document.removeEventListener('visibilitychange', onVisChange);
+  }, []);
 
   useEffect(() => {
     const onStop = () => {
