@@ -278,20 +278,7 @@ export default function App(){
   }, midi.duration + LEAD + 0.05);
 
 
-  // quand l’onglet devient invisible, on coupe tout
-  useEffect(() => {
-    const onVis = () => {
-      if (document.visibilityState === 'hidden') {
-        clearAllActive();
-        if (playing) {
-          Tone.Transport.pause();
-          setPlaying(false);
-        }
-      }
-    };
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
-  }, [playing]);
+
 
 
 
