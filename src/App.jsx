@@ -248,7 +248,7 @@ export default function App(){
       setDuration(midi.duration + LEAD);
       preparePart(midi);
       closeLibrary();
-      catch (err) {
+    } catch (err) {
       console.error("Erreur loadDemo:", err);
       alert("Impossible de charger le MIDI : " + name);
     }
@@ -921,4 +921,4 @@ const labelByMidi = useMemo(() => {
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   
   </>);
-}
+
