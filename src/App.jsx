@@ -431,8 +431,6 @@ const labelByMidi = useMemo(() => {
   }
 
 `}</style>
-
-  <div className="top">
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
@@ -463,6 +461,8 @@ const labelByMidi = useMemo(() => {
       </div>
     </div>
   )}
+  <div className="top">
+
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
       <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
