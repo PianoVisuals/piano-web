@@ -590,8 +590,15 @@ const labelByMidi = useMemo(() => {
   .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
   .white:first-child{border-left:none;}
   .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
-  .active.white{background:var(--act-w,#f9c74f);}
-  .active.black{background:var(--act-b,#f8961e);}
+  .active.white {
+    background: var(--act-w, #f9c74f);
+    box-shadow: 0 2px 12px rgba(249, 199, 79, 0.8);
+  }
+
+  .active.black {
+    background: var(--act-b, #f8961e);
+    box-shadow: 0 2px 12px rgba(248, 150, 30, 0.8);
+  }
   .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
 
