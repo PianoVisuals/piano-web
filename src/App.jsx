@@ -434,12 +434,56 @@ export default function App(){
         const barHeight = n.duration * (path / LEAD);
         const yTop = yBottom - barHeight;
 
-        ctx.fillStyle = WHITE.includes(n.midi % 12) ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w") : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-        ctx.fillRect(x, yTop, barWidth, barHeight);
-      });
-    });
-    ctx.restore();
-  };
+        // === à l’intérieur de midiData.tracks.forEach ===
+
+        // choix des couleurs de base
+        const baseW = getComputedStyle(document.documentElement).getPropertyValue("--bar-w");
+        const baseB = getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+        const isWhiteNote = WHITE.includes(n.midi % 12);
+
+        // coordonnées
+        const x0 = rect.left;
+        const y0 = yTop;
+        const w0 = barWidth;
+        const h0 = barHeight;
+        const y1 = y0 + h0;
+
+        // 1) créer un dégradé vertical de la couleur vers un ton plus clair
+        const grad = ctx.createLinearGradient(0, y0, 0, y1);
+        const col = isWhiteNote ? baseW : baseB;
+        grad.addColorStop(0, col);
+        grad.addColorStop(1, "rgba(255,255,255,0.2)");
+
+        // 2) ombre portée
+        ctx.shadowColor = "rgba(0,0,0,0.4)";
+        ctx.shadowBlur  = 6;
+        ctx.globalAlpha = 0.9;
+
+        // 3) coins arrondis
+        const radius = Math.min(w0, 8);
+        ctx.beginPath();
+        ctx.moveTo(x0 + radius, y0);
+        ctx.lineTo(x0 + w0 - radius, y0);
+        ctx.quadraticCurveTo(x0 + w0, y0, x0 + w0, y0 + radius);
+        ctx.lineTo(x0 + w0, y1 - radius);
+        ctx.quadraticCurveTo(x0 + w0, y1, x0 + w0 - radius, y1);
+        ctx.lineTo(x0 + radius, y1);
+        ctx.quadraticCurveTo(x0, y1, x0, y1 - radius);
+        ctx.lineTo(x0, y0 + radius);
+        ctx.quadraticCurveTo(x0, y0, x0 + radius, y0);
+        ctx.closePath();
+
+        // remplissage
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // 4) reset pour ne pas impacter les prochains dessins
+        ctx.shadowBlur  = 0;
+        ctx.globalAlpha = 1;
+              });
+            });
+            ctx.restore();
+          };
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
