@@ -256,6 +256,45 @@ export default function App(){
     setProgress(0);
   };
 
+
+  // relâche toutes les touches actives
+  function clearAllActive() {
+    // toutes les div[data-midi] qui ont la classe active
+    document.querySelectorAll('.active').forEach(el => {
+      const midi = +el.getAttribute('data-midi');
+      synthRef.current.triggerRelease(m2n(midi));
+      el.classList.remove('active');
+    });
+    // vide le set clavier si besoin
+    kbdSet.current.clear();
+  }
+
+  // dans preparePart, après partRef.current.start(0):
+  // on planifie la fin du morceau (+LEAD) pour nettoyer
+  Tone.Transport.schedule(() => {
+    clearAllActive();
+    Tone.Transport.stop();
+    setPlaying(false);
+  }, midi.duration + LEAD + 0.05);
+
+
+  // quand l’onglet devient invisible, on coupe tout
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') {
+        clearAllActive();
+        if (playing) {
+          Tone.Transport.pause();
+          setPlaying(false);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [playing]);
+
+
+
   // play / pause --------------------------------------------------- ---------------------------------------------------
   const togglePlay=()=>{if(!midiData)return;if(!playing){Tone.Transport.start("+0.1");setPlaying(true);}else{Tone.Transport.pause();setPlaying(false);} };
 
