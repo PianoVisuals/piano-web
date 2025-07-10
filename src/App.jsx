@@ -418,24 +418,12 @@ const labelByMidi = useMemo(() => {
     border:1px solid #555;
     color:#fff;
   }
-  .library-menu .close {
-    position: absolute;
-    top: 0.25rem;
-    left: 0.25rem;
-    right: auto;
-    background: transparent;
-    border: none;
-    color: #aaa;
-    font-size: 1.2rem;
-    cursor: pointer;
-  }
+
 
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
-        {/* 1) Bouton Fermer en tout premier */}
-        <button className="close" onClick={closeLibrary}>✕</button>
 
         {/* 2) Titre */}
         <h3>Upload or Select</h3>
