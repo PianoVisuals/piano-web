@@ -773,7 +773,11 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
 
-
+  @media (orientation: landscape) and (pointer: coarse) {
+    .top {
+      display: none !important;
+    }
+  }
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
