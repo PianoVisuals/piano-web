@@ -100,6 +100,17 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
+  const fileInputRef = useRef(null);
+  // pour afficher/masquer la pop-up de choix
+  const [showLibrary, setShowLibrary] = useState(false);
+
+  // ouvrir la pop-up
+  const openLibrary = () => setShowLibrary(true);
+  // fermer la pop-up
+  const closeLibrary = () => setShowLibrary(false);
+
+
+
   // appliquer thème -------------------------------------------------
   useEffect(()=>{
     const c = THEMES[theme];
@@ -293,25 +304,102 @@ const labelByMidi = useMemo(() => {
   const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
 
   return(<>
-  <style>{`
-    html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
-    .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
-    select,input[type=range]{background:#222;color:#fff;border:1px solid #444;}
-    input[type=range].prog{width:180px;}
-    .piano{display:flex;justify-content:center;position:fixed;left:0;right:0;height:var(--white-h);bottom:0;overflow:hidden;}
-    @media(orientation:portrait) and (pointer:coarse){
-      .piano{top:66vh;bottom:auto;}
-      .top{top:calc(66vh + var(--white-h));bottom:auto;}
-    }
-    .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
-    .white:first-child{border-left:none;}
-    .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
-    .active.white{background:var(--act-w,#f9c74f);}
-    .active.black{background:var(--act-b,#f8961e);}
-    .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
-    canvas{position:fixed;left:0;top:0;pointer-events:none;}
-  `}</style>
+ <style>{`
+  html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
+  .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
+  select,input[type=range]{background:#222;color:#fff;border:1px solid #444;}
+  input[type=range].prog{width:180px;}
+  .piano{display:flex;justify-content:center;position:fixed;left:0;right:0;height:var(--white-h);bottom:0;overflow:hidden;}
+  @media(orientation:portrait) and (pointer:coarse){
+    .piano{top:66vh;bottom:auto;}
+    .top{top:calc(66vh + var(--white-h));bottom:auto;}
+  }
+  .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
+  .white:first-child{border-left:none;}
+  .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
+  .active.white{background:var(--act-w,#f9c74f);}
+  .active.black{background:var(--act-b,#f8961e);}
+  .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
+  canvas{position:fixed;left:0;top:0;pointer-events:none;}
+
+  /* ——— Styles pour la fenêtre Import/Librairie ——— */
+  .library-overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+  }
+  .library-menu {
+    background:#222;
+    padding:1rem;
+    border-radius:6px;
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+    width:90%;
+    max-width:320px;
+    position:relative;
+  }
+  .library-menu h3 {
+    margin:0 0 0.5rem;
+    color:#fff;
+    text-align:center;
+  }
+  .library-menu button,
+  .library-menu select {
+    width:100%;
+    font-size:1rem;
+    padding:0.5rem;
+    background:#333;
+    border:1px solid #555;
+    color:#fff;
+  }
+  .library-menu .close {
+    position:absolute;
+    top:0.25rem;
+    right:0.25rem;
+    background:transparent;
+    border:none;
+    color:#aaa;
+    font-size:1.2rem;
+    cursor:pointer;
+  }
+`}</style>
+
   <div className="top">
+  {showLibrary && (
+    <div className="library-overlay" onClick={closeLibrary}>
+      <div className="library-menu" onClick={e => e.stopPropagation()}>
+        <h3>Importer ou choisir</h3>
+
+        <button onClick={() => {
+          fileInputRef.current.click();
+        }}>
+          Importer un fichier MIDI
+        </button>
+
+        <select
+          defaultValue=""
+          onChange={e => {
+            loadDemo(e.target.value);
+            closeLibrary();
+          }}
+        >
+          <option value="" disabled>Choisir un morceau…</option>
+          {DEMOS.map(name => (
+            <option key={name} value={name}>
+              {name.replace(/\.mid$/, "")}
+            </option>
+          ))}
+        </select>
+
+        <button className="close" onClick={closeLibrary}>✕</button>
+      </div>
+    </div>
+  )}
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
       <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
@@ -319,11 +407,27 @@ const labelByMidi = useMemo(() => {
     <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
     <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
       <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
-    <label>Vol <input type="range" min="0" max="150" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
+    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
     <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
-    <input type="file" accept=".mid" onChange={handleFile} />
+    {/* Bouton principal : Charger (importer ou choisir) */}
+    <button onClick={openLibrary}>
+      Charger…
+    </button>
+
+    {/* input caché pour import manuel */}
+    <input
+      type="file"
+      accept=".mid"
+      hidden
+      ref={fileInputRef}
+      onChange={e => {
+        handleFile(e.target.files[0]);
+        closeLibrary();
+      }}
+    />
+
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
-  </div>a
+  </div>
 
   <canvas ref={canvasRef}></canvas>
 
