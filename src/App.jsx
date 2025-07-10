@@ -604,21 +604,29 @@ const labelByMidi = useMemo(() => {
   .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
   /* Active White Keys */
   .active.white {
-    /* Couleur pleine, pas de transparence */
-    background: var(--act-w) !important;
-    /* Lueur externe assortie, et un reflet interne léger */
+    /* dégradé opaque : couleur de thème à la base → plus clair en haut */
+    background: linear-gradient(
+      to top,
+      var(--act-w) 0%,
+      rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.4) 100%
+    ) !important;
+
+    /* lueur externe assortie à la couleur du thème */
     box-shadow:
-      0 0 12px var(--act-w) ,  /* lueur diffuse */
-      inset 0 0 4px rgba(255,255,255,0.4) !important;
+      0 0 12px var(--act-w),
+      inset 0 0 4px rgba(255,255,255,0.3) !important;
   }
 
-  /* Active Black Keys */
+  /* Active Black Keys avec dégradé et lueur dynamique */
   .active.black {
-    /* Idem : couleur pleine */
-    background: var(--act-b) !important;
-    /* Lueur assortie */
+    background: linear-gradient(
+      to top,
+      var(--act-b) 0%,
+      rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.4) 100%
+    ) !important;
+
     box-shadow:
-      0 0 12px var(--act-b) ,  
+      0 0 12px var(--act-b),
       inset 0 0 4px rgba(255,255,255,0.2) !important;
   }
   .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
