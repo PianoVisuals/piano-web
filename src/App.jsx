@@ -604,25 +604,25 @@ const labelByMidi = useMemo(() => {
   .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
   /* Active White Keys */
   .active.white {
-    /* dégradé opaque : couleur de thème à la base → plus clair en haut */
+    /* du thème en bas → blanc mélangé à 40% en haut */
     background: linear-gradient(
       to top,
       var(--act-w) 0%,
-      rgba(var(--act-w-r), var(--act-w-g), var(--act-w-b), 0.4) 100%
+      color-mix(in srgb, white 40%, var(--act-w)) 100%
     ) !important;
 
-    /* lueur externe assortie à la couleur du thème */
+    /* lueur dynamique comme avant */
     box-shadow:
       0 0 12px var(--act-w),
       inset 0 0 4px rgba(255,255,255,0.3) !important;
   }
 
-  /* Active Black Keys avec dégradé et lueur dynamique */
+  /* Active Black Keys */
   .active.black {
     background: linear-gradient(
       to top,
       var(--act-b) 0%,
-      rgba(var(--act-b-r), var(--act-b-g), var(--act-b-b), 0.4) 100%
+      color-mix(in srgb, white 20%, var(--act-b)) 100%
     ) !important;
 
     box-shadow:
