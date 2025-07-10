@@ -205,8 +205,6 @@ async function loadDemo(name) {
     const arr = await res.arrayBuffer();
     const midi = new Midi(arr);
     setMidiData(midi);              // met à jour l’état midiData
-    setMode("normal");
-    setGameState("idle");
     setDuration(midi.duration + LEAD);
     preparePart(midi);              // ta fonction existante
     closeLibrary();                 // ferme la fenêtre
@@ -233,58 +231,6 @@ export default function App(){
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [progress,setProgress]=useState(0);
-
-  const [gameState, setGameState]     = useState("idle");      // "idle" | "countdown" | "playing"
-  const [displayCountdown, setDisplayCountdown] = useState(3);
-
-  const [mode, setMode] = useState("normal");           // "normal" ou "game"
-  const [showGameMenu, setShowGameMenu] = useState(false);
-  const [gameTrack, setGameTrack]     = useState("");   // id du fichier sans .mid
-  const [beatMap, setBeatMap]         = useState([]);   // remplira plus tard
-
-
-
-  async function startGame(id) {
-    // 1) fetch + parse MIDI comme avant
-    const resp = await fetch(`/game/${id}.mid`);
-    const arrayBuffer = await resp.arrayBuffer();
-    const midi = new Midi(arrayBuffer);
-    const events = [];
-    midi.tracks.forEach(track =>
-      track.notes.forEach(n => events.push({ time: n.time, midi: n.midi }))
-    );
-    events.sort((a,b)=>a.time-b.time);
-    setBeatMap(events);
-
-    // 2) passe en mode game
-    setMode("game");
-
-    // 3) lance le compte-à-rebours
-    setDisplayCountdown(3);
-    setGameState("countdown");
-  }
-
-
-  useEffect(() => {
-    if (gameState !== "countdown") return;
-    let t = 3;
-    setDisplayCountdown(t);
-    const iv = setInterval(() => {
-      t--;
-      setDisplayCountdown(t);
-      if (t <= 0) {
-        clearInterval(iv);
-        // 4) une fois 0 : on démarre le Transport et on passe en "playing"
-        Tone.Transport.seconds = 0;
-        Tone.Transport.start();
-        setGameState("playing");
-      }
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [gameState]);
-
-
-
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
@@ -405,12 +351,7 @@ export default function App(){
     const arr = await file.arrayBuffer();
     const midi = new Midi(arr);
     setMidiData(midi);
-
-    // ← IMPORTANT : on repasse au mode Normal
-    setMode("normal");
-    setGameState("idle");
-
-    setDuration(midi.duration + LEAD);
+    setDuration(midi.duration + LEAD); // include lead silence
     preparePart(midi);
   };
 
@@ -472,19 +413,18 @@ export default function App(){
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
 
   const drawBars = () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) return;       // on ne bloque plus sur midiData
     const canvas = canvasRef.current;
-    const ctx    = canvas.getContext("2d");
-    const W      = (canvas.width  = window.innerWidth);
-    const H      = (canvas.height = window.innerHeight);
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
 
-    // calcul de la position du haut du piano
+    // position du haut du piano
     const pianoRect = pianoRef.current?.getBoundingClientRect();
-    const keysY     = pianoRect
+    const keysY = pianoRect
       ? pianoRect.top
-      : (H - parseFloat(getComputedStyle(document.documentElement)
-         .getPropertyValue("--white-h")));
+      : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
     const path = keysY;
 
     const t = Tone.Transport.seconds;
@@ -494,58 +434,86 @@ export default function App(){
     ctx.rect(0, 0, W, keysY);
     ctx.clip();
 
-    // ─── 1) MODE GAME ───
-    if (mode === "game" && gameState === "playing" && beatMap.length > 0) {
-      beatMap.forEach(n => {
-        const impact    = n.time + LEAD;
-        const remaining = impact - t;
-        if (remaining < -0.2 || remaining > LEAD) return;
+    // ─── GESTION DES BARRES MONTANTES ───
+    // on récupère toutes les notes enfoncées (clavier + tactile)
+    const pressedMidis = [
+      ...kbdSet.current,
+      ...Array.from(pointerMap.current.values())
+    ];
 
-        const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
+    // si aucune musique n'est chargée ET qu'on a des touches pressées
+    if (!midiData && pressedMidis.length > 0) {
+      pressedMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi="${midi}"]`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
 
-        const w  = rect.width * 0.9;
-        const x  = rect.left + (rect.width - w) / 2;
-        const yB = (1 - remaining / LEAD) * path;
-        const h  = 4;           // barre fine pour le jeu
-        const yT = yB - h;
+        // ajustements de largeur et position X
+        const barWidth = rect.width * 0.9;
+        const x = rect.left + (rect.width - barWidth) / 2;
 
-        const col = getComputedStyle(document.documentElement)
-          .getPropertyValue("--bar-w");
-        ctx.fillStyle = col;
-        ctx.fillRect(x, yT, w, h);
+        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
+        const yBottom = rect.top;
+        const barHeight = yBottom;
+        const yTop = 0;
+
+        // couleur selon note blanche ou noire
+        const baseColor = WHITE.includes(midi % 12)
+          ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
+          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+
+        // dégradé opaque
+        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+        grad.addColorStop(0, baseColor);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+
+        // ombre portée
+        ctx.shadowColor = baseColor;
+        ctx.shadowBlur  = 8;
+        ctx.globalAlpha = 0.8;
+
+        // dessin
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, yTop, barWidth, barHeight);
+
+        // reset
+        ctx.shadowBlur  = 0;
+        ctx.globalAlpha = 1;
       });
+
       ctx.restore();
-      return;
+      return;  // on sort avant de dessiner les barres MIDI
     }
 
-    // ─── 2) MODE NORMAL (MIDI importé) ───
+    // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
     if (midiData) {
       midiData.tracks.forEach(tr => {
         tr.notes.forEach(n => {
-          const impact    = n.time + LEAD;
+          const impact = n.time + LEAD;
           const remaining = impact - t;
           if (remaining < -n.duration || remaining > LEAD) return;
 
           const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
           if (!keyEl) return;
-          const rect      = keyEl.getBoundingClientRect();
-          const barWidth  = rect.width * 0.9;
-          const x         = rect.left + (rect.width - barWidth) / 2;
-          const yBottom   = (1 - remaining / LEAD) * path;
-          const barHeight = n.duration * (path / LEAD);
-          const yTop      = yBottom - barHeight;
+          const rect = keyEl.getBoundingClientRect();
 
-          // dégradé de la couleur selon note blanche ou noire
+          // ajustement largeur comme précédemment
+          const barWidth = rect.width * 0.9;
+          const x = rect.left + (rect.width - barWidth) / 2;
+
+          const yBottom = (1 - remaining / LEAD) * path;
+          const barHeight = n.duration * (path / LEAD);
+          const yTop = yBottom - barHeight;
+
+          // couleur et dégradé
           const baseColor = WHITE.includes(n.midi % 12)
             ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
             : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
           const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
           grad.addColorStop(0, baseColor);
           grad.addColorStop(1, "rgba(255,255,255,0.2)");
-    
-          // ombre et transparence
+
+          // ombre et alpha
           ctx.shadowColor = "rgba(0,0,0,0.4)";
           ctx.shadowBlur  = 6;
           ctx.globalAlpha = 0.9;
@@ -566,53 +534,14 @@ export default function App(){
 
           ctx.fillStyle = grad;
           ctx.fill();
-
+  
+          // reset
           ctx.shadowBlur  = 0;
           ctx.globalAlpha = 1;
         });
       });
-      ctx.restore();
-      return;
     }
 
-    // ─── 3) MODE IDLE (aucun MIDI) ───
-    const pressedMidis = [
-      ...kbdSet.current,
-      ...Array.from(pointerMap.current.values())
-    ];
-    if (pressedMidis.length > 0) {
-      pressedMidis.forEach(midi => {
-        const keyEl = document.querySelector(`[data-midi='${midi}']`);
-        if (!keyEl) return;
-        const rect     = keyEl.getBoundingClientRect();
-        const barWidth = rect.width * 0.9;
-        const x        = rect.left + (rect.width - barWidth) / 2;
-        const yBottom  = rect.top;
-        const h        = yBottom;
-        const yTop     = 0;
-
-        const baseColor = WHITE.includes(midi % 12)
-          ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
-          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-        grad.addColorStop(0, baseColor);
-        grad.addColorStop(1, "rgba(255,255,255,0)");
-
-        ctx.shadowColor = baseColor;
-        ctx.shadowBlur  = 8;
-        ctx.globalAlpha = 0.8;
-
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, yTop, barWidth, h);
-
-        ctx.shadowBlur  = 0;
-        ctx.globalAlpha = 1;
-      });
-      ctx.restore();
-      return;
-    }
-
-    // ─── Rien à dessiner ───
     ctx.restore();
   };
 
@@ -879,46 +808,6 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-  .game-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-  }
-  .game-menu {
-    background: #222; padding: 1rem;
-    border-radius: 6px;
-    width: 90%; max-width: 320px;
-    display: flex; flex-direction: column;
-    gap: 0.5rem;
-  }
-  .game-menu h3 {
-    margin:0; color:#fff; text-align:center;
-  }
-  .game-menu select,
-  .game-menu button {
-    font-size:1rem;
-    padding:0.5rem;
-    background:#333;
-    border:1px solid #555;
-    color:#fff;
-  }
-
-  .countdown-overlay {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 6rem;
-    color: #fff;
-    background: rgba(0,0,0,0.6);
-    z-index: 30;
-    pointer-events: none;
-  }
-
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -958,37 +847,7 @@ const labelByMidi = useMemo(() => {
   >
     {isBarCollapsed ? ">" : "<"}
   </button>
-  {showGameMenu && (
-    <div
-      className="game-overlay"
-      onClick={() => setShowGameMenu(false)}
-    >
-      <div
-        className="game-menu"
-        onClick={e => e.stopPropagation()}
-      >
-        <h3>Game Mode</h3>
-        <select
-          value={gameTrack}
-          onChange={e => setGameTrack(e.target.value)}
-        >
-          <option value="">Annuler</option>
-          <option value="Alone - SOMA">Alone - SOMA</option>
-        </select>
-        <button
-          onClick={() => {
-            if (gameTrack) {
-              startGame(gameTrack);
-              setShowGameMenu(false);
-            }
-          }}
-          disabled={!gameTrack}
-        >
-          Play
-        </button>
-      </div>
-    </div>
-  )}
+
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
@@ -1020,9 +879,7 @@ const labelByMidi = useMemo(() => {
     />
 
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
-    <button onClick={() => setShowGameMenu(true)}>
-      Game
-    </button>
+
     <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
@@ -1057,11 +914,6 @@ const labelByMidi = useMemo(() => {
   <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-  {mode === "game" && gameState === "countdown" && (
-    <div className="countdown-overlay">
-      {displayCountdown > 0 ? displayCountdown : "Go !"}
-    </div>
-  )}
   
   </>);
 }
