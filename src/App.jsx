@@ -608,29 +608,26 @@ const labelByMidi = useMemo(() => {
         <h4>About This Site</h4>
 
         <p>
-          Piano Visuals is an interactive web application developed to give musicians
-          and hobbyists a seamless virtual piano experience in their browser. Built
-          with React and Tone.js, it allows you to play, record, and visualize MIDI
-          files with customizable themes, instruments, and playback speed. Whether you
-          import your own composition or choose from a curated set of demo tracks, the
-          falling-note animation provides real-time feedback and an engaging learning
-          environment.
+          Piano Visuals brings a realistic virtual piano right into your browser. Built
+          with React and Tone.js, it supports touch, computer keyboard, and USB-MIDI
+          controllers for an authentic playing experience. You can import your own
+          MIDI files or choose from a growing library of demo songs, instantly
+          visualizing each note as it lights up on the full-screen keyboard.
         </p>
 
         <p>
-          In addition to touch and keyboard input, Piano Visuals natively supports
-          USB-MIDI controllers—simply connect your device and start playing. The UI
-          adapts responsively to desktops, tablets, and mobile phones, ensuring that
-          every user enjoys a full-screen piano layout without awkward scrolling or
-          clipping. Volume control, sustain toggle, and speed adjustment (0.25× to
-          2×) help you practice at your own pace.
+          The responsive design adapts seamlessly to desktops, tablets, and mobile
+          devices in both landscape and portrait modes. Volume and sustain controls
+          let you shape your sound, while customizable themes and instrument voices
+          (piano, harpsichord, banjo, violin, etc.) allow for endless creative
+          exploration.
         </p>
 
         <p>
-          This project is open-source and continuously improved. Contributions,
-          feedback, and bug reports are welcome on the GitHub repository. For any
-          questions or feature requests, feel free to reach out via email at
-          you@example.com.
+          We update the site regularly with new demo tracks, improved sound
+          libraries, and performance optimizations. Whether you’re learning to read
+          music, practicing for a recital, or just having fun, Piano Visuals aims to
+          make playing and studying piano more accessible than ever.
         </p>
       </div>
     </details>
