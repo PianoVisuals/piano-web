@@ -46,6 +46,16 @@ const THEMES = {
   "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
 };
 
+const BAD_APPLE_THEME = {
+  bg: "#ffffff",
+  barW: "rgba(0,0,0,1)",
+  barB: "rgba(0,0,0,1)",
+  actW: "#000000",
+  actB: "#ffffff"
+};
+
+
+
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
@@ -231,6 +241,9 @@ export default function App(){
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [progress,setProgress]=useState(0);
+
+  const [prevTheme, setPrevTheme] = useState("Classic");
+
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
@@ -244,6 +257,11 @@ export default function App(){
     // stoppe le transport si nécessaire
     Tone.Transport.stop();
     setPlaying(false);
+
+    if (theme === "BadApple") {
+      setTheme(prevTheme);
+    }
+
     // vide les données MIDI
     setMidiData(null);
     // remet la barre de progression à zéro
@@ -254,6 +272,30 @@ export default function App(){
 
 
   const loadDemo = async (name) => {
+    // 1) si on sort de Bad Apple, on rétablit l’ancien thème
+    if (midiData && prevTheme && theme === "BadApple") {
+      setTheme(prevTheme);
+    }
+
+    // 2) cas Bad Apple
+    if (name === "Bad Apple!!.mid") {
+      // on sauvegarde l’actuel pour pouvoir revenir
+      setPrevTheme(theme);
+      setTheme("BadApple");                      // nom interne, pas dans THEME keys
+      // applique directement les vars CSS du thème Bad Apple
+      Object.entries({
+        bg: BAD_APPLE_THEME.bg,
+        "bar-w": BAD_APPLE_THEME.barW,
+        "bar-b": BAD_APPLE_THEME.barB,
+        "act-w": BAD_APPLE_THEME.actW,
+        "act-b": BAD_APPLE_THEME.actB
+      }).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
+    } else {
+      // demo normale : on rappelle setTheme pour appliquer la sélection
+      setTheme(prev => prev); // force re-application du theme courant
+    }
+
+    // 3) chargement MIDI comme avant
     try {
       const res = await fetch(`/demos/${encodeURIComponent(name)}`);
       const arr = await res.arrayBuffer();
@@ -267,7 +309,6 @@ export default function App(){
       alert("Impossible de charger le MIDI : " + name);
     }
   };
-
 
   useEffect(() => {
     const onClickOutside = e => {
