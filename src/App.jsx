@@ -446,83 +446,29 @@ const labelByMidi = useMemo(() => {
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
 
 
-  /* ——— Pop-up bibliothèque ——— */
-  .library-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-  }
-  .library-menu {
-    position: relative;
-    background: #222;
-    padding: 1rem;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 90%;
-    max-width: 320px;
-  }
-  .library-menu h3 {
-    margin: 0 0 0.5rem;
-    color: #fff;
-    text-align: center;
-  }
-  .library-menu button,
-  .library-menu select {
-    width: 100%;
-    font-size: 1rem;
-    padding: 0.5rem;
-    background: #333;
-    border: 1px solid #555;
-    color: #fff;
-  }
-
-  /* ——— Barre de contrôle ——— */
-  .top {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem;
-    flex-wrap: wrap;
-    position: fixed;
-    inset: 0 0 auto 0; /* top:0; left:0; right:0 */
-    background: #111;
-    z-index: 3;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
-  }
-
-  /* ——— Bouton À propos intégré ——— */
   .about {
-    position: static;
-    margin-left: auto;
-    list-style: none;
-    cursor: pointer;
+    position: fixed;
+    bottom: 0.5rem;
+    right: 0.5rem;
     font-size: 1.2rem;
-    color: #ddd;
+    user-select: none;
   }
   .about summary {
     list-style: none;
+    cursor: pointer;
   }
   .about summary::-webkit-details-marker {
-    display: none;
+    display: none; /* masque le chevron par défaut */
   }
   .about-content {
-    position: absolute;
-    top: 2.5rem;
-    right: 0;
+    display: none;
     background: #222;
     color: #ddd;
     padding: 0.75rem;
     border-radius: 6px;
-    width: 200px;
+    max-width: 200px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.8);
-    display: none;
-    z-index: 100;
+    margin-top: 0.5rem;
   }
   .about[open] .about-content {
     display: block;
@@ -540,146 +486,125 @@ const labelByMidi = useMemo(() => {
     text-decoration: none;
     font-size: 0.85rem;
   }
+
+
+
+  /* ——— Styles pour la fenêtre Import/Librairie ——— */
+  .library-overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+  }
+  .library-menu {
+    position: relative;   /* <-- impératif ! */
+    background:#222;
+    padding:1rem;
+    border-radius:6px;
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+    width:90%;
+    max-width:320px;
+  }
+  .library-menu h3 {
+    margin:0 0 0.5rem;
+    color:#fff;
+    text-align:center;
+  }
+  .library-menu button,
+  .library-menu select {
+    width:100%;
+    font-size:1rem;
+    padding:0.5rem;
+    background:#333;
+    border:1px solid #555;
+    color:#fff;
+  }
+
+
 `}</style>
+  {showLibrary && (
+    <div className="library-overlay" onClick={closeLibrary}>
+      <div className="library-menu" onClick={e => e.stopPropagation()}>
 
-{showLibrary && (
-  <div className="library-overlay" onClick={closeLibrary}>
-    <div className="library-menu" onClick={e => e.stopPropagation()}>
-      <button onClick={() => { fileInputRef.current.click(); }}>
-        Upload MIDI File
-      </button>
-      <select
-        defaultValue=""
-        onChange={e => {
-          loadDemo(e.target.value);
-          closeLibrary();
-        }}
-      >
-        <option value="" disabled>Select a Song...</option>
-        {DEMOS.map(name => (
-          <option key={name} value={name}>
-            {name.replace(/\.mid$/, "")}
-          </option>
-        ))}
-      </select>
+        {/* 2) Titre */}
+        <h3>Upload or Select</h3>
+
+        {/* 3) Upload file */}
+        <button onClick={() => fileInputRef.current.click()}>
+          Upload MIDI File
+        </button>
+
+        {/* 4) Sélecteur de la bibliothèque */}
+        <select
+          defaultValue=""
+          onChange={e => {
+            loadDemo(e.target.value);
+            closeLibrary();
+          }}
+        >
+          <option value="" disabled>Select a Song...</option>
+          {DEMOS.map(name => (
+            <option key={name} value={name}>
+              {name.replace(/\.mid$/, "")}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
-  </div>
-)}
+  )}
+  <div className="top">
 
-<div className="top">
-  {/* indicateur MIDI */}
-  <div
-    className="midi-status"
-    title={midiConnected
-      ? "MIDI piano connected"
-      : "No MIDI piano detected (not supported in Firefox)"}
-  >
-    <img
-      src={midiConnected ? "/midi_on.png" : "/midi_off.png"}
-      alt="MIDI status"
-      draggable="false"
-      width={24}
-      height={24}
-    />
-  </div>
 
-  {/* contrôles */}
-  <label>
-    Theme
-    <select value={theme} onChange={e => setTheme(e.target.value)}>
-      {Object.keys(THEMES).map(t => (
-        <option key={t}>{t}</option>
-      ))}
-    </select>
-  </label>
-  <label>
-    Instrument
-    <select
-      value={instrument}
-      onChange={e => setInstrument(e.target.value)}
-    >
-      {Object.keys(INSTR).map(i => (
-        <option key={i}>{i}</option>
-      ))}
-    </select>
-  </label>
-  <label style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+    {/* indicateur MIDI */}
+    <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
+      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
+    </div>
+    <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
+    <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
+      <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
+    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
+    <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
+    {/* Bouton principal : Charger (importer ou choisir) */}
+    <button onClick={openLibrary}>
+      Load…
+    </button>
+
+    {/* input caché pour import manuel */}
     <input
-      type="checkbox"
-      checked={sustain}
-      onChange={e => setSustain(e.target.checked)}
+      type="file"
+      accept=".mid"
+      hidden
+      ref={fileInputRef}
+      onChange={e => {
+        handleFile(e.target.files[0]);
+        closeLibrary();
+      }}
     />
-    Sustain
-  </label>
-  <label>
-    Vol
-    <input
-      type="range"
-      min="0"
-      max="200"
-      value={volume}
-      onChange={e => setVolume(+e.target.value)}
-    />
-  </label>
-  <button onClick={togglePlay} disabled={!midiData}>
-    {playing ? "Pause" : "Play"}
-  </button>
-  <button onClick={openLibrary}>Load…</button>
-  <input
-    type="file"
-    accept=".mid"
-    hidden
-    ref={fileInputRef}
-    onChange={e => {
-      handleFile(e.target.files[0]);
-      closeLibrary();
-    }}
-  />
-  <input
-    className="prog"
-    type="range"
-    min="0"
-    max="1"
-    step="0.001"
-    value={progress}
-    onChange={e => onScrub(e.target.valueAsNumber)}
-    disabled={!midiData}
-  />
 
-  {/* bouton À propos */}
+    <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
+  </div>
+
+  <canvas ref={canvasRef}></canvas>
+
+  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   <details className="about">
     <summary>ℹ️</summary>
     <div className="about-content">
       <h4>À propos de Piano Visuals</h4>
       <p>
-        Piano Visuals est un piano en ligne créé avec React et Tone.js.
-        Importez ou choisissez un fichier MIDI, personnalisez l’instrument et le thème,
+        Piano Visuals est un piano en ligne créé avec React et Tone.js.  
+        Importez ou choisissez un fichier MIDI, customizez l’instrument et le thème,  
         et jouez directement depuis votre navigateur.
       </p>
       <p>
-        &copy; 2025 Ton Nom –{" "}
-        <a href="mailto:toi@exemple.com">Contact</a>
+        &copy; 2025 Ton Nom – <a href="mailto:toi@exemple.com">Contact</a>
       </p>
     </div>
   </details>
-</div>
-
- </div>   {/* fin de <div className="top"> */}
-
-  {/* ——— Canvas pour les falling bars ——— */}
-  <canvas ref={canvasRef}></canvas>
-
-  {/* ——— Le clavier visuel ——— */}
-  <div
-    className="piano"
-    ref={pianoRef}
-    onPointerDown={pDown}
-    onPointerMove={pMove}
-    onPointerUp={pUp}
-    onPointerCancel={pUp}
-  >
-    {keys}
-  </div>
-  
-</>     {/* fermeture du fragment React */}
-);      {/* fin du return */}
+  </>);
+}
