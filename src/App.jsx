@@ -593,7 +593,7 @@ const labelByMidi = useMemo(() => {
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
 
     <details className="about">
-      <summary>ℹ️</summary>
+      <summary>ⓘ</summary>
       <div className="about-content">
         <h4>About Piano Visuals</h4>
         <p>
