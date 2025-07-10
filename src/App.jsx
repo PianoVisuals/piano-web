@@ -231,6 +231,34 @@ export default function App(){
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [progress,setProgress]=useState(0);
+
+  const [mode, setMode] = useState("normal");           // "normal" ou "game"
+  const [showGameMenu, setShowGameMenu] = useState(false);
+  const [gameTrack, setGameTrack]     = useState("");   // id du fichier sans .mid
+  const [beatMap, setBeatMap]         = useState([]);   // remplira plus tard
+
+
+
+  async function startGame(id) {
+    // 1) fetch le .mid
+    const resp = await fetch(`/game/${id}.mid`);
+    const arrayBuffer = await resp.arrayBuffer();
+    // 2) parse
+    const midi = new Midi(arrayBuffer);
+    // 3) extrait time + midi → beatMap
+    const events = [];
+    midi.tracks.forEach(track =>
+      track.notes.forEach(n =>
+        events.push({ time: n.time, midi: n.midi })
+      )
+    );
+    events.sort((a, b) => a.time - b.time);
+    setBeatMap(events);
+    // 4) passe en mode game
+    setMode("game");
+  }
+
+
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
@@ -433,6 +461,34 @@ export default function App(){
     ctx.beginPath();
     ctx.rect(0, 0, W, keysY);
     ctx.clip();
+
+    if (mode === "game" && beatMap.length > 0) {
+      beatMap.forEach(n => {
+        const impact   = n.time + LEAD;
+        const remaining= impact - Tone.Transport.seconds;
+        if (remaining < -0.2 || remaining > LEAD) return;
+
+        const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
+        if (!keyEl) return;
+        const rect = keyEl.getBoundingClientRect();
+
+        const w  = rect.width * 0.9;
+        const x  = rect.left + (rect.width - w) / 2;
+        const yB = (1 - remaining / LEAD) * path;
+        const h  = 4; // barre fine pour le jeu
+        const yT = yB - h;
+
+        // couleur Game (barW)
+        const col = getComputedStyle(document.documentElement)
+          .getPropertyValue("--bar-w");
+        ctx.fillStyle = col;
+        ctx.fillRect(x, yT, w, h);
+      });
+      ctx.restore();
+      return;
+    }
+
+
 
     // ─── GESTION DES BARRES MONTANTES ───
     // on récupère toutes les notes enfoncées (clavier + tactile)
@@ -808,6 +864,33 @@ const labelByMidi = useMemo(() => {
     }
   }
 
+  .game-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+  }
+  .game-menu {
+    background: #222; padding: 1rem;
+    border-radius: 6px;
+    width: 90%; max-width: 320px;
+    display: flex; flex-direction: column;
+    gap: 0.5rem;
+  }
+  .game-menu h3 {
+    margin:0; color:#fff; text-align:center;
+  }
+  .game-menu select,
+  .game-menu button {
+    font-size:1rem;
+    padding:0.5rem;
+    background:#333;
+    border:1px solid #555;
+    color:#fff;
+  }
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -847,7 +930,37 @@ const labelByMidi = useMemo(() => {
   >
     {isBarCollapsed ? ">" : "<"}
   </button>
-
+  {showGameMenu && (
+    <div
+      className="game-overlay"
+      onClick={() => setShowGameMenu(false)}
+    >
+      <div
+        className="game-menu"
+        onClick={e => e.stopPropagation()}
+      >
+        <h3>Game Mode</h3>
+        <select
+          value={gameTrack}
+          onChange={e => setGameTrack(e.target.value)}
+        >
+          <option value="">Annuler</option>
+          <option value="Alone - SOMA">Alone - SOMA</option>
+        </select>
+        <button
+          onClick={() => {
+            if (gameTrack) {
+              startGame(gameTrack);
+              setShowGameMenu(false);
+            }
+          }}
+          disabled={!gameTrack}
+        >
+          Play
+        </button>
+      </div>
+    </div>
+  )}
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
@@ -879,7 +992,9 @@ const labelByMidi = useMemo(() => {
     />
 
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
-
+    <button onClick={() => setShowGameMenu(true)}>
+      Game
+    </button>
     <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
