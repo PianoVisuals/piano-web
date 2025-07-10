@@ -99,6 +99,10 @@ export default function App(){
   const [progress,setProgress]=useState(0);
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
+  const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef(null);
+  // vitesse de lecture (0.25× à 2×)
+  const [rate, setRate] = useState(1);
 
   // appliquer thème -------------------------------------------------
   useEffect(()=>{
@@ -115,6 +119,12 @@ export default function App(){
     }
   },[]);
 
+  // jsp ---------------------------------------------------
+
+  useEffect(() => {
+    Tone.Transport.playbackRate = rate;
+  }, [rate]);
+
   // create synth ---------------------------------------------------
   useEffect(()=>{Tone.start();synthRef.current?.dispose();synthRef.current=makeSampler(instrument).toDestination();synthRef.current.volume.value=Tone.gainToDb(volume/100);
     synthRef.current.release = sustain ? LONG_REL : 1;return()=>synthRef.current?.dispose();},[instrument]);
@@ -124,12 +134,10 @@ export default function App(){
   const handleFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const arr = await file.arrayBuffer();
-    const midi = new Midi(arr);
-    setMidiData(midi);
-    setDuration(midi.duration + LEAD); // include lead silence
-    preparePart(midi);
+    setFileName(file.name.replace(/\.mid$/i, ""));
+    // … le reste inchangé …
   };
+
 
   const preparePart = (midi) => {
     partRef.current?.dispose();
@@ -149,7 +157,18 @@ export default function App(){
   };
 
   // play / pause --------------------------------------------------- ---------------------------------------------------
-  const togglePlay=()=>{if(!midiData)return;if(!playing){Tone.Transport.start("+0.1");setPlaying(true);}else{Tone.Transport.pause();setPlaying(false);} };
+  const togglePlay = () => {
+    if (!midiData) return;
+    Tone.Transport.playbackRate = rate; // ← ajoute cette ligne
+    if (!playing) {
+      Tone.Transport.start("+0.1");
+      setPlaying(true);
+    } else {
+      Tone.Transport.pause();
+      setPlaying(false);
+    }
+  };
+
 
   // progress tracking ---------------------------------------------
   useEffect(()=>{
@@ -289,10 +308,14 @@ const labelByMidi = useMemo(() => {
 }, [isAzerty]);
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
-  // keys render ----------------------------------------------------
-  const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
+// keys render ----------------------------------------------------
+const keys = KEYS.map(m => (
+  <div key={m} data-midi={m} className={WHITE.includes(m % 12) ? "white key" : "black key"}>
+    {labelByMidi[m] && <span className="label">{labelByMidi[m]}</span>}
+  </div>
+));
 
-  return(<>
+return (<>
   <style>{`
     html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
     .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
@@ -311,22 +334,68 @@ const labelByMidi = useMemo(() => {
     .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
     canvas{position:fixed;left:0;top:0;pointer-events:none;}
   `}</style>
+
   <div className="top">
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
-      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
+      <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24} />
     </div>
-    <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
-    <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
-      <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
-    <label>Vol <input type="range" min="0" max="150" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
-    <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
+
+    <label>Theme
+      <select value={theme} onChange={e => setTheme(e.target.value)}>
+        {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+      </select>
+    </label>
+
+    <label>Instrument
+      <select value={instrument} onChange={e => setInstrument(e.target.value)}>
+        {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+      </select>
+    </label>
+
+    <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} /> Sustain
+    </label>
+
+    <label>Vol
+      <input type="range" min="0" max="150" value={volume} onChange={e => setVolume(+e.target.value)} />
+    </label>
+
+    <button onClick={togglePlay} disabled={!midiData}>
+      {playing ? "Pause" : "Play"}
+    </button>
+
     <input type="file" accept=".mid" onChange={handleFile} />
-    <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
+
+    {/* nom du fichier sans extension */}
+    {fileName && <span>{fileName.replace(/\.mid$/i, "")}</span>}
+
+    {/* barre de progression */}
+    <input
+      className="prog"
+      type="range"
+      min="0"
+      max="1"
+      step="0.001"
+      value={progress}
+      onChange={e => onScrub(e.target.valueAsNumber)}
+      disabled={!midiData}
+    />
+
+    {/* vitesse de lecture */}
+    <label>
+      Speed
+      <select value={rate} onChange={e => setRate(+e.target.value)}>
+        {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(r => (
+          <option key={r} value={r}>x{r}</option>
+        ))}
+      </select>
+    </label>
   </div>
 
   <canvas ref={canvasRef}></canvas>
 
-  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-  </>);
-}
+  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>
+    {keys}
+  </div>
+</>);
