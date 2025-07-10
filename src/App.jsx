@@ -188,17 +188,7 @@ export default function App(){
   }, []);
 
 
-  const togglePlay = () => {
-    if (!midiData) return;
-    if (!playing) {
-      Tone.Transport.start("+0.1");
-      setPlaying(true);
-    } else {
-      // on pause : on arrête et on nettoie
-      clearAllHighlights();
-      // setPlaying(false) est déjà fait dans clearAllHighlights
-    }
-  };
+
 
 
   useEffect(() => {
