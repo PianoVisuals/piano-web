@@ -558,8 +558,6 @@ const labelByMidi = useMemo(() => {
     </div>
   )}
   <div className="top">
-
-
     {/* indicateur MIDI */}
     <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
       <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
@@ -587,24 +585,24 @@ const labelByMidi = useMemo(() => {
     />
 
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
+
+    <details className="about">
+      <summary>ℹ️</summary>
+      <div className="about-content">
+        <h4>About Piano Visuals</h4>
+        <p>
+          Piano Visuals is a browser-based piano built with React & Tone.js.<br/>
+          Upload or select a MIDI, customize theme & instrument,<br/>
+          and play directly from your browser.
+        </p>
+      
+      </div>
+    </details>
   </div>
 
   <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-  <details className="about">
-    <summary>ℹ️</summary>
-    <div className="about-content">
-      <h4>À propos de Piano Visuals</h4>
-      <p>
-        Piano Visuals est un piano en ligne créé avec React et Tone.js.  
-        Importez ou choisissez un fichier MIDI, customizez l’instrument et le thème,  
-        et jouez directement depuis votre navigateur.
-      </p>
-      <p>
-        &copy; 2025 Ton Nom – <a href="mailto:toi@exemple.com">Contact</a>
-      </p>
-    </div>
-  </details>
+  
   </>);
 }
