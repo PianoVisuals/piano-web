@@ -394,6 +394,7 @@ const labelByMidi = useMemo(() => {
     z-index:10;
   }
   .library-menu {
+    position: relative;   /* <-- impératif ! */
     background:#222;
     padding:1rem;
     border-radius:6px;
@@ -402,7 +403,6 @@ const labelByMidi = useMemo(() => {
     gap:0.5rem;
     width:90%;
     max-width:320px;
-    position:relative;
   }
   .library-menu h3 {
     margin:0 0 0.5rem;
@@ -419,10 +419,10 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
   .library-menu .close {
-    position: absolute;
-    top: 0.25rem;
-    left: 0.25rem;    /* ← on passe de right à left */
-    right: auto;      /* ← on désactive right */
+    position: absolute; 
+    top: 0.25rem;      
+    left: 0.25rem;     /* <-- ici on ancre en haut à gauche */
+    right: auto;      
     background: transparent;
     border: none;
     color: #aaa;
@@ -436,12 +436,12 @@ const labelByMidi = useMemo(() => {
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
-        <h3>Importer ou choisir</h3>
+        <h3>Upload or Select</h3>
 
         <button onClick={() => {
           fileInputRef.current.click();
         }}>
-          Importer un fichier MIDI
+          Upload MIDI File
         </button>
 
         <select
@@ -451,7 +451,7 @@ const labelByMidi = useMemo(() => {
             closeLibrary();
           }}
         >
-          <option value="" disabled>Choisir un morceau…</option>
+          <option value="" disabled>Select a Song...</option>
           {DEMOS.map(name => (
             <option key={name} value={name}>
               {name.replace(/\.mid$/, "")}
@@ -474,7 +474,7 @@ const labelByMidi = useMemo(() => {
     <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
     {/* Bouton principal : Charger (importer ou choisir) */}
     <button onClick={openLibrary}>
-      Charger…
+      Load…
     </button>
 
     {/* input caché pour import manuel */}
