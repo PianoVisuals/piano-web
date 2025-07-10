@@ -96,7 +96,9 @@ export default function App(){
   const [midiData,setMidiData]=useState(null); // Midi object
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
-  const [progress,setProgress]=useState(0); // 0‑1
+  const [progress,setProgress]=useState(0);
+  // état connexion MIDI
+  const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
   // appliquer thème -------------------------------------------------
   useEffect(()=>{
@@ -238,16 +240,21 @@ export default function App(){
   useEffect(()=>{
     if(!navigator.requestMIDIAccess) return;
     navigator.requestMIDIAccess().then(acc=>{
+      // connexion initiale
+      setMidiConnected(acc.inputs.size > 0);
+      // écoute des changements (connect / disconnect)
+      acc.onstatechange = ()=> setMidiConnected(acc.inputs.size > 0);
+      // mapping des messages
       acc.inputs.forEach(inp=>{
-        inp.onmidimessage = ({data}) => {
-          const [st, note, vel] = data;
-          const cmd = st & 0xf0;
-          if(cmd === 0x90 && vel){
-            synthRef.current.triggerAttack(m2n(note), undefined, vel/127);
-            highlight(note, true);
-          } else if(cmd === 0x80 || (cmd === 0x90 && !vel)){
+        inp.onmidimessage = ({data})=>{
+          const [st,note,vel]=data;
+          const cmd=st&0xf0;
+          if(cmd===0x90&&vel){
+            synthRef.current.triggerAttack(m2n(note),undefined,vel/127);
+            highlight(note,true);
+          } else if(cmd===0x80||(cmd===0x90&&!vel)){
             synthRef.current.triggerRelease(m2n(note));
-            highlight(note, false);
+            highlight(note,false);
           }
         };
       });
@@ -305,6 +312,10 @@ const labelByMidi = useMemo(() => {
     canvas{position:fixed;left:0;top:0;pointer-events:none;}
   `}</style>
   <div className="top">
+    {/* indicateur MIDI */}
+    <div className="midi-status" title={midiConnected?"MIDI piano connected":"No MIDI piano detected"}>
+      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" width={24} height={24}/>
+    </div>
     <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
     <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
       <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
