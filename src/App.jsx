@@ -419,44 +419,32 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
   .library-menu .close {
-    position: absolute !important;
-    top: 0.5rem !important;
-    left: 0.5rem !important;
-    right: auto !important;
-    z-index: 20 !important;
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;
+    right: auto;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
   }
 
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
-        <h3>Upload or Select</h3>
-
-        <button onClick={() => {
-          fileInputRef.current.click();
-        }}>
-          Upload MIDI File
-        </button>
-
-        <select
-          defaultValue=""
-          onChange={e => {
-            loadDemo(e.target.value);
-            closeLibrary();
-          }}
-        >
-          <option value="" disabled>Select a Song...</option>
-          {DEMOS.map(name => (
-            <option key={name} value={name}>
-              {name.replace(/\.mid$/, "")}
-            </option>
-          ))}
-        </select>
-
         <button className="close" onClick={closeLibrary}>✕</button>
+        <h3>Upload or Select</h3>
+        <button onClick={() => fileInputRef.current.click()}>Upload MIDI File</button>
+        <select defaultValue="" onChange={…}>
+          <option disabled>Select a Song…</option>
+          {DEMOS.map(name => <option key={name} value={name}>{name.replace(/\.mid$/,"")}</option>)}
+        </select>
       </div>
     </div>
   )}
+
   <div className="top">
 
     {/* indicateur MIDI */}
