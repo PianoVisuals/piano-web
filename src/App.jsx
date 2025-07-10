@@ -399,180 +399,138 @@ export default function App(){
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
 
   const drawBars = () => {
-    if (!canvasRef.current || !midiData) return;
-
+    if (!canvasRef.current) return;       // on ne bloque plus sur midiData
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const W = canvas.width = window.innerWidth;
     const H = canvas.height = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
 
-    // Position dynamique du haut du clavier (portrait vs paysage)
+    // position du haut du piano
     const pianoRect = pianoRef.current?.getBoundingClientRect();
-    const keysY = pianoRect ? pianoRect.top : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
-    const path = keysY;              // distance totale que les barres doivent parcourir
+    const keysY = pianoRect
+      ? pianoRect.top
+      : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
+    const path = keysY;
 
     const t = Tone.Transport.seconds;
 
     ctx.save();
-    ctx.beginPath();              // masque : on ne dessine pas sous le clavier
+    ctx.beginPath();
     ctx.rect(0, 0, W, keysY);
     ctx.clip();
 
-    const activeMidis = [
-      ...kbdSet.current,                           // PC
-      ...Array.from(pointerMap.current.values())   // tactile
+    // ─── GESTION DES BARRES MONTANTES ───
+    // on récupère toutes les notes enfoncées (clavier + tactile)
+    const pressedMidis = [
+      ...kbdSet.current,
+      ...Array.from(pointerMap.current.values())
     ];
 
-    // 2) Si aucune musique n’est chargée et qu’il y a des touches actives…
-    if (!midiData && activeMidis.length > 0) {
-      activeMidis.forEach(midi => {
-        const keyEl = document.querySelector(`[data-midi='${midi}']`);
+    // si aucune musique n'est chargée ET qu'on a des touches pressées
+    if (!midiData && pressedMidis.length > 0) {
+      pressedMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi="${midi}"]`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
 
-        // largeur ajustée 90%
-        const wAdj = rect.width * 0.9;
-        const xAdj = rect.left + (rect.width - wAdj) / 2;
+        // ajustements de largeur et position X
+        const barWidth = rect.width * 0.9;
+        const x = rect.left + (rect.width - barWidth) / 2;
 
-        // hauteur : du bas de l’écran (top du clavier) jusqu'en haut
+        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
         const yBottom = rect.top;
         const barHeight = yBottom;
         const yTop = 0;
 
-        // dégradé opaque du thème vers transparent en haut
-        const col = getComputedStyle(document.documentElement).getPropertyValue(
-          WHITE.includes(midi % 12) ? "--bar-w" : "--bar-b"
-        );
+        // couleur selon note blanche ou noire
+        const baseColor = WHITE.includes(midi % 12)
+          ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
+          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+
+        // dégradé opaque
         const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-        grad.addColorStop(0, col);
+        grad.addColorStop(0, baseColor);
         grad.addColorStop(1, "rgba(255,255,255,0)");
 
         // ombre portée
-        ctx.shadowColor = col;
+        ctx.shadowColor = baseColor;
         ctx.shadowBlur  = 8;
         ctx.globalAlpha = 0.8;
-    
-        // dessine la barre montante
+
+        // dessin
         ctx.fillStyle = grad;
-        ctx.fillRect(xAdj, yTop, wAdj, barHeight);
+        ctx.fillRect(x, yTop, barWidth, barHeight);
 
         // reset
         ctx.shadowBlur  = 0;
         ctx.globalAlpha = 1;
       });
 
-      // on restaure et on quitte avant la boucle MIDI habituelle
       ctx.restore();
-      return;
+      return;  // on sort avant de dessiner les barres MIDI
     }
 
+    // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
+    if (midiData) {
+      midiData.tracks.forEach(tr => {
+        tr.notes.forEach(n => {
+          const impact = n.time + LEAD;
+          const remaining = impact - t;
+          if (remaining < -n.duration || remaining > LEAD) return;
 
+          const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
+          if (!keyEl) return;
+          const rect = keyEl.getBoundingClientRect();
 
-    if (!midiData && activeMidis.length) {
-      // on dessine une barre montante pour chaque note active
-      activeMidis.forEach(midi => {
-        const keyEl = document.querySelector(`[data-midi='${midi}']`);
-        if (!keyEl) return;
-        const rect = keyEl.getBoundingClientRect();
-        const barWidth = rect.width * 0.9;           // même ajustement largeur
-        const x = rect.left + (rect.width - barWidth)/2;
-        const yBottom = keyEl.getBoundingClientRect().top;
-        const barHeight = yBottom;                   // tout jusqu'en haut
+          // ajustement largeur comme précédemment
+          const barWidth = rect.width * 0.9;
+          const x = rect.left + (rect.width - barWidth) / 2;
 
-        // dégradé simple du bas (couleur thème) → transparent en haut
-        const grad = ctx.createLinearGradient(0, 0, 0, yBottom);
-        grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue("--act-w"));
-        grad.addColorStop(1, "rgba(255,255,255,0)");
+          const yBottom = (1 - remaining / LEAD) * path;
+          const barHeight = n.duration * (path / LEAD);
+          const yTop = yBottom - barHeight;
 
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, 0, barWidth, yBottom);
+          // couleur et dégradé
+          const baseColor = WHITE.includes(n.midi % 12)
+            ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
+            : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+          const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+          grad.addColorStop(0, baseColor);
+          grad.addColorStop(1, "rgba(255,255,255,0.2)");
 
-        // ombre légère
-        ctx.shadowColor = getComputedStyle(document.documentElement).getPropertyValue("--act-w");
-        ctx.shadowBlur  = 8;
-        ctx.fillRect(x, 0, barWidth, yBottom);
-        ctx.shadowBlur  = 0;
+          // ombre et alpha
+          ctx.shadowColor = "rgba(0,0,0,0.4)";
+          ctx.shadowBlur  = 6;
+          ctx.globalAlpha = 0.9;
+
+          // coins arrondis
+          const radius = Math.min(barWidth, 8);
+          ctx.beginPath();
+          ctx.moveTo(x + radius, yTop);
+          ctx.lineTo(x + barWidth - radius, yTop);
+          ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
+          ctx.lineTo(x + barWidth, yBottom - radius);
+          ctx.quadraticCurveTo(x + barWidth, yBottom, x + barWidth - radius, yBottom);
+          ctx.lineTo(x + radius, yBottom);
+          ctx.quadraticCurveTo(x, yBottom, x, yBottom - radius);
+          ctx.lineTo(x, yTop + radius);
+          ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
+          ctx.closePath();
+
+          ctx.fillStyle = grad;
+          ctx.fill();
+  
+          // reset
+          ctx.shadowBlur  = 0;
+          ctx.globalAlpha = 1;
+        });
       });
-
-      ctx.restore();
-      return;
     }
 
+    ctx.restore();
+  };
 
-
-    midiData.tracks.forEach(tr => {
-      tr.notes.forEach(n => {
-        const impact = n.time + LEAD;
-        const remaining = impact - t;
-        if (remaining < -n.duration || remaining > LEAD) return;
-
-        const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
-        if (!keyEl) return;
-        const rect = keyEl.getBoundingClientRect();
-        const barWidth = rect.width;
-        const x = rect.left;
-
-
-        // Réduire la largeur de 10% (ou remplace 0.9 par 0.95 pour 5%, etc.)
-        const wAdj = barWidth * 0.9;
-        // Recentrer horizontalement
-        const xAdj = x + (barWidth - wAdj) / 2;
-
-        const yBottom = (1 - remaining / LEAD) * path;
-        const barHeight = n.duration * (path / LEAD);
-        const yTop = yBottom - barHeight;
-
-        // === à l’intérieur de midiData.tracks.forEach ===
-
-        // choix des couleurs de base
-        const baseW = getComputedStyle(document.documentElement).getPropertyValue("--bar-w");
-        const baseB = getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-        const isWhiteNote = WHITE.includes(n.midi % 12);
-
-        // coordonnées
-        const x0 = xAdj;
-        const y0 = yTop;
-        const w0 = wAdj;
-        const h0 = barHeight;
-        const y1 = y0 + h0;
-
-        // 1) créer un dégradé vertical de la couleur vers un ton plus clair
-        const grad = ctx.createLinearGradient(0, y0, 0, y1);
-        const col = isWhiteNote ? baseW : baseB;
-        grad.addColorStop(0, col);
-        grad.addColorStop(1, "rgba(255,255,255,0.2)");
-
-        // 2) ombre portée
-        ctx.shadowColor = "rgba(0,0,0,0.4)";
-        ctx.shadowBlur  = 6;
-        ctx.globalAlpha = 0.9;
-
-        // 3) coins arrondis
-        const radius = Math.min(w0, 8);
-        ctx.beginPath();
-        ctx.moveTo(x0 + radius, y0);
-        ctx.lineTo(x0 + w0 - radius, y0);
-        ctx.quadraticCurveTo(x0 + w0, y0, x0 + w0, y0 + radius);
-        ctx.lineTo(x0 + w0, y1 - radius);
-        ctx.quadraticCurveTo(x0 + w0, y1, x0 + w0 - radius, y1);
-        ctx.lineTo(x0 + radius, y1);
-        ctx.quadraticCurveTo(x0, y1, x0, y1 - radius);
-        ctx.lineTo(x0, y0 + radius);
-        ctx.quadraticCurveTo(x0, y0, x0 + radius, y0);
-        ctx.closePath();
-
-        // remplissage
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        // 4) reset pour ne pas impacter les prochains dessins
-        ctx.shadowBlur  = 0;
-        ctx.globalAlpha = 1;
-              });
-            });
-            ctx.restore();
-          };
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
