@@ -806,6 +806,28 @@ const labelByMidi = useMemo(() => {
     .toggle-bar {
       z-index: 5;
     }
+
+    .top.collapsed ~ canvas,
+    .top.collapsed ~ .piano {
+      top: 0 !important;
+      bottom: 0 !important;
+      height: 100vh !important;
+    }
+    /* Et on masque totalement la barre (pour éviter un petit interstice) */
+    .top.collapsed {
+      transform: translateY(-100%);
+    }
+
+    .top:not(.collapsed) ~ canvas {
+      top: 0 !important;
+      bottom: auto !important;
+      height: auto !important;
+    }
+    .top:not(.collapsed) ~ .piano {
+      bottom: 0 !important;
+      top: auto !important;
+      height: var(--white-h) !important;
+    }
   }
 
 `}</style>
