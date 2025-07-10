@@ -252,6 +252,21 @@ export default function App(){
     preparePart(midi);
   };
 
+
+  const clearAllActive = () => {
+    // désactive visuellement + soniquement chaque note “allumée”
+    document.querySelectorAll('.active').forEach(el => {
+      const midi = +el.getAttribute('data-midi');
+      // son
+      synthRef.current.triggerRelease(m2n(midi));
+      // visuel
+      el.classList.remove('active');
+    });
+    // reset du set clavier (pc)
+    kbdSet.current.clear();
+  };
+
+
   const preparePart = (midi) => {
     partRef.current?.dispose();
     const events = [];
@@ -267,6 +282,11 @@ export default function App(){
     partRef.current.start(0);
     Tone.Transport.seconds = 0;
     setProgress(0);
+    Tone.Transport.schedule(() => {
+        clearAllActive();
+        Tone.Transport.stop();
+        setPlaying(false);
+      }, midi.duration + LEAD + 0.05)
   };
 
 
