@@ -924,25 +924,7 @@ const labelByMidi = useMemo(() => {
   }
 
 
-  @media (pointer: coarse) and (orientation: portrait) {
-    /* en mode Jeu (rythme), on force chaque touche à 2× la hauteur normale */
-    :root[data-mode="rythme"] .piano .white,
-    :root[data-mode="rythme"] .piano .black {
-      height: calc(var(--white-h) * 2) !important;
-    }
-    /* ajuste aussi le conteneur piano si besoin */
-    :root[data-mode="rythme"] .piano {
-      height: calc(var(--white-h) * 2) !important;
-    }
-  }
 
-
-  @media (pointer: coarse) and (orientation: portrait) {
-    :root[data-mode="rythme"] .piano {
-      /* ici 50vh, tu peux ajuster à 40vh, 60vh selon ton goût */
-      height: 50vh !important;
-    }
-  }
 
   @media (pointer: coarse) and (orientation: portrait) {
     :root[data-mode="rythme"] {
