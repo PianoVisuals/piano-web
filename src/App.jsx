@@ -936,7 +936,7 @@ const labelByMidi = useMemo(() => {
   @media (pointer: coarse) and (orientation: portrait) {
     :root[data-mode="rythme"] {
       /* remplace 4× par 8×, ou choisis une valeur fixe */
-      --white-h: calc(var(--white-h) * 2) !important;
+      --white-h: calc(var(--white-h) * 1.5) !important;
       /* et recalcule la hauteur des noires proportionnellement */
       --black-h: calc(var(--white-h) * 0.6) !important;
     }
