@@ -541,7 +541,8 @@ export default function App(){
   };
 
 
-
+  const borderColor = "#ffffff";   // contour noir, ou une couleur de ton thème
+  const borderWidth = 1.5;      // épaisseur en pixels
 
 
   // play / pause --------------------------------------------------- ---------------------------------------------------
@@ -688,6 +689,11 @@ export default function App(){
           ctx.fillStyle = grad;
           ctx.fill();
   
+          ctx.lineWidth   = borderWidth;
+          ctx.strokeStyle = borderColor;
+          ctx.stroke();
+
+
           // reset
           ctx.shadowBlur  = 0;
           ctx.globalAlpha = 1;
