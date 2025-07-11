@@ -47,6 +47,14 @@ const THEMES = {
 };
 
 
+// Inscrire immédiatement le thème Game Mode
+THEMES["Game Mode"] = {
+  bg: "#ffffff",
+  barW: "rgba(255,50,50,0.7)",
+  barB: "rgba(200,0,0,0.7)",
+  actW: "#ff5050",
+  actB: "#cc0000"
+};
 
 
 
@@ -262,15 +270,6 @@ export default function App(){
   const TEMP_THEME_KEY = "Bad Apple";
 
 
-  // clé et définition du thème “Game Mode”
-  const GAME_THEME_KEY = "Game Mode";
-  const GAME_THEME = {
-    bg: "#ffffff",        // fond sombre spécifique
-    barW: "rgba(255,50,50,0.7)",  // barre rougeoyante
-    barB: "rgba(200,0,0,0.7)",
-    actW: "#ff5050",   // touches actives rouge
-    actB: "#cc0000"
-  };
 
   useEffect(() => {
     if (mode === "piano") {
