@@ -362,6 +362,7 @@ export default function App(){
 
 
 
+
   useEffect(() => {
     const onBlur = () => {
       // pareil : release toutes les notes en cours
@@ -706,6 +707,15 @@ const labelByMidi = useMemo(() => {
 
   return(<>
  <style>{`
+
+
+  :root[data-mode="rythme"] {
+    --white-w: 40px;
+    --white-h: 160px;
+  }
+  [data-mode="rythme"] .black { display: none; }
+
+
 
   :root {
     /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
