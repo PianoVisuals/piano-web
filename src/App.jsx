@@ -797,6 +797,20 @@ export default function App(){
   };
 
 
+  useEffect(() => {
+    if (!endlessActive) return;
+
+    let rafId;
+    const loop = () => {
+      drawBars();                  // dessine les barres (Endless + MIDI)
+      rafId = requestAnimationFrame(loop);
+    };
+
+    loop();  // démarre tout de suite
+
+    return () => cancelAnimationFrame(rafId);
+  }, [endlessActive, fallingNotes, midiData]);
+
 
   useEffect(() => {
     if (!endlessActive) return;
