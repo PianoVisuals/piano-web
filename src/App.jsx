@@ -252,7 +252,9 @@ export default function App(){
 
   const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
 
-
+  const OCTAVE_START = Tone.Frequency("C4").toMidi();
+  // les 12 notes de C4 à B4
+  const OCTAVE_MIDIS = Array.from({ length: 12 }, (_, i) => OCTAVE_START + i);
 
   // pour gérer le thème temporaire de Bad Apple
   const prevThemeRef = useRef(null);
