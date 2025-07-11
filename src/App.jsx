@@ -943,6 +943,20 @@ const labelByMidi = useMemo(() => {
   }
 
 
+  @media (pointer: coarse) and (orientation: portrait) {
+    /* 1) Barre d’options en bas */
+    :root[data-mode="rythme"] .top {
+      bottom: 0 !important;
+      top: auto !important;
+    }
+  
+    /* 2) Piano juste au-dessus de la barre */
+    :root[data-mode="rythme"] .piano {
+      bottom: 50px !important; /* ← décale vers le haut */
+      top: auto !important;
+    }
+  }
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
