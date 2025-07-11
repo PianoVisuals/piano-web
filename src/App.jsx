@@ -362,11 +362,11 @@ const prevThemeRef = useRef(null);
 
 // définition du thème « spécial »
 const BAD_APPLE_THEME = {
-  bg: "#ffffff",
+  bg: "#f0f0f0",
   barW: "rgba(0,0,0,1)",
   barB: "rgba(0,0,0,1)",
   actW: "#000000",
-  actB: "#ffffff"
+  actB: "#f0f0f0"
 };
 
 
