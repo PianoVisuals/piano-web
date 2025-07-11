@@ -660,8 +660,11 @@ export default function App(){
             ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
             : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
           const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-          grad.addColorStop(0, baseColor);
-          grad.addColorStop(1, "rgba(255,255,255,0.2)");
+          // 0 → en haut : transparent clair
+          grad.addColorStop(0, "rgba(255,255,255,0.2)");
+          // 1 → en bas : couleur pleine
+          grad.addColorStop(1, baseColor);
+
 
           // ombre et alpha
           ctx.shadowColor = "rgba(0,0,0,0.4)";
