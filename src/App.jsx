@@ -702,7 +702,7 @@ const labelByMidi = useMemo(() => {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-mode", mode);
-  }, [mode]);
+}, [mode]);
 
   return(<>
  <style>{`
@@ -989,20 +989,36 @@ const labelByMidi = useMemo(() => {
   </div>
 
   {mode === "piano" ? (
-    /* ==== ÉCRAN PIANO ==== */
+    /* ======= ÉCRAN PIANO ======= */
     <>
       <canvas ref={canvasRef}></canvas>
-      <div className="piano" ref={pianoRef}>
+      <div
+        className="piano"
+        ref={pianoRef}
+        onPointerDown={pDown}
+        onPointerMove={pMove}
+        onPointerUp={pUp}
+        onPointerCancel={pUp}
+      >
         {keys}
       </div>
     </>
   ) : (
-    /* ==== ÉCRAN JEU DE RYTHME ==== */
+    /* ======= ÉCRAN JEU DE RYTHME ======= */
     <>
       <canvas ref={canvasRef}></canvas>
-      <div className="piano" ref={pianoRef}>
+      <div
+        className="piano"
+        ref={pianoRef}
+        onPointerDown={pDown}
+        onPointerMove={pMove}
+        onPointerUp={pUp}
+        onPointerCancel={pUp}
+      >
         {keys}
       </div>
     </>
   )}
+  
+  </>);
 }
