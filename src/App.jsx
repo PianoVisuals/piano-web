@@ -68,6 +68,12 @@ const PC_MAP = {
 const n2m = n => Tone.Frequency(n).toMidi();
 const m2n = m => Tone.Frequency(m, "midi").toNote();
 
+const GAME_MIDIS = useMemo(
+  () => new Set(Object.values(PC_MAP).map(n => Tone.Frequency(n).toMidi())),
+  []
+);
+
+
 // ===== Responsiveness (CSS vars) =========================================
 const setCSSVars = () => {
   const vw = window.innerWidth;
@@ -697,7 +703,16 @@ const labelByMidi = useMemo(() => {
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
-  const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
+  const keys = (mode === "piano" ? KEYS : KEYS.filter(m => GAME_MIDIS.has(m)))
+    .map(m => (
+      <div
+        key={m}
+        data-midi={m}
+        className={WHITE.includes(m % 12) ? "white key" : "black key"}
+      >
+        {labelByMidi[m] && <span className="label">{labelByMidi[m]}</span>}
+      </div>
+    ));
 
 
 
@@ -709,11 +724,6 @@ const labelByMidi = useMemo(() => {
  <style>{`
 
 
-  :root[data-mode="rythme"] {
-    --white-w: 40px;
-    --white-h: 160px;
-  }
-  [data-mode="rythme"] .black { display: none; }
 
 
 
