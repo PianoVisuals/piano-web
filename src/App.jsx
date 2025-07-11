@@ -618,229 +618,172 @@ export default function App(){
   // ==== Falling bars =============================================
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
 
+  
   const drawBars = () => {
-    if (!canvasRef.current) return;       // on ne bloque plus sur midiData
+    if (!canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const W = canvas.width = window.innerWidth;
-    const H = canvas.height = window.innerHeight;
+    const W = (canvas.width = window.innerWidth);
+    const H = (canvas.height = window.innerHeight);
     ctx.clearRect(0, 0, W, H);
-
-    // position du haut du piano
-    const pianoRect = pianoRef.current?.getBoundingClientRect();
-    const keysY = pianoRect
-      ? pianoRect.top
-      : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
-    const path = keysY;
-
-    const t = Tone.Transport.seconds;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, 0, W, keysY);
-    ctx.clip();
-
-    // ─── GESTION DES BARRES MONTANTES ───
-    // on récupère toutes les notes enfoncées (clavier + tactile)
-    const pressedMidis = [
-      ...kbdSet.current,
-      ...Array.from(pointerMap.current.values())
-    ];
-
-    // si aucune musique n'est chargée ET qu'on a des touches pressées
-    if (!midiData && pressedMidis.length > 0) {
-      pressedMidis.forEach(midi => {
-        const keyEl = document.querySelector(`[data-midi="${midi}"]`);
-        if (!keyEl) return;
-        const rect = keyEl.getBoundingClientRect();
-
-        // ajustements de largeur et position X
-        const barWidth = rect.width * 0.9;
-        const x = rect.left + (rect.width - barWidth) / 2;
-
-        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
-        const yBottom = rect.top;
-        const barHeight = yBottom;
-        const yTop = 0;
-
-        // couleur selon note blanche ou noire
-        const baseColor = WHITE.includes(midi % 12)
-          ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
-          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-
-        // dégradé opaque
-        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-        // 0 → en haut : transparent clair
-        grad.addColorStop(0, "rgba(255,255,255,0.2)");
-        // 1 → en bas : couleur pleine
-        grad.addColorStop(1, baseColor);
-
-        // ombre portée
-        ctx.shadowColor = baseColor;
-        ctx.shadowBlur  = 8;
-        ctx.globalAlpha = 0.8;
-
-        // dessin
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, yTop, barWidth, barHeight);
-
-        // reset
-        ctx.shadowBlur  = 0;
-        ctx.globalAlpha = 1;
-      });
-
-      ctx.restore();
-      return;  // on sort avant de dessiner les barres MIDI
-    }
-
-
-    // ─── Endless Mode bars ───
+  
+    // ────── 1) Endless Mode ──────
     if (endlessActive) {
-      fallingNotes.forEach(note => {
+      ctx.save();
+      // Pas de clip ici : on dessine sur toute la surface
+      const whiteH = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
+      );
+      const barH = whiteH * 2;  // 2× la hauteur d'une touche
+  
+      fallingNotes.forEach((note) => {
         const keyEl = document.querySelector(`[data-midi='${note.midi}']`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
-        const barWidth  = rect.width * 0.6;
-        const barHeight = parseFloat(getComputedStyle(document.documentElement)
-                             .getPropertyValue("--white-h")) * 2;
-        const x = rect.left + (rect.width - barWidth)/2;
+  
+        const barW = rect.width * 0.6;
+        const x = rect.left + (rect.width - barW) / 2;
         const y = note.y;
-        ctx.fillStyle = getComputedStyle(document.documentElement)
-                         .getPropertyValue(
-                           WHITE.includes(note.midi%12)?"--bar-w":"--bar-b"
-                         );
-        ctx.fillRect(x, y - barHeight, barWidth, barHeight);
+  
+        // couleur selon blanche/noire
+        const baseColor = WHITE.includes(note.midi % 12)
+          ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
+          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+        ctx.fillStyle = baseColor;
+  
+        // dessin du rectangle de la barre
+        ctx.fillRect(x, y - barH, barW, barH);
+  
+        // contour
+        ctx.lineWidth = borderWidth;
+        ctx.strokeStyle = borderColor;
+        ctx.strokeRect(x, y - barH, barW, barH);
       });
-      // on continue vers le reste (MIDI) si besoin
+  
+      ctx.restore();
+      // On ne return pas ici pour permettre éventuellement le dessin MIDI après
     }
-
-
-    // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
+  
+    // ────── 2) Barres MIDI ──────
     if (midiData) {
-      midiData.tracks.forEach(tr => {
-        tr.notes.forEach(n => {
+      const pianoRect = pianoRef.current.getBoundingClientRect();
+      const keysY = pianoRect.top;
+      const path = keysY;
+      const t = Tone.Transport.seconds;
+  
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, W, keysY);
+      ctx.clip();
+  
+      midiData.tracks.forEach((tr) =>
+        tr.notes.forEach((n) => {
           const impact = n.time + LEAD;
           const remaining = impact - t;
           if (remaining < -n.duration || remaining > LEAD) return;
-
+  
           const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
           if (!keyEl) return;
           const rect = keyEl.getBoundingClientRect();
-
-          // ajustement largeur comme précédemment
-          const barWidth = rect.width * 0.9;
-          const x = rect.left + (rect.width - barWidth) / 2;
-
+  
+          const barW = rect.width * 0.9;
+          const x = rect.left + (rect.width - barW) / 2;
           const yBottom = (1 - remaining / LEAD) * path;
-          const barHeight = n.duration * (path / LEAD);
-          const yTop = yBottom - barHeight;
-
-          // couleur et dégradé
+          const barH = n.duration * (path / LEAD);
+          const yTop = yBottom - barH;
+  
+          // dégradé inversé (clair en haut)
           const baseColor = WHITE.includes(n.midi % 12)
             ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
             : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
           const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-          // 0 → en haut : transparent clair
           grad.addColorStop(0, "rgba(255,255,255,0.2)");
-          // 1 → en bas : couleur pleine
           grad.addColorStop(1, baseColor);
-
-
-          // ombre et alpha
+  
           ctx.shadowColor = "rgba(0,0,0,0.4)";
-          ctx.shadowBlur  = 6;
+          ctx.shadowBlur = 6;
           ctx.globalAlpha = 0.9;
-
+  
           // coins arrondis
-          const radius = Math.min(barWidth / 2, barHeight / 2, 8);
+          const radius = Math.min(barW / 2, barH / 2, 8);
           ctx.beginPath();
           ctx.moveTo(x + radius, yTop);
-          ctx.lineTo(x + barWidth - radius, yTop);
-          ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
-          ctx.lineTo(x + barWidth, yBottom - radius);
-          ctx.quadraticCurveTo(x + barWidth, yBottom, x + barWidth - radius, yBottom);
+          ctx.lineTo(x + barW - radius, yTop);
+          ctx.quadraticCurveTo(x + barW, yTop, x + barW, yTop + radius);
+          ctx.lineTo(x + barW, yBottom - radius);
+          ctx.quadraticCurveTo(x + barW, yBottom, x + barW - radius, yBottom);
           ctx.lineTo(x + radius, yBottom);
           ctx.quadraticCurveTo(x, yBottom, x, yBottom - radius);
           ctx.lineTo(x, yTop + radius);
           ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
           ctx.closePath();
-
+  
           ctx.fillStyle = grad;
           ctx.fill();
   
-          ctx.lineWidth   = borderWidth;
+          // contour
+          ctx.lineWidth = borderWidth;
           ctx.strokeStyle = borderColor;
           ctx.stroke();
-
-
-          // reset
-          ctx.shadowBlur  = 0;
+  
+          ctx.shadowBlur = 0;
           ctx.globalAlpha = 1;
-        });
-      });
+        })
+      );
+  
+      ctx.restore();
     }
-
-    ctx.restore();
   };
-
-
+  
+  Et voici les deux hooks pour spawning et animation :
+  
+  // Hook animation (toujours appeler drawBars tant qu'endlessActive)
   useEffect(() => {
     if (!endlessActive) return;
-
     let rafId;
     const loop = () => {
-      drawBars();                  // dessine les barres (Endless + MIDI)
+      drawBars();
       rafId = requestAnimationFrame(loop);
     };
-
-    loop();  // démarre tout de suite
-
+    loop();
     return () => cancelAnimationFrame(rafId);
   }, [endlessActive, fallingNotes, midiData]);
-
-
+  
+  // Hook spawn & move
   useEffect(() => {
     if (!endlessActive) return;
   
-    // 1) spawn à fréquence réglée
-    const spawnInterval = {
-      easy:   600,
-      normal: 400,
-      hard:   250
-    }[difficulty];
-  
+    // fréquence d'apparition
+    const spawnIntervalMap = { easy: 600, normal: 400, hard: 250 };
     const spawnId = setInterval(() => {
       const pool = whiteOnly
-        ? KEYS.filter(m => WHITE.includes(m % 12))
+        ? KEYS.filter((m) => WHITE.includes(m % 12))
         : KEYS;
-      const midi = pool[Math.floor(Math.random()*pool.length)];
-      setFallingNotes(notes => [
-        ...notes,
-        { midi, y: 0 }
-      ]);
-    }, spawnInterval);
+      const midi = pool[Math.floor(Math.random() * pool.length)];
+      setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
+    }, spawnIntervalMap[difficulty]);
   
-    // 2) déplacement en boucle (60fps)
-    const speedMap = { easy:1.5, normal:2.5, hard:4.0 };
-    const speed = speedMap[difficulty] * 0.4; // ajusté
-  
+    // déplacement & suppression
+    const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
+    const speed = baseSpeedMap[difficulty] * 0.4;
     const moveId = setInterval(() => {
-      setFallingNotes(notes => {
-        // barHeight pour durée de vie
-        const barH = parseFloat(getComputedStyle(document.documentElement)
-                          .getPropertyValue("--white-h")) * 2;
-        return notes
-          .map(n => ({ ...n, y: n.y + speed }))
-          .filter(n => {
+      const whiteH = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
+      );
+      const barH = whiteH * 2;
+      setFallingNotes((notes) =>
+        notes
+          .map((n) => ({ ...n, y: n.y + speed }))
+          .filter((n) => {
             if (n.y < window.innerHeight + barH) return true;
-            // hors écran → MISS
+            // MISS
             setCombo(0);
-            setHealth(h => Math.max(0, h - 0.05));
-            setScore(s => s - 10);
+            setHealth((h) => Math.max(0, h - 0.05));
+            setScore((s) => s - 10);
             return false;
-          });
-      });
-    }, 1000/60);
+          })
+      );
+    }, 1000 / 60);
   
     return () => {
       clearInterval(spawnId);
