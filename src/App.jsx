@@ -963,6 +963,26 @@ const labelByMidi = useMemo(() => {
     }
   }
 
+
+  @media (pointer: coarse) and (orientation: portrait) {
+    /* On cible les boutons, selects et inputs de la barre en mode portrait tactile */
+    :root[data-mode="piano"] .top button,
+    :root[data-mode="piano"] .top select,
+    :root[data-mode="piano"] .top input[type="range"],
+    :root[data-mode="piano"] .top label {
+      font-size: 0.75rem !important;     /* réduire la taille du texte */
+      padding: 0.25rem 0.5rem !important; /* réduire les paddings */
+      margin: 0 !important;              /* enlever marges superflues */
+    }
+
+    /* Pour les icons / summary du about */
+    :root[data-mode="piano"] .top details summary {
+      font-size: 1rem !important;
+    }
+  }
+
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
