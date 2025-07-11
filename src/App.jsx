@@ -901,6 +901,24 @@ const labelByMidi = useMemo(() => {
     }
   }
 
+  @media (pointer: coarse) {
+    /* 1) On force le .piano à s’étendre sur toute la largeur */
+    :root[data-mode="rythme"] .piano {
+      left: 0 !important;
+      right: 0 !important;
+      justify-content: stretch !important;
+    }
+
+    /* 2) On fait en sorte que chaque touche prenne une part égale */
+    :root[data-mode="rythme"] .piano .white,
+    :root[data-mode="rythme"] .piano .black {
+      /* Désactive la largeur fixe et passe en flex-grow */
+      flex: 1 1 0 !important;
+      width: auto !important;
+    }
+  }
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -943,66 +961,140 @@ const labelByMidi = useMemo(() => {
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
     {/* indicateur MIDI */}
-    <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
-      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
+    <div
+      className="midi-status"
+      title={
+        midiConnected
+          ? "MIDI piano connected"
+          : "No MIDI piano detected (not supported in Firefox)"
+      }
+    >
+      <img
+        src={midiConnected ? "/midi_on.png" : "/midi_off.png"}
+        alt="MIDI status"
+        draggable="false"
+        width={24}
+        height={24}
+      />
     </div>
-    <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
-    <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
-      <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
-    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
-    <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
-    {/* Bouton principal : Charger (importer ou choisir) */}
-    <button onClick={openLibrary}>
-      Load…
+
+    {mode === "piano" && (
+      <>
+        <label>
+          Theme{" "}
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+          >
+            {Object.keys(THEMES).map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+  
+        <label>
+          Instrument{" "}
+          <select
+            value={instrument}
+            onChange={(e) => setInstrument(e.target.value)}
+          >
+            {Object.keys(INSTR).map((i) => (
+              <option key={i}>{i}</option>
+            ))}
+          </select>
+        </label>
+  
+        <label style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <input
+            type="checkbox"
+            checked={sustain}
+            onChange={(e) => setSustain(e.target.checked)}
+          />{" "}
+          Sustain
+        </label>
+  
+        <label>
+          Vol{" "}
+          <input
+            type="range"
+            min="0"
+            max="200"
+            value={volume}
+            onChange={(e) => setVolume(+e.target.value)}
+          />
+        </label>
+  
+        <button onClick={togglePlay} disabled={!midiData}>
+          {playing ? "Pause" : "Play"}
+        </button>
+  
+        <button onClick={openLibrary}>Load…</button>
+        <button onClick={unloadMidi} disabled={!midiData}>
+          Clear
+        </button>
+  
+        {/* input caché pour import manuel */}
+        <input
+          type="file"
+          accept=".mid"
+          hidden
+          ref={fileInputRef}
+          onChange={(e) => {
+            handleFile(e);
+            closeLibrary();
+          }}
+        />
+  
+        <input
+          className="prog"
+          type="range"
+          min="0"
+          max="1"
+          step="0.001"
+          value={progress}
+          onChange={(e) => onScrub(e.target.valueAsNumber)}
+          disabled={!midiData}
+        />
+      </>
+    )}
+
+    {/* bouton de bascule Piano ↔ Jeu */}
+    <button
+      onClick={() =>
+        setMode((m) => (m === "piano" ? "rythme" : "piano"))
+      }
+    >
+      {mode === "piano" ? "Game Mode" : "Piano Mode"}
     </button>
-    <button onClick={unloadMidi} disabled={!midiData}>
-        Clear
-    </button>
-
-    {/* input caché pour import manuel */}
-    <input
-      type="file"
-      accept=".mid"
-      hidden
-      ref={fileInputRef}
-      onChange={e => {
-        handleFile(e);    // <-- on passe l’événement, pas e.target.files[0]
-        closeLibrary();
-      }}
-    />
-
-    <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
-
-    <button onClick={() => setMode(m => m === "piano" ? "rythme" : "piano")}>
-      {mode === "piano" ? "Mode Jeu" : "Retour Piano"}
-    </button>
-
+  
+    {/* A propos */}
     <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
         <h4>About This Site</h4>
-
+  
         <p>
-          Piano Visuals brings a realistic virtual piano right into your browser. Built
-          with React and Tone.js, it supports touch, computer keyboard, and USB-MIDI
-          controllers for an authentic playing experience. You can import your own
-          MIDI files or choose from a growing library of demo songs, instantly
-          visualizing each note as it lights up on the full-screen keyboard.
+          Piano Visuals brings a realistic virtual piano right into your browser.
+          Built with React and Tone.js, it supports touch, computer keyboard,
+          and USB-MIDI controllers for an authentic playing experience. You can
+          import your own MIDI files or choose from a growing library of demo
+          songs, instantly visualizing each note as it lights up on the
+          full-screen keyboard.
         </p>
-
+  
         <p>
           The responsive design adapts seamlessly to desktops, tablets, and mobile
           devices in both landscape and portrait modes. Volume and sustain controls
-          let you shape your sound, while customizable themes and instrument voices
-          (piano, harpsichord, banjo, violin, etc.) allow for endless creative
-          exploration.
+          let you shape your sound, while customizable themes and instrument
+          voices (piano, harpsichord, banjo, violin, etc.) allow for endless
+          creative exploration.
         </p>
-
+  
         <p>
           We update the site regularly with new demo tracks, improved sound
-          libraries, and performance optimizations. Whether you’re learning to read
-          music, practicing for a recital, or just having fun, Piano Visuals aims to
-          make playing and studying piano more accessible than ever.
+          libraries, and performance optimizations. Whether you’re learning to
+          read music, practicing for a recital, or just having fun, Piano Visuals
+          aims to make playing and studying piano more accessible than ever.
         </p>
       </div>
     </details>
