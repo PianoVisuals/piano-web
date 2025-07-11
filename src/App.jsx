@@ -45,18 +45,6 @@ const THEMES = {
   "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
 };
 
-
-const [prevTheme, setPrevTheme] = useState(null);
-
-
-const BAD_APPLE_STYLE = {
-  bg: "#ffffff",            // fond noir
-  barW: "rgba(0,0,0,1)",  // barre blanche = rouge translucide
-  barB: "rgba(0,0,0,1)",  // barre noire = rouge foncé translucide
-  actW: "#000000",       // touche active blanche = rose vif
-  actB: "#ffffff",       // touche active noire = bordeaux
-};
-
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
@@ -252,18 +240,16 @@ export default function App(){
 
   // réinitialise l'état pour revenir à l'écran vide
   const unloadMidi = () => {
-  Tone.Transport.stop();
-  setPlaying(false);
-  setMidiData(null);
-  setProgress(0);
-  clearAllActive();
-
-  // si on était en thème Bad Apple, on restaure l'ancien
-  if (theme === "Bad Apple" && prevTheme !== null) {
-    setTheme(prevTheme);
-    setPrevTheme(null);
-  }
-};
+    // stoppe le transport si nécessaire
+    Tone.Transport.stop();
+    setPlaying(false);
+    // vide les données MIDI
+    setMidiData(null);
+    // remet la barre de progression à zéro
+    setProgress(0);
+    // relâche toutes les touches en cas de restes bloquées
+    clearAllActive();
+  };
 
 
   const loadDemo = async (name) => {
@@ -274,28 +260,7 @@ export default function App(){
       setMidiData(midi);
       setDuration(midi.duration + LEAD);
       preparePart(midi);
-
-      // si c'est Bad Apple, on sauvegarde l'ancien thème et on applique le style spécial
-      if (name === "Bad Apple!!.mid") {
-        setPrevTheme(theme);
-        // pose directement les variables CSS du thème spécial
-        Object.entries({
-          bg:      BAD_APPLE_STYLE.bg,
-          "bar-w": BAD_APPLE_STYLE.barW,
-          "bar-b": BAD_APPLE_STYLE.barB,
-          "act-w": BAD_APPLE_STYLE.actW,
-          "act-b": BAD_APPLE_STYLE.actB
-        }).forEach(([k,v])=>
-          document.documentElement.style.setProperty(`--${k}`, v)
-        );
-        // on met à jour le state theme pour garder la cohérence
-        setTheme("Bad Apple");
-      } else if (prevTheme !== null) {
-        // si on charge autre chose et qu'on avait un prevTheme, on le restaure
-        setTheme(prevTheme);
-        setPrevTheme(null);
-      }
-
+      closeLibrary();
     } catch (err) {
       console.error("Erreur loadDemo:", err);
       alert("Impossible de charger le MIDI : " + name);
