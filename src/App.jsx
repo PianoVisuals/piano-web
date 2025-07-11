@@ -541,7 +541,7 @@ export default function App(){
   };
 
 
-  const borderColor = "#ffffff";   // contour noir, ou une couleur de ton thème
+  const borderColor = "#afafaf";   // contour noir, ou une couleur de ton thème
   const borderWidth = 1;      // épaisseur en pixels
 
 
