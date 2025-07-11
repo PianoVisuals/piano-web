@@ -399,14 +399,24 @@ export default function App(){
   useEffect(()=>{if(synthRef.current){synthRef.current.volume.value=Tone.gainToDb(volume/100);synthRef.current.release = sustain ? LONG_REL : 1;}},[volume,sustain]);
 
   // MIDI import ----------------------------------------------------
-  const handleFile = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const arr = await file.arrayBuffer();
-    const midi = new Midi(arr);
-    setMidiData(midi);
-    setDuration(midi.duration + LEAD); // include lead silence
-    preparePart(midi);
+  const handleFile = async (eOrFile) => {
+    // si on a un File direct, on le prend, sinon on en extrait un du event
+    const file = eOrFile instanceof File
+      ? eOrFile
+      : (eOrFile.target && eOrFile.target.files[0]);
+
+    if (!file) return;   // pas de fichier → on sort
+
+    try {
+      const arr = await file.arrayBuffer();
+      const midi = new Midi(arr);
+      setMidiData(midi);
+      setDuration(midi.duration + LEAD);
+      preparePart(midi);
+    } catch (err) {
+      console.error("Err MIDI :", err);
+      alert("Unable to play this MIDI.");
+    }
   };
 
 
@@ -927,7 +937,7 @@ const labelByMidi = useMemo(() => {
       hidden
       ref={fileInputRef}
       onChange={e => {
-        handleFile(e.target.files[0]);
+        handleFile(e);    // <-- on passe l’événement, pas e.target.files[0]
         closeLibrary();
       }}
     />
