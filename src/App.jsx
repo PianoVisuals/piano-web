@@ -234,6 +234,24 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
+
+  // pour gérer le thème temporaire de Bad Apple
+  const prevThemeRef = useRef(null);
+
+  // définition du thème « spécial »
+  const BAD_APPLE_THEME = {
+    bg: "#f0f0f0",
+    barW: "rgba(0,0,0,1)",
+    barB: "rgba(0,0,0,1)",
+    actW: "#000000",
+    actB: "#d2d2d2"
+  };
+
+
+  const TEMP_THEME_KEY = "Bad Apple";
+
+
+
   const fileInputRef = useRef(null);
   // pour afficher/masquer la pop-up de choix
   const [showLibrary, setShowLibrary] = useState(false);
@@ -284,7 +302,7 @@ export default function App(){
           "act-w": t.actW,
           "act-b": t.actB
         }).forEach(([k, v]) =>
-          document.documentElement.style.setProperty(`--${k}`, v)
+
         );
       } else {
         // Pour toute autre musique, si on venait de Bad Apple, on restaure
@@ -357,18 +375,6 @@ export default function App(){
     };
   }, []);
 
-
-// pour gérer le thème temporaire de Bad Apple
-const prevThemeRef = useRef(null);
-
-// définition du thème « spécial »
-const BAD_APPLE_THEME = {
-  bg: "#f0f0f0",
-  barW: "rgba(0,0,0,1)",
-  barB: "rgba(0,0,0,1)",
-  actW: "#000000",
-  actB: "#d2d2d2"
-};
 
 
 
