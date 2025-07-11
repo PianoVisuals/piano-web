@@ -919,6 +919,19 @@ const labelByMidi = useMemo(() => {
   }
 
 
+@media (pointer: coarse) {
+  :root[data-mode="rythme"] {
+    /* on augmente la hauteur relative des touches */
+    --white-h: calc(var(--white-w) * 7); /* au lieu de *4, on passe à *4.5 */
+  }
+  /* assure que le conteneur prend bien cette nouvelle hauteur */
+  :root[data-mode="rythme"] .piano {
+    height: var(--white-h) !important;
+  }
+}
+
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
