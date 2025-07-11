@@ -247,6 +247,28 @@ export default function App(){
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [progress,setProgress]=useState(0);
+
+
+
+
+
+
+  const [endlessSettingsOpen, setEndlessSettingsOpen] = useState(false);
+  const [endlessActive, setEndlessActive]       = useState(false);
+  const [difficulty, setDifficulty]             = useState("normal"); // “easy” | “normal” | “hard”
+  const [whiteOnly, setWhiteOnly]               = useState(false);
+
+  const [score, setScore]       = useState(0);
+  const [combo, setCombo]       = useState(0);
+  const [health, setHealth]     = useState(1);    // 0→1 barre de vie
+  const [fallingNotes, setFallingNotes] = useState([]); // liste des notes à l’écran
+
+
+
+
+
+
+
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
@@ -1052,9 +1074,46 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-
+  .endless-popup {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    display:flex; align-items:center; justify-content:center; z-index:20;
+  }
+  .endless-menu {
+    background:#222; padding:1rem; border-radius:6px; width:80%; max-width:300px;
+    color:#fff;
+  }
+  .endless-menu fieldset { border:1px solid #555; padding:0.5rem; }
 
 `}</style>
+
+
+  {endlessSettingsOpen && (
+    <div className="endless-popup" onClick={()=>setEndlessSettingsOpen(false)}>
+      <div className="endless-menu" onClick={e=>e.stopPropagation()}>
+        <h3>Endless Settings</h3>
+  
+        <fieldset>
+          <legend>Difficulty</legend>
+          <label><input type="radio" value="easy"   checked={difficulty==="easy"}   onChange={e=>setDifficulty(e.target.value)} /> Easy (×0.5)</label>
+          <label><input type="radio" value="normal" checked={difficulty==="normal"} onChange={e=>setDifficulty(e.target.value)} /> Normal (×1)</label>
+          <label><input type="radio" value="hard"   checked={difficulty==="hard"}   onChange={e=>setDifficulty(e.target.value)} /> Hard (×2)</label>
+        </fieldset>
+  
+        <label style={{marginTop:"0.5rem"}}>
+          <input type="checkbox" checked={whiteOnly} onChange={e=>setWhiteOnly(e.target.checked)} />
+          Only White Keys (×0.5)
+        </label>
+
+        <button onClick={()=>{
+          setEndlessSettingsOpen(false);
+          setEndlessActive(true);
+          setScore(0); setCombo(0); setHealth(1);
+        }}>Start</button>
+        <button onClick={()=>setEndlessSettingsOpen(false)}>Cancel</button>
+      </div>
+    </div>
+  )}
+
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
@@ -1197,6 +1256,13 @@ const labelByMidi = useMemo(() => {
         />
       </>
     )}
+
+    {mode === "rythme" && !endlessSettingsOpen && !endlessActive && (
+      <button onClick={() => setEndlessSettingsOpen(true)}>
+        Endless Mode
+      </button>
+    )}
+
 
     {/* bouton de bascule Piano ↔ Jeu */}
     <button
