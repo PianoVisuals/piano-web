@@ -935,13 +935,12 @@ const labelByMidi = useMemo(() => {
 
   @media (pointer: coarse) and (orientation: portrait) {
     :root[data-mode="rythme"] {
-      /* remplace 4× par 8×, ou choisis une valeur fixe */
-      --white-h: calc(var(--white-h) * 1.5) !important;
-      /* et recalcule la hauteur des noires proportionnellement */
-      --black-h: calc(var(--white-h) * 0.6) !important;
+      /* On fixe la hauteur des touches à 15 vh */
+      --white-h: 15vh !important;
+      /* noire à 60 % de la blanche */
+      --black-h: calc(15vh * 0.6) !important;
     }
   }
-
 
   @media (pointer: coarse) and (orientation: portrait) {
     /* 1) Barre d’options en bas */
@@ -952,7 +951,7 @@ const labelByMidi = useMemo(() => {
   
     /* 2) Piano juste au-dessus de la barre */
     :root[data-mode="rythme"] .piano {
-      bottom: 3rem  !important; /* ← décale vers le haut */
+      bottom: 50px !important; /* ← décale vers le haut */
       top: auto !important;
     }
   }
