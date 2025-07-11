@@ -356,6 +356,10 @@ export default function App(){
       Tone.Transport.stop();
       setPlaying(false);
 
+      if (THEMES[TEMP_THEME_KEY]) {
+            delete THEMES[TEMP_THEME_KEY];
+
+
       // 2) Vide les données MIDI pour empêcher tout rendu de barres
       setMidiData(null);
       setProgress(0);
@@ -1086,10 +1090,17 @@ const labelByMidi = useMemo(() => {
       <>
         <label>
           Theme{" "}
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-          >
+          <select value={theme} onChange={e=>setTheme(e.target.value)}>
+            {Object.keys(THEMES)
+              // 1) on enlève Game Mode
+              .filter(t => t !== "Game Mode")
+              // 2) on n’affiche pas le thème temporaire Bad Apple si non chargé
+              .filter(t => t !== TEMP_THEME_KEY)
+              .map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))
+            }
+          </select>
             {Object.keys(THEMES).map((t) => (
               <option key={t}>{t}</option>
             ))}
