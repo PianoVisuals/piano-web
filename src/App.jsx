@@ -356,8 +356,6 @@ export default function App(){
       Tone.Transport.stop();
       setPlaying(false);
 
-      if (THEMES[TEMP_THEME_KEY]) {
-            delete THEMES[TEMP_THEME_KEY];
 
 
       // 2) Vide les données MIDI pour empêcher tout rendu de barres
@@ -366,6 +364,24 @@ export default function App(){
 
       // 3) Relâche toutes les touches encore actives
       clearAllActive();
+    }
+  }, [mode]);
+
+
+  useEffect(() => {
+    if (mode === "rythme") {
+      // on entre en Game Mode : on s’assure de virer Bad Apple
+      if (THEMES[TEMP_THEME_KEY]) {
+        delete THEMES[TEMP_THEME_KEY];
+        // si tu es encore sur ce thème, on remet Classic
+        if (theme === TEMP_THEME_KEY) {
+          setTheme("Classic");
+        }
+      }
+      setTheme("Game Mode");
+    } else {
+      // retour Piano : on force Classic
+      setTheme("Classic");
     }
   }, [mode]);
 
