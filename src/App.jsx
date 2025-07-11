@@ -542,7 +542,7 @@ export default function App(){
 
 
   const borderColor = "#ffffff";   // contour noir, ou une couleur de ton thème
-  const borderWidth = 1.5;      // épaisseur en pixels
+  const borderWidth = 1;      // épaisseur en pixels
 
 
   // play / pause --------------------------------------------------- ---------------------------------------------------
