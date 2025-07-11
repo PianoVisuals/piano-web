@@ -696,34 +696,22 @@ export default function App(){
 
     // ─── Endless Mode bars ───
     if (endlessActive) {
-      // descendre et dessiner chaque barre
-      const newNotes = [];
-      for (const note of fallingNotes) {
-        const xEl = document.querySelector(`[data-midi='${note.midi}']`);
-        if (!xEl) continue;
-        const rect = xEl.getBoundingClientRect();
-        const x = rect.left + (rect.width*0.9)/2;
-        const baseSpeed = { easy:1.5, normal:2.5, hard:4.0 }[difficulty];
-        const speed     = baseSpeed * 0.05;   // ralentit la chute (~2.5× plus lent)
-        note.y += speed;
-        // dessiner un cercle ou barre fine
+      fallingNotes.forEach(note => {
+        const keyEl = document.querySelector(`[data-midi='${note.midi}']`);
+        if (!keyEl) return;
+        const rect = keyEl.getBoundingClientRect();
+        const barWidth  = rect.width * 0.6;
+        const barHeight = parseFloat(getComputedStyle(document.documentElement)
+                             .getPropertyValue("--white-h")) * 2;
+        const x = rect.left + (rect.width - barWidth)/2;
+        const y = note.y;
         ctx.fillStyle = getComputedStyle(document.documentElement)
-                        .getPropertyValue(note.midi%12<5?"--bar-w":"--bar-b");
-        const barHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")) * 2;
-        const barWidth  = rect.width * 0.6;                    // un peu plus fin que la touche
-        const xPos      = rect.left + (rect.width - barWidth)/2;
-        const yPos      = note.y - barHeight;                  // on part de note.y en bas
-        ctx.fillRect(xPos, yPos, barWidth, barHeight);
-        // garder si pas hors écran
-        if (note.y < window.innerHeight) newNotes.push(note);
-        else {
-          // note missée
-          setCombo(0);
-          setHealth(h=>Math.max(0,h - 0.05));
-          setScore(s=>s - 10);
-        }
-      }
-      setFallingNotes(newNotes);
+                         .getPropertyValue(
+                           WHITE.includes(note.midi%12)?"--bar-w":"--bar-b"
+                         );
+        ctx.fillRect(x, y - barHeight, barWidth, barHeight);
+      });
+      // on continue vers le reste (MIDI) si besoin
     }
 
 
@@ -813,27 +801,51 @@ export default function App(){
 
   useEffect(() => {
     if (!endlessActive) return;
-    const interval = {
+  
+    // 1) spawn à fréquence réglée
+    const spawnInterval = {
       easy:   600,
-      normal:  400,
-      hard:    250
+      normal: 400,
+      hard:   250
     }[difficulty];
-
-    const spawn = () => {
-      // choisir midi aléatoire
+  
+    const spawnId = setInterval(() => {
       const pool = whiteOnly
-        ? KEYS.filter(m=>WHITE.includes(m%12))
+        ? KEYS.filter(m => WHITE.includes(m % 12))
         : KEYS;
       const midi = pool[Math.floor(Math.random()*pool.length)];
-
       setFallingNotes(notes => [
         ...notes,
-        { midi, y: 0, hit: false }
+        { midi, y: 0 }
       ]);
+    }, spawnInterval);
+  
+    // 2) déplacement en boucle (60fps)
+    const speedMap = { easy:1.5, normal:2.5, hard:4.0 };
+    const speed = speedMap[difficulty] * 0.4; // ajusté
+  
+    const moveId = setInterval(() => {
+      setFallingNotes(notes => {
+        // barHeight pour durée de vie
+        const barH = parseFloat(getComputedStyle(document.documentElement)
+                          .getPropertyValue("--white-h")) * 2;
+        return notes
+          .map(n => ({ ...n, y: n.y + speed }))
+          .filter(n => {
+            if (n.y < window.innerHeight + barH) return true;
+            // hors écran → MISS
+            setCombo(0);
+            setHealth(h => Math.max(0, h - 0.05));
+            setScore(s => s - 10);
+            return false;
+          });
+      });
+    }, 1000/60);
+  
+    return () => {
+      clearInterval(spawnId);
+      clearInterval(moveId);
     };
-
-    const id = setInterval(spawn, interval);
-    return () => clearInterval(id);
   }, [endlessActive, difficulty, whiteOnly]);
 
 
