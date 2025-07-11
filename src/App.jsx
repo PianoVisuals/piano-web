@@ -234,6 +234,9 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
+  const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
+
+
 
   // pour gérer le thème temporaire de Bad Apple
   const prevThemeRef = useRef(null);
@@ -695,6 +698,12 @@ const labelByMidi = useMemo(() => {
   // keys render ----------------------------------------------------
   const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
 
+
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-mode", mode);
+  }, [mode]);
+
   return(<>
  <style>{`
 
@@ -944,6 +953,10 @@ const labelByMidi = useMemo(() => {
 
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
 
+    <button onClick={() => setMode(m => m === "piano" ? "rythme" : "piano")}>
+      {mode === "piano" ? "Mode Jeu" : "Retour Piano"}
+    </button>
+
     <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
@@ -975,9 +988,20 @@ const labelByMidi = useMemo(() => {
     </details>
   </div>
 
-  <canvas ref={canvasRef}></canvas>
-
-  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-  
-  </>);
-}
+  {mode === "piano" ? (
+  /* ==== ÉCRAN PIANO ==== */
+  <>
+    <canvas ref={canvasRef}></canvas>
+    <div className="piano" ref={pianoRef}>
+      {keys}
+    </div>
+  </>
+) : (
+  /* ==== ÉCRAN JEU DE RYTHME ==== */
+  <>
+    <canvas ref={canvasRef}></canvas>
+    <div className="piano" ref={pianoRef}>
+      {keys}
+    </div>
+  </>
+)}
