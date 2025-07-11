@@ -924,6 +924,19 @@ const labelByMidi = useMemo(() => {
   }
 
 
+  @media (pointer: coarse) and (orientation: portrait) {
+    /* en mode Jeu (rythme), on force chaque touche à 2× la hauteur normale */
+    :root[data-mode="rythme"] .piano .white,
+    :root[data-mode="rythme"] .piano .black {
+      height: calc(var(--white-h) * 2) !important;
+    }
+    /* ajuste aussi le conteneur piano si besoin */
+    :root[data-mode="rythme"] .piano {
+      height: calc(var(--white-h) * 2) !important;
+    }
+  }
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
