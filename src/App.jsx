@@ -259,21 +259,22 @@ export default function App(){
 
   // réinitialise l'état pour revenir à l'écran vide
   const unloadMidi = () => {
-    // Stoppe la lecture
+    // 1) Stoppe la lecture
     Tone.Transport.stop();
     setPlaying(false);
 
-    // Si on venait de Bad Apple, restaure l’ancien thème
+    // 2) Si on venait de Bad Apple, restaure l’ancien thème et nettoie
     if (prevThemeRef.current !== null) {
       setTheme(prevThemeRef.current);
       prevThemeRef.current = null;
+      delete THEMES[TEMP_THEME_KEY];
     }
 
-    // Vide le MIDI et la progression
+    // 3) Réinitialise les données
     setMidiData(null);
     setProgress(0);
 
-    // Relâche toutes les touches
+    // 4) Relâche toutes les touches actives
     clearAllActive();
   };
 
@@ -281,44 +282,43 @@ export default function App(){
   // À placer DANS ton composant App(), à l’endroit où tu as défini loadDemo
   const loadDemo = async (name) => {
     try {
+      // 1) Charger le fichier depuis /demos/
       const res = await fetch(`/demos/${encodeURIComponent(name)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const arr = await res.arrayBuffer();
       const midi = new Midi(arr);
+
+      // 2) Mettre à jour l’état et préparer la lecture
       setMidiData(midi);
       setDuration(midi.duration + LEAD);
       preparePart(midi);
 
+      // 3) Gestion du thème spécial Bad Apple
       if (name === "Bad Apple!!.mid") {
-        // Si on n'a pas encore stocké un thème précédent, on le fait
-        if (prevThemeRef.current === null) {
-          prevThemeRef.current = theme;
-        }
-        // Applique le thème Bad Apple
-        const t = BAD_APPLE_THEME;
-        Object.entries({
-          bg: t.bg,
-          "bar-w": t.barW,
-          "bar-b": t.barB,
-          "act-w": t.actW,
-          "act-b": t.actB
-        }).forEach(([k, v]) =>
-
-        );
+        // injecte le thème temporaire dans l’objet THEMES
+        THEMES[TEMP_THEME_KEY] = BAD_APPLE_THEME;
+        // mémorise le thème courant
+        prevThemeRef.current = theme;
+        // active le thème Bad Apple
+        setTheme(TEMP_THEME_KEY);
       } else {
-        // Pour toute autre musique, si on venait de Bad Apple, on restaure
+        // si on venait de Bad Apple, restaure l’ancien thème et nettoie
         if (prevThemeRef.current !== null) {
           setTheme(prevThemeRef.current);
           prevThemeRef.current = null;
+          delete THEMES[TEMP_THEME_KEY];
         }
       }
 
+      // 4) Fermer la pop-up
       closeLibrary();
     } catch (err) {
-      console.error(err);
-      alert("Impossible de charger " + name);
+      console.error("Erreur loadDemo :", err);
+      alert("Impossible de charger le morceau : " + name);
       closeLibrary();
     }
   };
+
 
 
   useEffect(() => {
