@@ -265,7 +265,7 @@ export default function App(){
   // clé et définition du thème “Game Mode”
   const GAME_THEME_KEY = "Game Mode";
   const GAME_THEME = {
-    bg: "#222",        // fond sombre spécifique
+    bg: "#ffffff",        // fond sombre spécifique
     barW: "rgba(255,50,50,0.7)",  // barre rougeoyante
     barB: "rgba(200,0,0,0.7)",
     actW: "#ff5050",   // touches actives rouge
