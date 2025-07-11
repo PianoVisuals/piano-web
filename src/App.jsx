@@ -73,7 +73,24 @@ const GAME_MIDIS = new Set(
 );
 
 // ===== Responsiveness (CSS vars) =========================================
-
+const setCSSVars = () => {
+  const vw = window.innerWidth;
+  const safeLeft = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("env(safe-area-inset-left,0px)")) || 0;
+  const safeRight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("env(safe-area-inset-right,0px)")) || 0;
+  const usable = vw - safeLeft - safeRight;
+  const whiteW = Math.floor(usable / 52);
+  const whiteH = whiteW * 4;
+  const vars = {
+    "--white-w": `${whiteW}px`,
+    "--white-h": `${whiteH}px`,
+    "--black-w": `${Math.round(whiteW * 0.6)}px`,
+    "--black-h": `${Math.round(whiteH * 0.6)}px`,
+    "--black-shift": `-${Math.round(whiteW * 0.3)}px`
+  };
+  for (const [k, v] of Object.entries(vars)) document.documentElement.style.setProperty(k, v);
+};
+window.addEventListener("resize", setCSSVars);
+setCSSVars();
 
 // ===== Instruments SoundFont =============================================
 const BASE = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
@@ -205,45 +222,6 @@ async function loadDemo(name) {
 
 
 export default function App(){
-
-
-  useEffect(() => {
-    const updateVars = () => {
-      const vw = window.innerWidth;
-      const safeLeft = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("env(safe-area-inset-left,0px)")) || 0;
-      const safeRight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("env(safe-area-inset-right,0px)")) || 0;
-      const usable = vw - safeLeft - safeRight;
-      // Toujours calculer la largeur d'une blanche sur 52 touches
-      const whiteW = Math.floor(usable / 52);
-      // Par défaut, hauteur = 4× largeur
-      let whiteH = whiteW * 4;
-
-      // En mode Jeu ET portrait tactile, on double la hauteur
-      if (
-        mode === "rythme" &&
-        window.matchMedia("(pointer: coarse) and (orientation: portrait)").matches
-      ) {
-        whiteH = whiteW * 8; // deux fois plus haut
-        }
-
-      const vars = {
-        "--white-w": `${whiteW}px`,
-        "--white-h": `${whiteH}px`,
-        "--black-w": `${Math.round(whiteW * 0.6)}px`,
-        "--black-h": `${Math.round(whiteH * 0.6)}px`,
-        "--black-shift": `-${Math.round(whiteW * 0.3)}px`
-      };
-      for (const [k, v] of Object.entries(vars)) {
-        document.documentElement.style.setProperty(k, v);
-      }
-    };
-
-    window.addEventListener("resize", updateVars);
-    updateVars();
-    return () => window.removeEventListener("resize", updateVars);
-  }, [mode]);
-
-
   // refs & state ----------------------------------------------------
   const pianoRef=useRef(null); const canvasRef=useRef(null);
   const synthRef=useRef(null); const partRef=useRef(null);
@@ -261,8 +239,6 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
   const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
-
-
 
 
 
@@ -957,6 +933,14 @@ const labelByMidi = useMemo(() => {
     /* ajuste aussi le conteneur piano si besoin */
     :root[data-mode="rythme"] .piano {
       height: calc(var(--white-h) * 2) !important;
+    }
+  }
+
+
+  @media (pointer: coarse) and (orientation: portrait) {
+    :root[data-mode="rythme"] .piano {
+      /* ici 50vh, tu peux ajuster à 40vh, 60vh selon ton goût */
+      height: 50vh !important;
     }
   }
 
