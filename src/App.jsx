@@ -253,6 +253,41 @@ export default function App(){
 
 
 
+  const onHit = (midi) => {
+    // Position d’impact (juste au-dessus du piano)
+    const impactY = window.innerHeight
+      - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")) / 2;
+
+    let bestNote = null, bestDist = Infinity;
+    for (const note of fallingNotes) {
+      if (note.midi !== midi) continue;
+      const dist = Math.abs(note.y - impactY);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestNote = note;
+      }
+    }
+
+    if (bestNote && bestDist < 30) {
+      // HIT
+      setFallingNotes(ns => ns.filter(n => n !== bestNote));
+      const diffMult = { easy: 0.5, normal: 1, hard: 2 }[difficulty];
+      const whiteMult = whiteOnly ? 0.5 : 1;
+      setScore(s => s + Math.round(100 * diffMult * whiteMult));
+      setCombo(c => c + 1);
+      setHealth(h => Math.min(1, h + 0.01 * combo));
+    } else {
+      // MISS
+      setScore(s => s - 10);
+      setCombo(0);
+      setHealth(h => Math.max(0, h - 0.05));
+    }
+  };
+
+
+
+
+
   const [endlessSettingsOpen, setEndlessSettingsOpen] = useState(false);
   const [endlessActive, setEndlessActive]       = useState(false);
   const [difficulty, setDifficulty]             = useState("normal"); // “easy” | “normal” | “hard”
@@ -658,6 +693,41 @@ export default function App(){
       return;  // on sort avant de dessiner les barres MIDI
     }
 
+
+    // ─── Endless Mode bars ───
+    if (endlessActive) {
+      // descendre et dessiner chaque barre
+      const newNotes = [];
+      for (const note of fallingNotes) {
+        const xEl = document.querySelector(`[data-midi='${note.midi}']`);
+        if (!xEl) continue;
+        const rect = xEl.getBoundingClientRect();
+        const x = rect.left + (rect.width*0.9)/2;
+        const speed = {
+          easy:   1.5,
+          normal: 2.5,
+          hard:   4.0
+        }[difficulty];
+        note.y += speed;
+        // dessiner un cercle ou barre fine
+        ctx.fillStyle = getComputedStyle(document.documentElement)
+                        .getPropertyValue(note.midi%12<5?"--bar-w":"--bar-b");
+        ctx.beginPath();
+        ctx.arc(x, note.y, rect.width*0.3, 0,Math.PI*2);
+        ctx.fill();
+        // garder si pas hors écran
+        if (note.y < window.innerHeight) newNotes.push(note);
+        else {
+          // note missée
+          setCombo(0);
+          setHealth(h=>Math.max(0,h - 0.05));
+          setScore(s=>s - 10);
+        }
+      }
+      setFallingNotes(newNotes);
+    }
+
+
     // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
     if (midiData) {
       midiData.tracks.forEach(tr => {
@@ -758,31 +828,55 @@ export default function App(){
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
-      if(e.code === 'Space') { // Espace = Play/Pause si un fichier est chargé
-        if(midiData){ e.preventDefault(); togglePlay(); }
+      // 1) Gestion Espace pour Play/Pause MIDI (mode Piano)
+      if (e.code === "Space") {
+        if (midiData && mode === "piano") {
+          e.preventDefault();
+          togglePlay();
+        }
         return;
       }
-      if (e.repeat) return;
+  
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
+  
+      // 2) Endless Mode actif → on score la frappe
+      if (mode === "rythme" && endlessActive) {
+        onHit(midi);
+        return;
+      }
+  
+      // 3) Mode Piano (ou Game Mode inactif) → ancien comportement
+      if (e.repeat) return;
       if (kbdSet.current.has(midi)) return;
       kbdSet.current.add(midi);
       synthRef.current.triggerAttack(note);
       highlight(midi, true);
     };
+
     const up = (e) => {
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
-      kbdSet.current.delete(midi);
-      synthRef.current.triggerRelease(note);
-      highlight(midi, false);
+  
+      // Mode Piano → release normal
+      if (mode === "piano") {
+        kbdSet.current.delete(midi);
+        synthRef.current.triggerRelease(note);
+        highlight(midi, false);
+      }
+      // En Endless, on ne gère pas le release (pas de son)
     };
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, []);
+  
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, [mode, endlessActive, midiData]);
+
 
   // --- Web MIDI ----------------------------------------------------
   useEffect(()=>{
