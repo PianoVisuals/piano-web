@@ -727,6 +727,34 @@ export default function App(){
   };
 
 
+
+  useEffect(() => {
+    if (!endlessActive) return;
+    const interval = {
+      easy:   1200,
+      normal:  800,
+      hard:    500
+    }[difficulty];
+
+    const spawn = () => {
+      // choisir midi aléatoire
+      const pool = whiteOnly
+        ? KEYS.filter(m=>WHITE.includes(m%12))
+        : KEYS;
+      const midi = pool[Math.floor(Math.random()*pool.length)];
+
+      setFallingNotes(notes => [
+        ...notes,
+        { midi, y: 0, hit: false }
+      ]);
+    };
+
+    const id = setInterval(spawn, interval);
+    return () => clearInterval(id);
+  }, [endlessActive, difficulty, whiteOnly]);
+
+
+
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
@@ -1084,6 +1112,15 @@ const labelByMidi = useMemo(() => {
   }
   .endless-menu fieldset { border:1px solid #555; padding:0.5rem; }
 
+
+  .health-bar {
+    width:100px; height:8px; background:#444; border:1px solid #222;
+    margin-left:0.5rem;
+  }
+  .health-bar .fill {
+    height:100%; background:#0f0; transition:width 0.1s;
+  }
+
 `}</style>
 
 
@@ -1256,6 +1293,17 @@ const labelByMidi = useMemo(() => {
         />
       </>
     )}
+
+    {mode==="rythme" && endlessActive && (
+      <>
+        <div>Score: {score}</div>
+        <div>Combo: {combo}</div>
+        <div className="health-bar">
+          <div className="fill" style={{ width: `${health*100}%` }}></div>
+        </div>
+      </>
+    )}
+
 
     {mode === "rythme" && !endlessSettingsOpen && !endlessActive && (
       <button onClick={() => setEndlessSettingsOpen(true)}>
