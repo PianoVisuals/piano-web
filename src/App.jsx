@@ -943,15 +943,15 @@ const labelByMidi = useMemo(() => {
   }
 
   @media (pointer: coarse) and (orientation: portrait) {
-    /* 1) Barre d’options en bas */
+    /* Barre d’options collée en bas */
     :root[data-mode="rythme"] .top {
       bottom: 0 !important;
       top: auto !important;
     }
-  
-    /* 2) Piano juste au-dessus de la barre */
+
+    /* Piano juste au-dessus de la barre (2.5rem = hauteur estimée de .top) */
     :root[data-mode="rythme"] .piano {
-      bottom: 10px !important; /* ← décale vers le haut */
+      bottom: 2rem !important;
       top: auto !important;
     }
   }
