@@ -726,7 +726,11 @@ const labelByMidi = useMemo(() => {
  <style>{`
 
 
-
+  :root[data-mode="rythme"] {
+    --white-w: 40px;
+    --white-h: 160px;
+  }
+  [data-mode="rythme"] .black { display: none; }
 
 
 
