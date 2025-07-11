@@ -927,29 +927,19 @@ const labelByMidi = useMemo(() => {
 
 
   @media (pointer: coarse) and (orientation: portrait) {
-    :root[data-mode="rythme"] .piano {
-      /* ici 50vh, tu peux ajuster à 40vh, 60vh selon ton goût */
-      height: 50vh !important;
-    }
-  }
-
-  @media (pointer: coarse) and (orientation: portrait) {
+    /* 1) On fixe la hauteur des touches à 15 vh */
     :root[data-mode="rythme"] {
-      /* On fixe la hauteur des touches à 15 vh */
       --white-h: 15vh !important;
-      /* noire à 60 % de la blanche */
       --black-h: calc(15vh * 0.6) !important;
     }
-  }
 
-  @media (pointer: coarse) and (orientation: portrait) {
-    /* Barre d’options collée en bas */
+    /* 2) Barre d’options collée en bas */
     :root[data-mode="rythme"] .top {
       bottom: 0 !important;
       top: auto !important;
     }
 
-    /* Piano juste au-dessus de la barre (2.5rem = hauteur estimée de .top) */
+    /* 3) Piano juste au-dessus de la barre (2rem = hauteur de la .top) */
     :root[data-mode="rythme"] .piano {
       bottom: 2rem !important;
       top: auto !important;
