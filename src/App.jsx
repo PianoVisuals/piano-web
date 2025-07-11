@@ -241,21 +241,21 @@ export default function App(){
 
   // réinitialise l'état pour revenir à l'écran vide
   const unloadMidi = () => {
-    // stop de la lecture
+    // Stoppe la lecture
     Tone.Transport.stop();
     setPlaying(false);
 
-    // rétablit le thème d’avant si on sort de Bad Apple
-    if (prevThemeRef.current) {
+    // Si on venait de Bad Apple, restaure l’ancien thème
+    if (prevThemeRef.current !== null) {
       setTheme(prevThemeRef.current);
       prevThemeRef.current = null;
     }
 
-    // vide les données MIDI et progress
+    // Vide le MIDI et la progression
     setMidiData(null);
     setProgress(0);
 
-    // relâche toutes les touches
+    // Relâche toutes les touches
     clearAllActive();
   };
 
@@ -263,22 +263,19 @@ export default function App(){
   // À placer DANS ton composant App(), à l’endroit où tu as défini loadDemo
   const loadDemo = async (name) => {
     try {
-      // 1) Chargement du fichier MIDI depuis /demos/
       const res = await fetch(`/demos/${encodeURIComponent(name)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const arr = await res.arrayBuffer();
       const midi = new Midi(arr);
-
-      // 2) Mise à jour de l’état
       setMidiData(midi);
       setDuration(midi.duration + LEAD);
       preparePart(midi);
 
-      // 3) Gestion du thème spécial Bad Apple!!.mid
       if (name === "Bad Apple!!.mid") {
-        // mémorise l’ancien thème
-        prevThemeRef.current = theme;
-        // applique directement le thème spécial (sans passer par setTheme)
+        // Si on n'a pas encore stocké un thème précédent, on le fait
+        if (prevThemeRef.current === null) {
+          prevThemeRef.current = theme;
+        }
+        // Applique le thème Bad Apple
         const t = BAD_APPLE_THEME;
         Object.entries({
           bg: t.bg,
@@ -289,17 +286,18 @@ export default function App(){
         }).forEach(([k, v]) =>
           document.documentElement.style.setProperty(`--${k}`, v)
         );
-      } else if (prevThemeRef.current) {
-        // on revient au thème enregistré si on change de morceau
-        setTheme(prevThemeRef.current);
-        prevThemeRef.current = null;
+      } else {
+        // Pour toute autre musique, si on venait de Bad Apple, on restaure
+        if (prevThemeRef.current !== null) {
+          setTheme(prevThemeRef.current);
+          prevThemeRef.current = null;
+        }
       }
 
-      // 4) Ferme la fenêtre pop-up
       closeLibrary();
     } catch (err) {
-      console.error("Erreur lors du chargement de la démo :", err);
-      alert("Impossible de charger le morceau : " + name);
+      console.error(err);
+      alert("Impossible de charger " + name);
       closeLibrary();
     }
   };
