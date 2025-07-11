@@ -46,6 +46,10 @@ const THEMES = {
   "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
 };
 
+
+
+
+
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
@@ -256,6 +260,41 @@ export default function App(){
 
 
   const TEMP_THEME_KEY = "Bad Apple";
+
+
+  // clé et définition du thème “Game Mode”
+  const GAME_THEME_KEY = "Game Mode";
+  const GAME_THEME = {
+    bg: "#222",        // fond sombre spécifique
+    barW: "rgba(255,50,50,0.7)",  // barre rougeoyante
+    barB: "rgba(200,0,0,0.7)",
+    actW: "#ff5050",   // touches actives rouge
+    actB: "#cc0000"
+  };
+
+  // on garde en mémoire le thème actif avant de passer en mode Jeu
+  const prevThemeRef = useRef(null);
+
+
+
+  useEffect(() => {
+    if (mode === "rythme") {
+      // mémorise le thème courant
+      prevThemeRef.current = theme;
+      // injecte le thème Game Mode dans le global THEMES
+      THEMES[GAME_THEME_KEY] = GAME_THEME;
+      // active le thème Game Mode
+      setTheme(GAME_THEME_KEY);
+    } else {
+      // on revient en Mode Piano : restaure l’ancien thème
+      if (prevThemeRef.current !== null) {
+        setTheme(prevThemeRef.current);
+        // on nettoie l’injection
+        delete THEMES[GAME_THEME_KEY];
+        prevThemeRef.current = null;
+      }
+    }
+  }, [mode]);
 
 
 
