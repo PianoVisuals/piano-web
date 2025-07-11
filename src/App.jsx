@@ -620,51 +620,87 @@ export default function App(){
 
   
   const drawBars = () => {
-    if (!canvasRef.current) return;
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const W = (canvas.width = window.innerWidth);
     const H = (canvas.height = window.innerHeight);
     ctx.clearRect(0, 0, W, H);
   
-    // ────── 1) Endless Mode ──────
+    // hauteur d'une touche blanche (CSS var)
+    const whiteH = parseFloat(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--white-h")
+    );
+  
+    // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
+    if (!midiData) {
+      const pressedMidis = [
+        ...kbdSet.current,
+        ...Array.from(pointerMap.current.values()),
+      ];
+      if (pressedMidis.length > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, W, H); // pas de clip, on monte jusqu'en haut
+        ctx.clip();
+  
+        pressedMidis.forEach((midi) => {
+          const keyEl = document.querySelector(`[data-midi='${midi}']`);
+          if (!keyEl) return;
+          const rect = keyEl.getBoundingClientRect();
+          const barW = rect.width * 0.9;
+          const x = rect.left + (rect.width - barW) / 2;
+          const barH = rect.top; // du bas du clavier jusqu'en haut
+          const yTop = 0;
+          // dégradé inversé (clair en haut)
+          const baseColor = WHITE.includes(midi % 12)
+            ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
+            : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+          const grad = ctx.createLinearGradient(0, yTop, 0, rect.top);
+          grad.addColorStop(0, "rgba(255,255,255,0.2)");
+          grad.addColorStop(1, baseColor);
+  
+          ctx.shadowColor = baseColor;
+          ctx.shadowBlur = 8;
+          ctx.globalAlpha = 0.8;
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, yTop, barW, barH);
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+        });
+  
+        ctx.restore();
+        // on continue : on ne return pas, pour que endless ou MIDI puissent dessiner aussi
+      }
+    }
+  
+    // ─── 2) BARRES ENDLESS MODE ───
     if (endlessActive) {
       ctx.save();
-      // Pas de clip ici : on dessine sur toute la surface
-      const whiteH = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
-      );
-      const barH = whiteH * 2;  // 2× la hauteur d'une touche
-  
+      // pas de clip
+      const barH = whiteH * 2;
       fallingNotes.forEach((note) => {
         const keyEl = document.querySelector(`[data-midi='${note.midi}']`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
-  
         const barW = rect.width * 0.6;
         const x = rect.left + (rect.width - barW) / 2;
         const y = note.y;
-  
-        // couleur selon blanche/noire
         const baseColor = WHITE.includes(note.midi % 12)
           ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
           : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
         ctx.fillStyle = baseColor;
-  
-        // dessin du rectangle de la barre
         ctx.fillRect(x, y - barH, barW, barH);
-  
         // contour
-        ctx.lineWidth = borderWidth;
-        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "#000";
         ctx.strokeRect(x, y - barH, barW, barH);
       });
-  
       ctx.restore();
-      // On ne return pas ici pour permettre éventuellement le dessin MIDI après
     }
   
-    // ────── 2) Barres MIDI ──────
+    // ─── 3) BARRES MIDI ───
     if (midiData) {
       const pianoRect = pianoRef.current.getBoundingClientRect();
       const keysY = pianoRect.top;
@@ -681,18 +717,14 @@ export default function App(){
           const impact = n.time + LEAD;
           const remaining = impact - t;
           if (remaining < -n.duration || remaining > LEAD) return;
-  
           const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
           if (!keyEl) return;
           const rect = keyEl.getBoundingClientRect();
-  
           const barW = rect.width * 0.9;
           const x = rect.left + (rect.width - barW) / 2;
           const yBottom = (1 - remaining / LEAD) * path;
           const barH = n.duration * (path / LEAD);
           const yTop = yBottom - barH;
-  
-          // dégradé inversé (clair en haut)
           const baseColor = WHITE.includes(n.midi % 12)
             ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
             : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
@@ -720,10 +752,8 @@ export default function App(){
   
           ctx.fillStyle = grad;
           ctx.fill();
-  
-          // contour
-          ctx.lineWidth = borderWidth;
-          ctx.strokeStyle = borderColor;
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "#000";
           ctx.stroke();
   
           ctx.shadowBlur = 0;
@@ -735,9 +765,7 @@ export default function App(){
     }
   };
   
-
-  
-  // Hook animation (toujours appeler drawBars tant qu'endlessActive)
+  // ==== Hook animation ====
   useEffect(() => {
     if (!endlessActive) return;
     let rafId;
@@ -749,11 +777,10 @@ export default function App(){
     return () => cancelAnimationFrame(rafId);
   }, [endlessActive, fallingNotes, midiData]);
   
-  // Hook spawn & move
+  // ==== Hook spawn & move ====
   useEffect(() => {
     if (!endlessActive) return;
-  
-    // fréquence d'apparition
+    // spawn
     const spawnIntervalMap = { easy: 600, normal: 400, hard: 250 };
     const spawnId = setInterval(() => {
       const pool = whiteOnly
@@ -763,7 +790,7 @@ export default function App(){
       setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
     }, spawnIntervalMap[difficulty]);
   
-    // déplacement & suppression
+    // move & cleanup
     const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
     const speed = baseSpeedMap[difficulty] * 0.4;
     const moveId = setInterval(() => {
