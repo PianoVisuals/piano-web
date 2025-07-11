@@ -272,8 +272,6 @@ export default function App(){
     actB: "#cc0000"
   };
 
-  // on garde en mémoire le thème actif avant de passer en mode Jeu
-  const prevThemeRef = useRef(null);
 
 
 
