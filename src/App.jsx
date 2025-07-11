@@ -10,11 +10,10 @@ const DEMOS = [
   "Lacrimosa - Mozart.mid",
   "Clair de Lune - Debussy.mid",
   "Moonlight Sonata - Beethoven.mid",
-  "Prelude n15 op28 \"Raindrop\" - Chopin.mid",
   "Serenade - Schubert.mid",
   "Gravity Falls Opening Theme Song.mid",
   "Vogel im Käfig - Attack on Titan.mid",
-  "Bad Apple!!.mid",
+  "Bad Apple.mid",
   "Rush E.mid",
   "Lilium - Elfen Lied.mid",
   "Alone - SOMA.mid",
@@ -279,7 +278,7 @@ export default function App(){
     }
 
     // 2) cas Bad Apple
-    if (name === "Bad Apple!!.mid") {
+    if (name === "Bad Apple.mid") {
       // on sauvegarde l’actuel pour pouvoir revenir
       setPrevTheme(theme);
       setTheme("BadApple");                      // nom interne, pas dans THEME keys
