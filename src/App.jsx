@@ -703,18 +703,17 @@ export default function App(){
         if (!xEl) continue;
         const rect = xEl.getBoundingClientRect();
         const x = rect.left + (rect.width*0.9)/2;
-        const speed = {
-          easy:   1.5,
-          normal: 2.5,
-          hard:   4.0
-        }[difficulty];
+        const baseSpeed = { easy:1.5, normal:2.5, hard:4.0 }[difficulty];
+        const speed     = baseSpeed * 0.2;   // ralentit la chute (~2.5× plus lent)
         note.y += speed;
         // dessiner un cercle ou barre fine
         ctx.fillStyle = getComputedStyle(document.documentElement)
                         .getPropertyValue(note.midi%12<5?"--bar-w":"--bar-b");
-        ctx.beginPath();
-        ctx.arc(x, note.y, rect.width*0.3, 0,Math.PI*2);
-        ctx.fill();
+        const barHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")) * 2;
+        const barWidth  = rect.width * 0.6;                    // un peu plus fin que la touche
+        const xPos      = rect.left + (rect.width - barWidth)/2;
+        const yPos      = note.y - barHeight;                  // on part de note.y en bas
+        ctx.fillRect(xPos, yPos, barWidth, barHeight);
         // garder si pas hors écran
         if (note.y < window.innerHeight) newNotes.push(note);
         else {
@@ -815,9 +814,9 @@ export default function App(){
   useEffect(() => {
     if (!endlessActive) return;
     const interval = {
-      easy:   1200,
-      normal:  800,
-      hard:    500
+      easy:   600,
+      normal:  400,
+      hard:    250
     }[difficulty];
 
     const spawn = () => {
