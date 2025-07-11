@@ -50,18 +50,7 @@ const THEMES = {
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
 const WHITE = [0, 2, 4, 5, 7, 9, 11];
-const keys = (mode === "piano" ? KEYS : Array.from(GAME_MIDIS))
-  .map(m => (
-    <div
-      key={m}
-      data-midi={m}
-      className={WHITE.includes(m % 12) ? "white key" : "black key"}
-    >
-      {labelByMidi[m] && <span className="label">{labelByMidi[m]}</span>}
-    </div>
-  ));
-
-
+const KEYS     = Array.from({length:NOTE_MAX-NOTE_MIN+1},(_,i)=>NOTE_MIN+i);
 // Pré‑calcul index des touches blanches pour un alignement parfait
 const WHITE_INDEX = {};
 let wIdx = 0;
@@ -76,12 +65,6 @@ for (let m = NOTE_MIN; m <= NOTE_MAX; m++) {
 const PC_MAP = {
   KeyA: "C4", KeyW: "C#4", KeyS: "D4", KeyE: "D#4", KeyD: "E4", KeyF: "F4", KeyT: "F#4", KeyG: "G4", KeyY: "G#4", KeyH: "A4", KeyU: "A#4", KeyJ: "B4", KeyK: "C5", KeyO: "C#5", KeyL: "D5", KeyP: "D#5", Semicolon: "E5"
 };
-
-const GAME_MIDIS = useMemo(
-  () => new Set(Object.values(PC_MAP).map(note => n2m(note))),
-  []
-);
-
 const n2m = n => Tone.Frequency(n).toMidi();
 const m2n = m => Tone.Frequency(m, "midi").toNote();
 
