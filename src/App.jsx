@@ -272,27 +272,14 @@ export default function App(){
     actB: "#cc0000"
   };
 
-
-
-
   useEffect(() => {
-    if (mode === "rythme") {
-      // mémorise le thème courant
-      prevThemeRef.current = theme;
-      // injecte le thème Game Mode dans le global THEMES
-      THEMES[GAME_THEME_KEY] = GAME_THEME;
-      // active le thème Game Mode
-      setTheme(GAME_THEME_KEY);
-    } else {
-      // on revient en Mode Piano : restaure l’ancien thème
-      if (prevThemeRef.current !== null) {
-        setTheme(prevThemeRef.current);
-        // on nettoie l’injection
-        delete THEMES[GAME_THEME_KEY];
-        prevThemeRef.current = null;
-      }
+    if (mode === "piano") {
+      setTheme("Classic");
     }
   }, [mode]);
+
+
+
 
 
 
