@@ -1116,7 +1116,7 @@ const labelByMidi = useMemo(() => {
                 <option key={t} value={t}>{t}</option>
               ))
             }
-          </select>
+
             {Object.keys(THEMES).map((t) => (
               <option key={t}>{t}</option>
             ))}
