@@ -281,6 +281,24 @@ export default function App(){
   }, [mode]);
 
 
+  useEffect(() => {
+    if (mode === "rythme") {
+      // on entre en Game Mode : on s’assure de virer Bad Apple
+      if (THEMES[TEMP_THEME_KEY]) {
+        delete THEMES[TEMP_THEME_KEY];
+        // si tu es encore sur ce thème, on remet Classic
+        if (theme === TEMP_THEME_KEY) {
+          setTheme("Classic");
+        }
+      }
+      setTheme("Game Mode");
+    } else {
+      // retour Piano : on force Classic
+      setTheme("Classic");
+    }
+  }, [mode]);
+
+
 
   const fileInputRef = useRef(null);
   // pour afficher/masquer la pop-up de choix
@@ -356,32 +374,12 @@ export default function App(){
       Tone.Transport.stop();
       setPlaying(false);
 
-
-
       // 2) Vide les données MIDI pour empêcher tout rendu de barres
       setMidiData(null);
       setProgress(0);
 
       // 3) Relâche toutes les touches encore actives
       clearAllActive();
-    }
-  }, [mode]);
-
-
-  useEffect(() => {
-    if (mode === "rythme") {
-      // on entre en Game Mode : on s’assure de virer Bad Apple
-      if (THEMES[TEMP_THEME_KEY]) {
-        delete THEMES[TEMP_THEME_KEY];
-        // si tu es encore sur ce thème, on remet Classic
-        if (theme === TEMP_THEME_KEY) {
-          setTheme("Classic");
-        }
-      }
-      setTheme("Game Mode");
-    } else {
-      // retour Piano : on force Classic
-      setTheme("Classic");
     }
   }, [mode]);
 
@@ -1116,11 +1114,8 @@ const labelByMidi = useMemo(() => {
                 <option key={t} value={t}>{t}</option>
               ))
             }
-
-            {Object.keys(THEMES).map((t) => (
-              <option key={t}>{t}</option>
-            ))}
           </select>
+
         </label>
   
         <label>
