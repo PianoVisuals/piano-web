@@ -997,8 +997,8 @@ const labelByMidi = useMemo(() => {
 
   <button
     className="toggle-bar"
-  - onClick={() => setIsBarCollapsed(b => !b)}
-  + onClick={toggleFullScreenBar}
+    onClick={() => setIsBarCollapsed(b => !b)}
+    onClick={toggleFullScreenBar}
     aria-label={isBarCollapsed ? "Show options" : "Hide options"}
   >
     {isBarCollapsed ? ">" : "<"}
