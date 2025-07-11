@@ -777,9 +777,10 @@ const labelByMidi = useMemo(() => {
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
-  const keys = (mode === "piano"
+    const keys = (mode === "piano"
     ? KEYS
-    : KEYS.filter(m => GAME_MIDIS.has(m))
+    : // mode “rythme” → intersection octave × clavier
+      OCTAVE_MIDIS.filter(m => GAME_MIDIS.has(m))
   ).map(m => (
     <div
       key={m}
