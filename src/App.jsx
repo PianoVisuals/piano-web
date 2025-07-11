@@ -241,19 +241,22 @@ export default function App(){
 
   // réinitialise l'état pour revenir à l'écran vide
   const unloadMidi = () => {
-    // stoppe le transport si nécessaire
+    // stop de la lecture
     Tone.Transport.stop();
     setPlaying(false);
-    // vide les données MIDI
-    setMidiData(null);
-    // remet la barre de progression à zéro
-    setProgress(0);
-    // relâche toutes les touches en cas de restes bloquées
-    clearAllActive();
+
+    // rétablit le thème d’avant si on sort de Bad Apple
     if (prevThemeRef.current) {
       setTheme(prevThemeRef.current);
       prevThemeRef.current = null;
     }
+
+    // vide les données MIDI et progress
+    setMidiData(null);
+    setProgress(0);
+
+    // relâche toutes les touches
+    clearAllActive();
   };
 
 
@@ -366,7 +369,7 @@ const BAD_APPLE_THEME = {
   barW: "rgba(0,0,0,1)",
   barB: "rgba(0,0,0,1)",
   actW: "#000000",
-  actB: "#f0f0f0"
+  actB: "#d2d2d2"
 };
 
 
