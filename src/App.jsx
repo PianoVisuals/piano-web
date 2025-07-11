@@ -275,11 +275,11 @@ export default function App(){
   useEffect(() => {
     if (mode === "piano") {
       setTheme("Classic");
+    } else {
+      // si tu veux un thème spécifique en jeu, par exemple "Game Mode"
+      setTheme("Game Mode");
     }
   }, [mode]);
-
-
-
 
 
 
