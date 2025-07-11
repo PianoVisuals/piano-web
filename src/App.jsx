@@ -68,7 +68,9 @@ const PC_MAP = {
 const n2m = n => Tone.Frequency(n).toMidi();
 const m2n = m => Tone.Frequency(m, "midi").toNote();
 
-
+const GAME_MIDIS = new Set(
+  Object.values(PC_MAP).map(note => Tone.Frequency(note).toMidi())
+);
 
 // ===== Responsiveness (CSS vars) =========================================
 const setCSSVars = () => {
