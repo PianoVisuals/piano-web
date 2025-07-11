@@ -704,7 +704,7 @@ export default function App(){
         const rect = xEl.getBoundingClientRect();
         const x = rect.left + (rect.width*0.9)/2;
         const baseSpeed = { easy:1.5, normal:2.5, hard:4.0 }[difficulty];
-        const speed     = baseSpeed * 0.2;   // ralentit la chute (~2.5× plus lent)
+        const speed     = baseSpeed * 0.05;   // ralentit la chute (~2.5× plus lent)
         note.y += speed;
         // dessiner un cercle ou barre fine
         ctx.fillStyle = getComputedStyle(document.documentElement)
