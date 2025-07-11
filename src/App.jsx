@@ -327,6 +327,22 @@ export default function App(){
   };
 
 
+  useEffect(() => {
+    if (mode === "rythme") {
+      // 1) Stoppe la lecture en cours
+      Tone.Transport.stop();
+      setPlaying(false);
+
+      // 2) Vide les données MIDI pour empêcher tout rendu de barres
+      setMidiData(null);
+      setProgress(0);
+
+      // 3) Relâche toutes les touches encore actives
+      clearAllActive();
+    }
+  }, [mode]);
+
+
 
   useEffect(() => {
     const onClickOutside = e => {
