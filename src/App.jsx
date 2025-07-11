@@ -249,21 +249,54 @@ export default function App(){
     setProgress(0);
     // relâche toutes les touches en cas de restes bloquées
     clearAllActive();
+    if (prevThemeRef.current) {
+      setTheme(prevThemeRef.current);
+      prevThemeRef.current = null;
+    }
   };
 
 
+  // À placer DANS ton composant App(), à l’endroit où tu as défini loadDemo
   const loadDemo = async (name) => {
     try {
+      // 1) Chargement du fichier MIDI depuis /demos/
       const res = await fetch(`/demos/${encodeURIComponent(name)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const arr = await res.arrayBuffer();
       const midi = new Midi(arr);
+
+      // 2) Mise à jour de l’état
       setMidiData(midi);
       setDuration(midi.duration + LEAD);
       preparePart(midi);
+
+      // 3) Gestion du thème spécial Bad Apple!!.mid
+      if (name === "Bad Apple!!.mid") {
+        // mémorise l’ancien thème
+        prevThemeRef.current = theme;
+        // applique directement le thème spécial (sans passer par setTheme)
+        const t = BAD_APPLE_THEME;
+        Object.entries({
+          bg: t.bg,
+          "bar-w": t.barW,
+          "bar-b": t.barB,
+          "act-w": t.actW,
+          "act-b": t.actB
+        }).forEach(([k, v]) =>
+          document.documentElement.style.setProperty(`--${k}`, v)
+        );
+      } else if (prevThemeRef.current) {
+        // on revient au thème enregistré si on change de morceau
+        setTheme(prevThemeRef.current);
+        prevThemeRef.current = null;
+      }
+
+      // 4) Ferme la fenêtre pop-up
       closeLibrary();
     } catch (err) {
-      console.error("Erreur loadDemo:", err);
-      alert("Impossible de charger le MIDI : " + name);
+      console.error("Erreur lors du chargement de la démo :", err);
+      alert("Impossible de charger le morceau : " + name);
+      closeLibrary();
     }
   };
 
@@ -321,6 +354,20 @@ export default function App(){
       window.removeEventListener("blur", onBlur);
     };
   }, []);
+
+
+// pour gérer le thème temporaire de Bad Apple
+const prevThemeRef = useRef(null);
+
+// définition du thème « spécial »
+const BAD_APPLE_THEME = {
+  bg: "#ffffff",
+  barW: "rgba(0,0,0,1)",
+  barB: "rgba(0,0,0,1)",
+  actW: "#000000",
+  actB: "#ffffff"
+};
+
 
 
   // appliquer thème -------------------------------------------------
