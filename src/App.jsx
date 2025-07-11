@@ -735,7 +735,7 @@ export default function App(){
     }
   };
   
-  Et voici les deux hooks pour spawning et animation :
+
   
   // Hook animation (toujours appeler drawBars tant qu'endlessActive)
   useEffect(() => {
