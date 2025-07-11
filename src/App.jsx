@@ -49,7 +49,7 @@ const THEMES = {
 
 // Inscrire immédiatement le thème Game Mode
 THEMES["Game Mode"] = {
-  bg: "#ffffff",
+  bg: "#6164ce",
   barW: "rgba(255,50,50,0.7)",
   barB: "rgba(200,0,0,0.7)",
   actW: "#ff5050",
