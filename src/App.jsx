@@ -989,19 +989,20 @@ const labelByMidi = useMemo(() => {
   </div>
 
   {mode === "piano" ? (
-  /* ==== ÉCRAN PIANO ==== */
-  <>
-    <canvas ref={canvasRef}></canvas>
-    <div className="piano" ref={pianoRef}>
-      {keys}
-    </div>
-  </>
-) : (
-  /* ==== ÉCRAN JEU DE RYTHME ==== */
-  <>
-    <canvas ref={canvasRef}></canvas>
-    <div className="piano" ref={pianoRef}>
-      {keys}
-    </div>
-  </>
-)}
+    /* ==== ÉCRAN PIANO ==== */
+    <>
+      <canvas ref={canvasRef}></canvas>
+      <div className="piano" ref={pianoRef}>
+        {keys}
+      </div>
+    </>
+  ) : (
+    /* ==== ÉCRAN JEU DE RYTHME ==== */
+    <>
+      <canvas ref={canvasRef}></canvas>
+      <div className="piano" ref={pianoRef}>
+        {keys}
+      </div>
+    </>
+  )}
+}
