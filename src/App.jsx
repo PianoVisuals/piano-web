@@ -573,7 +573,7 @@ export default function App(){
           ctx.globalAlpha = 0.9;
 
           // coins arrondis
-          const radius = Math.min(barWidth, 8);
+          const radius = Math.min(barWidth / 2, barHeight / 2, 8);
           ctx.beginPath();
           ctx.moveTo(x + radius, yTop);
           ctx.lineTo(x + barWidth - radius, yTop);
