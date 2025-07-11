@@ -612,9 +612,10 @@ export default function App(){
 
         // dégradé opaque
         const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-        grad.addColorStop(1, "rgba(255,255,255,0)");
-
-        grad.addColorStop(0, baseColor);
+        // 0 → en haut : transparent clair
+        grad.addColorStop(0, "rgba(255,255,255,0.2)");
+        // 1 → en bas : couleur pleine
+        grad.addColorStop(1, baseColor);
 
         // ombre portée
         ctx.shadowColor = baseColor;
