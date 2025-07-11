@@ -383,7 +383,24 @@ export default function App(){
     };
   }, []);
 
-
+  const toggleFullScreenBar = () => {
+    // si on va cacher la barre, on entre en plein écran
+    if (!isBarCollapsed) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen(); // Safari
+      }
+    } else {
+      // sinon on sort du plein écran
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (document.webkitFullscreenElement) {
+        document.webkitExitFullscreen();
+      }
+    }
+    setIsBarCollapsed(b => !b);
+  };
 
 
   // appliquer thème -------------------------------------------------
@@ -980,7 +997,8 @@ const labelByMidi = useMemo(() => {
 
   <button
     className="toggle-bar"
-    onClick={() => setIsBarCollapsed(b => !b)}
+  - onClick={() => setIsBarCollapsed(b => !b)}
+  + onClick={toggleFullScreenBar}
     aria-label={isBarCollapsed ? "Show options" : "Hide options"}
   >
     {isBarCollapsed ? ">" : "<"}
