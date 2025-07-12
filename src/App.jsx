@@ -445,6 +445,12 @@ export default function App(){
   }, []);
 
 
+  useEffect(() => {
+    const staticModal = document.getElementById("modal");
+    if (staticModal) {
+      staticModal.style.display = "none";
+    }
+  }, []);
 
 
   // appliquer thème -------------------------------------------------
@@ -1041,7 +1047,6 @@ const labelByMidi = useMemo(() => {
       <summary>ⓘ</summary>
       <div
           className="about-content"
-          // pour que ton JSX accepte le HTML dans les paragraphes
           dangerouslySetInnerHTML={{
             __html: `<h4>${title}</h4>` +
                     paragraphs.map(p => `<p>${p}</p>`).join("")
