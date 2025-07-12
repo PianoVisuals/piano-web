@@ -239,14 +239,6 @@ export default function App(){
 
   const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
 
-  const highlight = (midi, on) => {
-    // toujours faire le toggle, quelle que soit la valeur de mode
-    document
-      .querySelector(`[data-midi='${midi}']`)
-      ?.classList.toggle("active", on);
-  };
-
-
   const pianoRef=useRef(null); const canvasRef=useRef(null);
   const synthRef=useRef(null); const partRef=useRef(null);
   const pointerMap=useRef(new Map()); const kbdSet=useRef(new Set());
@@ -601,8 +593,8 @@ export default function App(){
     // décale de LEAD pour que le son démarre quand les barres touchent le clavier
     partRef.current = new Tone.Part((time, note) => {
       synthRef.current.triggerAttackRelease(note.name, note.duration, time, note.velocity);
-      Tone.Draw.schedule(() => highlight(n2m(note.name), true), time);
-      Tone.Draw.schedule(() => highlight(n2m(note.name), false), time + note.duration);
+      Tone.Draw.schedule(()=>highlight(n2m(note.name),true),time);
+      Tone.Draw.schedule(()=>highlight(n2m(note.name),false),time+note.duration);
     }, events.map(n => ({ time: n.time + LEAD, name: n.name, duration: n.duration, velocity: n.velocity })));
 
     partRef.current.start(0);
@@ -652,7 +644,7 @@ export default function App(){
     );
   
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-    if (mode === "piano" && !midiData) {
+    if (!midiData) {
       const pressedMidis = [
         ...kbdSet.current,
         ...Array.from(pointerMap.current.values()),
@@ -843,38 +835,43 @@ export default function App(){
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
-    const down = (e) => {
-      if (e.repeat) return;
-      const note = PC_MAP[e.code];
-      if (!note) return;
-      const midi = Tone.Frequency(note).toMidi();
-
-      // on joue toujours le son
-      synthRef.current.triggerAttack(note);
-
-      // surbrillance uniquement en mode piano
-      highlight(midi, true);
-
-      // mémorisation pour release plus tard
-      kbdSet.current.add(midi);
+    const down = e => {
+      // … votre logique de synthé/game…
+      if (mode === "piano") {
+        // attaque + highlight
+        const note = PC_MAP[e.code];
+        if (!note) return;
+        const midi = n2m(note);
+        if (kbdSet.current.has(midi)) return;
+        kbdSet.current.add(midi);
+        synthRef.current.triggerAttack(note);
+        highlight(midi, true);
+      } else {
+        // mode jeu → uniquement onHit, pas de highlight
+        const note = PC_MAP[e.code];
+        if (!note) return;
+        onHit(n2m(note));
+      }
     };
-    const up = (e) => {
+  
+    const up = e => {
+      if (mode !== "piano") return;
+      // ————— mode Piano seulement : release + un-highlight
       const note = PC_MAP[e.code];
       if (!note) return;
-      const midi = Tone.Frequency(note).toMidi();
-
+      const midi = n2m(note);
+      kbdSet.current.delete(midi);
       synthRef.current.triggerRelease(note);
       highlight(midi, false);
-      kbdSet.current.delete(midi);
     };
-
+  
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [highlight]);
+  }, [mode, midiData]);
 
 
   // --- Web MIDI ----------------------------------------------------
@@ -905,13 +902,22 @@ export default function App(){
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
 
-
-  const pDown = e => {
+    const highlight = (m, on) => {
+      if (mode !== "piano") return;
+      document
+        .querySelector(`[data-midi='${m}']`)
+        ?.classList.toggle("active", on);
+    };
+    const pDown = e => {
     const midi = midiAt(e.clientX, e.clientY);
     if (midi == null) return;
-    synthRef.current.triggerAttack(Tone.Frequency(midi, "midi").toNote());
-    highlight(midi, true);
+  
     pointerMap.current.set(e.pointerId, midi);
+    synthRef.current.triggerAttack(m2n(midi));
+  
+    // highlight uniquement en mode piano
+    if (mode === "piano") highlight(midi, true);
+  
     pianoRef.current.setPointerCapture(e.pointerId);
   };
   
@@ -934,13 +940,13 @@ export default function App(){
 
   const pUp = e => {
     const midi = pointerMap.current.get(e.pointerId);
+    pointerMap.current.delete(e.pointerId);
     if (midi != null) {
-      synthRef.current.triggerRelease(Tone.Frequency(midi, "midi").toNote());
-      highlight(midi, false);
-      pointerMap.current.delete(e.pointerId);
+      synthRef.current.triggerRelease(m2n(midi));
+      if (mode === "piano") highlight(midi, false);
     }
   };
-
+  
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
 
@@ -987,12 +993,6 @@ const labelByMidi = useMemo(() => {
  <style>{`
 
 
-  :root[data-mode="rythme"] .active.white,
-  :root[data-mode="rythme"] .active.black {
-    /* on retire fond + lueur */
-    background: none !important;
-    box-shadow: none !important;
-  }
 
 
 
@@ -1251,11 +1251,6 @@ const labelByMidi = useMemo(() => {
   .health-bar .fill {
     height:100%; background:#0f0; transition:width 0.1s;
   }
-
-
-
-
-
 
 `}</style>
 
