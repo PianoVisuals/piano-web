@@ -27,32 +27,16 @@
       padding-top: 2rem;
     }
 
-    /* Bouton info */
-    #info-btn {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 1.5rem;
-      cursor: pointer;
-      z-index: 10;
-    }
-
-    /* Overlay modal */
+    /* Overlay modal affiché par défaut */
     #modal {
-      display: none;
+      display: flex;
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.8);
       justify-content: center;
       align-items: center;
       padding: 1rem;
-      z-index: 9;
-    }
-    #modal.open {
-      display: flex;
+      z-index: 999;
     }
 
     /* Contenu modal */
@@ -93,10 +77,7 @@
 </head>
 
 <body>
-  <!-- Bouton pour ouvrir le modal -->
-  <button id="info-btn" aria-label="About">ⓘ</button>
-
-  <!-- Fenêtre modale -->
+  <!-- Fenêtre modale affichée au démarrage -->
   <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
       <button class="close-btn" aria-label="Close">×</button>
@@ -136,16 +117,12 @@
   <script type="module" src="/src/main.jsx"></script>
 
   <script>
-    // Contrôles du modal
-    const infoBtn = document.getElementById('info-btn');
+    // Bouton pour fermer la modal une seule fois
     const modal   = document.getElementById('modal');
     const closeBtn = modal.querySelector('.close-btn');
 
-    infoBtn.addEventListener('click', () => modal.classList.add('open'));
-    closeBtn.addEventListener('click', () => modal.classList.remove('open'));
-    // Fermer aussi si on clique en dehors du contenu
-    modal.addEventListener('click', e => {
-      if (e.target === modal) modal.classList.remove('open');
+    closeBtn.addEventListener('click', () => {
+      modal.remove(); // supprime complètement la modal, impossible de rouvrir
     });
   </script>
 </body>
