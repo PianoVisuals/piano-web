@@ -845,13 +845,13 @@ const labelByMidi = useMemo(() => {
 
   .about-content {
     font-size: 0.9rem;        /* taille de police 90 % de la normale */
-    line-height: 1.4;         /* pour compacter un peu l’interligne */
+    line-height: 1;         /* pour compacter un peu l’interligne */
     max-height: 70vh;         /* hauteur maxi pour ne pas dépasser */
     overflow-y: auto;         /* scroll si trop long */
     padding-right: 0.5rem;    /* pour le scroll */
   }
   .about-content h4 {
-    font-size: 1.7rem;        /* titre un peu plus petit aussi */
+    font-size: 4rem;        /* titre un peu plus petit aussi */
     margin-bottom: 1rem;
   }
   .about-content p {
