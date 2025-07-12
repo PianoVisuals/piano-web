@@ -634,7 +634,46 @@ export default function App(){
     );
   
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-
+    if (!midiData) {
+      const pressedMidis = [
+        ...kbdSet.current,
+        ...Array.from(pointerMap.current.values()),
+      ];
+      if (pressedMidis.length > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, W, H); // pas de clip, on monte jusqu'en haut
+        ctx.clip();
+  
+        pressedMidis.forEach((midi) => {
+          const keyEl = document.querySelector(`[data-midi='${midi}']`);
+          if (!keyEl) return;
+          const rect = keyEl.getBoundingClientRect();
+          const barW = rect.width * 0.9;
+          const x = rect.left + (rect.width - barW) / 2;
+          const barH = rect.top; // du bas du clavier jusqu'en haut
+          const yTop = 0;
+          // dégradé inversé (clair en haut)
+          const baseColor = WHITE.includes(midi % 12)
+            ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
+            : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+          const grad = ctx.createLinearGradient(0, yTop, 0, rect.top);
+          grad.addColorStop(0, "rgba(255,255,255,0.2)");
+          grad.addColorStop(1, baseColor);
+  
+          ctx.shadowColor = baseColor;
+          ctx.shadowBlur = 8;
+          ctx.globalAlpha = 0.8;
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, yTop, barW, barH);
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+        });
+  
+        ctx.restore();
+        // on continue : on ne return pas, pour que endless ou MIDI puissent dessiner aussi
+      }
+    }
   
     // ─── 2) BARRES ENDLESS MODE ───
     if (endlessActive) {
@@ -736,7 +775,7 @@ export default function App(){
     };
     loop();
     return () => cancelAnimationFrame(rafId);
-  }, [endlessActive, mode, midiData]);
+  }, [endlessActive, fallingNotes, midiData]);
   
   // ==== Hook spawn & move ====
   useEffect(() => {
