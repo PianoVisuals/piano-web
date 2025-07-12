@@ -239,7 +239,7 @@ export default function App(){
 
 
 
-  const aboutRef = useRef(null);
+
 
   // 1) Détection de la langue
   const isFr = navigator.language && navigator.language.startsWith("fr");
