@@ -995,27 +995,27 @@ const labelByMidi = useMemo(() => {
         <h4>About This Site</h4>
 
         <p>
-          Piano Visuals brings a realistic virtual piano right into your browser. Built
-          with React and Tone.js, it supports touch, computer keyboard, and USB-MIDI
-          controllers for an authentic playing experience. You can import your own
-          MIDI files or choose from a growing library of demo songs, instantly
-          visualizing each note as it lights up on the full-screen keyboard.
+          At the top you’ll see a little piano icon that lights up whenever a USB-MIDI keyboard is plugged in (note: MIDI detection is not supported in Firefox).  
+          Next, use the Theme dropdown to switch between dark, neon, retro and other visual styles.  
+          The Instrument menu lets you choose from acoustic grand piano, harpsichord, banjo, violin—and over 50 more soundfonts.  
+          Toggle Sustain on or off, adjust the volume slider, and hit Play to start or pause playback.
         </p>
 
         <p>
-          The responsive design adapts seamlessly to desktops, tablets, and mobile
-          devices in both landscape and portrait modes. Volume and sustain controls
-          let you shape your sound, while customizable themes and instrument voices
-          (piano, harpsichord, banjo, violin, etc.) allow for endless creative
-          exploration.
+          Click “Load…” to import your own .mid files from your computer, or choose one of the built-in demos.  
+          Once a file is loaded, a progress bar appears—drag it to scrub through the song and watch each note light up its key in perfect sync with the animated falling bars.
         </p>
 
         <p>
-          We update the site regularly with new demo tracks, improved sound
-          libraries, and performance optimizations. Whether you’re learning to read
-          music, practicing for a recital, or just having fun, Piano Visuals aims to
-          make playing and studying piano more accessible than ever.
+          If you’re looking for more MIDI tracks, check out sites like <a href="https://bitmidi.com" target="_blank" rel="noopener">BitMidi</a> or
+          <a href="https://freemidi.org" target="_blank" rel="noopener">FreeMIDI.org</a>.
+          Simply download any .mid, then import it here to instantly visualize and play along..
         </p>
+        <p>
+          Whether you’re practicing scales, rehearsing a recital, or just exploring new tunes, 
+          Midi Piano Web Visual puts a fully customizable, interactive piano studio right in your browser.
+        </p>
+
       </div>
     </details>
   </div>
