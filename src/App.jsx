@@ -296,8 +296,7 @@ export default function App(){
   const [score, setScore]       = useState(0);
   const [combo, setCombo]       = useState(0);
   const [health, setHealth]     = useState(1);    // 0→1 barre de vie
-  const fallingNotesRef = useRef([]);
-  const [, setTick] = useState(0);  // juste pour forcer un render périodique
+  const [fallingNotes, setFallingNotes] = useState([]); // liste des notes à l’écran
 
 
 
