@@ -46,18 +46,6 @@ const THEMES = {
   "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
 };
 
-
-// Inscrire immédiatement le thème Game Mode
-THEMES["Game Mode"] = {
-  bg: "#32347e",
-  barW: "rgba(255,50,50,0.7)",
-  barB: "rgba(200,0,0,0.7)",
-  actW: "#ff5050",
-  actB: "#cc0000"
-};
-
-
-
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
@@ -79,10 +67,6 @@ const PC_MAP = {
 };
 const n2m = n => Tone.Frequency(n).toMidi();
 const m2n = m => Tone.Frequency(m, "midi").toNote();
-
-const GAME_MIDIS = new Set(
-  Object.values(PC_MAP).map(note => Tone.Frequency(note).toMidi())
-);
 
 // ===== Responsiveness (CSS vars) =========================================
 const setCSSVars = () => {
@@ -247,71 +231,9 @@ export default function App(){
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [progress,setProgress]=useState(0);
-
-
-
-
-
-
-  const onHit = (midi) => {
-    // Position d’impact (juste au-dessus du piano)
-    const impactY = window.innerHeight
-      - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")) / 2;
-
-    let bestNote = null, bestDist = Infinity;
-    for (const note of fallingNotes) {
-      if (note.midi !== midi) continue;
-      const dist = Math.abs(note.y - impactY);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestNote = note;
-      }
-    }
-
-    if (bestNote && bestDist < 30) {
-      // HIT
-      setFallingNotes(ns => ns.filter(n => n !== bestNote));
-      const diffMult = { easy: 0.5, normal: 1, hard: 2 }[difficulty];
-      const whiteMult = whiteOnly ? 0.5 : 1;
-      setScore(s => s + Math.round(100 * diffMult * whiteMult));
-      setCombo(c => c + 1);
-      setHealth(h => Math.min(1, h + 0.01 * combo));
-    } else {
-      // MISS
-      setScore(s => s - 10);
-      setCombo(0);
-      setHealth(h => Math.max(0, h - 0.05));
-    }
-  };
-
-
-
-
-
-  const [endlessSettingsOpen, setEndlessSettingsOpen] = useState(false);
-  const [endlessActive, setEndlessActive]       = useState(false);
-  const [difficulty, setDifficulty]             = useState("normal"); // “easy” | “normal” | “hard”
-  const [whiteOnly, setWhiteOnly]               = useState(false);
-
-  const [score, setScore]       = useState(0);
-  const [combo, setCombo]       = useState(0);
-  const [health, setHealth]     = useState(1);    // 0→1 barre de vie
-  const [fallingNotes, setFallingNotes] = useState([]); // liste des notes à l’écran
-
-
-
-
-
-
-
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
-  const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
-
-  const OCTAVE_START = Tone.Frequency("C4").toMidi();
-  // les 12 notes de C4 à B4
-  const OCTAVE_MIDIS = Array.from({ length: 12 }, (_, i) => OCTAVE_START + i);
 
   // pour gérer le thème temporaire de Bad Apple
   const prevThemeRef = useRef(null);
@@ -327,35 +249,6 @@ export default function App(){
 
 
   const TEMP_THEME_KEY = "Bad Apple";
-
-
-
-  useEffect(() => {
-    if (mode === "piano") {
-      setTheme("Classic");
-    } else {
-      // si tu veux un thème spécifique en jeu, par exemple "Game Mode"
-      setTheme("Game Mode");
-    }
-  }, [mode]);
-
-
-  useEffect(() => {
-    if (mode === "rythme") {
-      // on entre en Game Mode : on s’assure de virer Bad Apple
-      if (THEMES[TEMP_THEME_KEY]) {
-        delete THEMES[TEMP_THEME_KEY];
-        // si tu es encore sur ce thème, on remet Classic
-        if (theme === TEMP_THEME_KEY) {
-          setTheme("Classic");
-        }
-      }
-      setTheme("Game Mode");
-    } else {
-      // retour Piano : on force Classic
-      setTheme("Classic");
-    }
-  }, [mode]);
 
 
 
@@ -427,22 +320,6 @@ export default function App(){
   };
 
 
-  useEffect(() => {
-    if (mode === "rythme") {
-      // 1) Stoppe la lecture en cours
-      Tone.Transport.stop();
-      setPlaying(false);
-
-      // 2) Vide les données MIDI pour empêcher tout rendu de barres
-      setMidiData(null);
-      setProgress(0);
-
-      // 3) Relâche toutes les touches encore actives
-      clearAllActive();
-    }
-  }, [mode]);
-
-
 
   useEffect(() => {
     const onClickOutside = e => {
@@ -482,7 +359,6 @@ export default function App(){
 
 
 
-
   useEffect(() => {
     const onBlur = () => {
       // pareil : release toutes les notes en cours
@@ -499,24 +375,7 @@ export default function App(){
     };
   }, []);
 
-  const toggleFullScreenBar = () => {
-    // si on va cacher la barre, on entre en plein écran
-    if (!isBarCollapsed) {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen(); // Safari
-      }
-    } else {
-      // sinon on sort du plein écran
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else if (document.webkitFullscreenElement) {
-        document.webkitExitFullscreen();
-      }
-    }
-    setIsBarCollapsed(b => !b);
-  };
+
 
 
   // appliquer thème -------------------------------------------------
@@ -598,8 +457,7 @@ export default function App(){
   };
 
 
-  const borderColor = "#afafaf";   // contour noir, ou une couleur de ton thème
-  const borderWidth = 1;      // épaisseur en pixels
+
 
 
   // play / pause --------------------------------------------------- ---------------------------------------------------
@@ -618,230 +476,156 @@ export default function App(){
   // ==== Falling bars =============================================
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
 
-  
   const drawBars = () => {
+    if (!canvasRef.current) return;       // on ne bloque plus sur midiData
     const canvas = canvasRef.current;
-    if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const W = (canvas.width = window.innerWidth);
-    const H = (canvas.height = window.innerHeight);
+    const W = canvas.width = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
-  
-    // hauteur d'une touche blanche (CSS var)
-    const whiteH = parseFloat(
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--white-h")
-    );
-  
-    // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-    if (!midiData) {
-      const pressedMidis = [
-        ...kbdSet.current,
-        ...Array.from(pointerMap.current.values()),
-      ];
-      if (pressedMidis.length > 0) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, W, H); // pas de clip, on monte jusqu'en haut
-        ctx.clip();
-  
-        pressedMidis.forEach((midi) => {
-          const keyEl = document.querySelector(`[data-midi='${midi}']`);
-          if (!keyEl) return;
-          const rect = keyEl.getBoundingClientRect();
-          const barW = rect.width * 0.9;
-          const x = rect.left + (rect.width - barW) / 2;
-          const barH = rect.top; // du bas du clavier jusqu'en haut
-          const yTop = 0;
-          // dégradé inversé (clair en haut)
-          const baseColor = WHITE.includes(midi % 12)
-            ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
-            : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-          const grad = ctx.createLinearGradient(0, yTop, 0, rect.top);
-          grad.addColorStop(0, "rgba(255,255,255,0.2)");
-          grad.addColorStop(1, baseColor);
-  
-          ctx.shadowColor = baseColor;
-          ctx.shadowBlur = 8;
-          ctx.globalAlpha = 0.8;
-          ctx.fillStyle = grad;
-          ctx.fillRect(x, yTop, barW, barH);
-          ctx.shadowBlur = 0;
-          ctx.globalAlpha = 1;
-        });
-  
-        ctx.restore();
-        // on continue : on ne return pas, pour que endless ou MIDI puissent dessiner aussi
-      }
-    }
-  
-    // ─── 2) BARRES ENDLESS MODE ───
-    if (endlessActive) {
-      ctx.save();
-      // pas de clip
-      const barH = whiteH * 2;
-      fallingNotes.forEach((note) => {
-        const keyEl = document.querySelector(`[data-midi='${note.midi}']`);
+
+    // position du haut du piano
+    const pianoRect = pianoRef.current?.getBoundingClientRect();
+    const keysY = pianoRect
+      ? pianoRect.top
+      : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
+    const path = keysY;
+
+    const t = Tone.Transport.seconds;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, W, keysY);
+    ctx.clip();
+
+    // ─── GESTION DES BARRES MONTANTES ───
+    // on récupère toutes les notes enfoncées (clavier + tactile)
+    const pressedMidis = [
+      ...kbdSet.current,
+      ...Array.from(pointerMap.current.values())
+    ];
+
+    // si aucune musique n'est chargée ET qu'on a des touches pressées
+    if (!midiData && pressedMidis.length > 0) {
+      pressedMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi="${midi}"]`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
-        const barW = rect.width * 0.6;
-        const x = rect.left + (rect.width - barW) / 2;
-        const y = note.y;
-        const baseColor = WHITE.includes(note.midi % 12)
+
+        // ajustements de largeur et position X
+        const barWidth = rect.width * 0.9;
+        const x = rect.left + (rect.width - barWidth) / 2;
+
+        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
+        const yBottom = rect.top;
+        const barHeight = yBottom;
+        const yTop = 0;
+
+        // couleur selon note blanche ou noire
+        const baseColor = WHITE.includes(midi % 12)
           ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
           : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-        ctx.fillStyle = baseColor;
-        ctx.fillRect(x, y - barH, barW, barH);
-        // contour
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = "#000";
-        ctx.strokeRect(x, y - barH, barW, barH);
+
+        // dégradé opaque
+        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+        grad.addColorStop(0, baseColor);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+
+        // ombre portée
+        ctx.shadowColor = baseColor;
+        ctx.shadowBlur  = 8;
+        ctx.globalAlpha = 0.8;
+
+        // dessin
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, yTop, barWidth, barHeight);
+
+        // reset
+        ctx.shadowBlur  = 0;
+        ctx.globalAlpha = 1;
       });
+
       ctx.restore();
+      return;  // on sort avant de dessiner les barres MIDI
     }
-  
-    // ─── 3) BARRES MIDI ───
+
+    // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
     if (midiData) {
-      const pianoRect = pianoRef.current.getBoundingClientRect();
-      const keysY = pianoRect.top;
-      const path = keysY;
-      const t = Tone.Transport.seconds;
-  
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 0, W, keysY);
-      ctx.clip();
-  
-      midiData.tracks.forEach((tr) =>
-        tr.notes.forEach((n) => {
+      midiData.tracks.forEach(tr => {
+        tr.notes.forEach(n => {
           const impact = n.time + LEAD;
           const remaining = impact - t;
           if (remaining < -n.duration || remaining > LEAD) return;
+
           const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
           if (!keyEl) return;
           const rect = keyEl.getBoundingClientRect();
-          const barW = rect.width * 0.9;
-          const x = rect.left + (rect.width - barW) / 2;
+
+          // ajustement largeur comme précédemment
+          const barWidth = rect.width * 0.9;
+          const x = rect.left + (rect.width - barWidth) / 2;
+
           const yBottom = (1 - remaining / LEAD) * path;
-          const barH = n.duration * (path / LEAD);
-          const yTop = yBottom - barH;
+          const barHeight = n.duration * (path / LEAD);
+          const yTop = yBottom - barHeight;
+
+          // couleur et dégradé
           const baseColor = WHITE.includes(n.midi % 12)
             ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
             : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
           const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-          grad.addColorStop(0, "rgba(255,255,255,0.2)");
-          grad.addColorStop(1, baseColor);
-  
+          grad.addColorStop(0, baseColor);
+          grad.addColorStop(1, "rgba(255,255,255,0.2)");
+
+          // ombre et alpha
           ctx.shadowColor = "rgba(0,0,0,0.4)";
-          ctx.shadowBlur = 6;
+          ctx.shadowBlur  = 6;
           ctx.globalAlpha = 0.9;
-  
+
           // coins arrondis
-          const radius = Math.min(barW / 2, barH / 2, 8);
+          const radius = Math.min(barWidth / 2, barHeight / 2, 8);
           ctx.beginPath();
           ctx.moveTo(x + radius, yTop);
-          ctx.lineTo(x + barW - radius, yTop);
-          ctx.quadraticCurveTo(x + barW, yTop, x + barW, yTop + radius);
-          ctx.lineTo(x + barW, yBottom - radius);
-          ctx.quadraticCurveTo(x + barW, yBottom, x + barW - radius, yBottom);
+          ctx.lineTo(x + barWidth - radius, yTop);
+          ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
+          ctx.lineTo(x + barWidth, yBottom - radius);
+          ctx.quadraticCurveTo(x + barWidth, yBottom, x + barWidth - radius, yBottom);
           ctx.lineTo(x + radius, yBottom);
           ctx.quadraticCurveTo(x, yBottom, x, yBottom - radius);
           ctx.lineTo(x, yTop + radius);
           ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
           ctx.closePath();
-  
+
           ctx.fillStyle = grad;
           ctx.fill();
-          ctx.lineWidth = 1.5;
-          ctx.strokeStyle = "#000";
-          ctx.stroke();
   
-          ctx.shadowBlur = 0;
+          // reset
+          ctx.shadowBlur  = 0;
           ctx.globalAlpha = 1;
-        })
-      );
-  
-      ctx.restore();
+        });
+      });
     }
-  };
-  
-  // ==== Hook animation ====
-  useEffect(() => {
-    if (!endlessActive) return;
-    let rafId;
-    const loop = () => {
-      drawBars();
-      rafId = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => cancelAnimationFrame(rafId);
-  }, [endlessActive, fallingNotes, midiData]);
-  
-  // ==== Hook spawn & move ====
-  useEffect(() => {
-    if (!endlessActive) return;
-    // spawn
-    const spawnIntervalMap = { easy: 2000, normal: 1000, hard: 500 };
-    const spawnId = setInterval(() => {
-      const pool = (whiteOnly
-          ? OCTAVE_MIDIS.filter((m) => WHITE.includes(m % 12))
-          : OCTAVE_MIDIS
-      ).filter((m) => GAME_MIDIS.has(m)); // et on garde la map clavier
-      const midi = pool[Math.floor(Math.random() * pool.length)];
-      setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
-    }, spawnIntervalMap[difficulty]);
-  
-    // move & cleanup
-    const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
-    const speed = baseSpeedMap[difficulty];
-    const moveId = setInterval(() => {
-      const whiteH = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
-      );
-      const barH = whiteH * 2;
-      setFallingNotes((notes) =>
-        notes
-          .map((n) => ({ ...n, y: n.y + speed }))
-          .filter((n) => {
-            if (n.y < window.innerHeight + barH) return true;
-            // MISS
-            setCombo(0);
-            setHealth((h) => Math.max(0, h - 0.05));
-            setScore((s) => s - 10);
-            return false;
-          })
-      );
-    }, 1000 / 60);
-  
-    return () => {
-      clearInterval(spawnId);
-      clearInterval(moveId);
-    };
-  }, [endlessActive, difficulty, whiteOnly]);
 
+    ctx.restore();
+  };
 
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
+      if(e.code === 'Space') { // Espace = Play/Pause si un fichier est chargé
+        if(midiData){ e.preventDefault(); togglePlay(); }
+        return;
+      }
+      if (e.repeat) return;
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
-  
-      // 1) Si on est en mode rythme ET endless actif, on gère le hit
-      if (mode === "rythme" && endlessActive) {
-        onHit(midi);
-        return; // on ne joue pas le son "piano"
-      }
-
-      // 2) Sinon (mode piano ou game sans endless), on joue comme avant
-      if (!kbdSet.current.has(midi)) {
-        kbdSet.current.add(midi);
-        synthRef.current.triggerAttack(note);
-        highlight(midi, true);
-      }
+      if (kbdSet.current.has(midi)) return;
+      kbdSet.current.add(midi);
+      synthRef.current.triggerAttack(note);
+      highlight(midi, true);
     };
-  
     const up = (e) => {
       const note = PC_MAP[e.code];
       if (!note) return;
@@ -850,15 +634,10 @@ export default function App(){
       synthRef.current.triggerRelease(note);
       highlight(midi, false);
     };
-  
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
-  }, [mode, endlessActive]);
-
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+  }, []);
 
   // --- Web MIDI ----------------------------------------------------
   useEffect(()=>{
@@ -888,20 +667,7 @@ export default function App(){
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
   const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
-  const pDown = e => {
-    const m = midiAt(e.clientX, e.clientY);
-    if (m == null) return;
-  
-    if (mode === "rythme" && endlessActive) {
-      onHit(m);
-      return;
-    }
-
-    pointerMap.current.set(e.pointerId, m);
-    synthRef.current.triggerAttack(m2n(m));
-    highlight(m, true);
-    pianoRef.current.setPointerCapture(e.pointerId);
-  };
+  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);synthRef.current.triggerAttack(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
   const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
   const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
@@ -927,32 +693,10 @@ const labelByMidi = useMemo(() => {
   useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
-    const keys = (mode === "piano"
-    ? KEYS
-    : // mode “rythme” → intersection octave × clavier
-      OCTAVE_MIDIS.filter(m => GAME_MIDIS.has(m))
-  ).map(m => (
-    <div
-      key={m}
-      data-midi={m}
-      className={WHITE.includes(m % 12) ? "white key" : "black key"}
-    >
-      {labelByMidi[m] && <span className="label">{labelByMidi[m]}</span>}
-    </div>
-  ));
-
-
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-mode", mode);
-}, [mode]);
+  const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
 
   return(<>
  <style>{`
-
-
-
-
 
   :root {
     /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
@@ -1128,118 +872,7 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-  @media (pointer: coarse) {
-    /* 1) Pleine largeur */
-    :root[data-mode="rythme"] .piano {
-      left: 0 !important;
-      right: 0 !important;
-      justify-content: stretch !important;
-    }
-
-    /* 2) Flex-grow pour largeur dynamique */
-    :root[data-mode="rythme"] .piano .white,
-    :root[data-mode="rythme"] .piano .black {
-      flex: 1 1 0 !important;
-      width: auto !important;
-    }
-
-    /* 3) Hauteur des touches = --white-h */
-    :root[data-mode="rythme"] .piano .white,
-    :root[data-mode="rythme"] .piano .black {
-      height: var(--white-h) !important;
-    }
-  }
-
-
-
-
-  @media (pointer: coarse) and (orientation: portrait) {
-    /* 1) On fixe la hauteur des touches à 15 vh */
-    :root[data-mode="rythme"] {
-      --white-h: 15vh !important;
-      --black-h: calc(15vh * 0.6) !important;
-    }
-
-    /* 2) Barre d’options collée en bas */
-    :root[data-mode="rythme"] .top {
-      bottom: 0 !important;
-      top: auto !important;
-    }
-
-    /* 3) Piano juste au-dessus de la barre (2rem = hauteur de la .top) */
-    :root[data-mode="rythme"] .piano {
-      bottom: 2rem !important;
-      top: auto !important;
-    }
-  }
-
-
-  @media (pointer: coarse) and (orientation: portrait) {
-    /* On cible les boutons, selects et inputs de la barre en mode portrait tactile */
-    :root[data-mode="piano"] .top button,
-    :root[data-mode="piano"] .top select,
-    :root[data-mode="piano"] .top input[type="range"],
-    :root[data-mode="piano"] .top label {
-      font-size: 0.75rem !important;     /* réduire la taille du texte */
-      padding: 0.25rem 0.5rem !important; /* réduire les paddings */
-      margin: 0 !important;              /* enlever marges superflues */
-    }
-
-    /* Pour les icons / summary du about */
-    :root[data-mode="piano"] .top details summary {
-      font-size: 1rem !important;
-    }
-  }
-
-  .endless-popup {
-    position:fixed; inset:0; background:rgba(0,0,0,0.6);
-    display:flex; align-items:center; justify-content:center; z-index:20;
-  }
-  .endless-menu {
-    background:#222; padding:1rem; border-radius:6px; width:80%; max-width:300px;
-    color:#fff;
-  }
-  .endless-menu fieldset { border:1px solid #555; padding:0.5rem; }
-
-
-  .health-bar {
-    width:100px; height:8px; background:#444; border:1px solid #222;
-    margin-left:0.5rem;
-  }
-  .health-bar .fill {
-    height:100%; background:#0f0; transition:width 0.1s;
-  }
-
 `}</style>
-
-
-  {endlessSettingsOpen && (
-    <div className="endless-popup" onClick={()=>setEndlessSettingsOpen(false)}>
-      <div className="endless-menu" onClick={e=>e.stopPropagation()}>
-        <h3>Endless Settings</h3>
-  
-        <fieldset>
-          <legend>Difficulty</legend>
-          <label><input type="radio" value="easy"   checked={difficulty==="easy"}   onChange={e=>setDifficulty(e.target.value)} /> Easy (×0.5)</label>
-          <label><input type="radio" value="normal" checked={difficulty==="normal"} onChange={e=>setDifficulty(e.target.value)} /> Normal (×1)</label>
-          <label><input type="radio" value="hard"   checked={difficulty==="hard"}   onChange={e=>setDifficulty(e.target.value)} /> Hard (×2)</label>
-        </fieldset>
-  
-        <label style={{marginTop:"0.5rem"}}>
-          <input type="checkbox" checked={whiteOnly} onChange={e=>setWhiteOnly(e.target.checked)} />
-          Only White Keys (×0.5)
-        </label>
-
-        <button onClick={()=>{
-          setEndlessSettingsOpen(false);
-          setEndlessActive(true);
-          setScore(0); setCombo(0); setHealth(1);
-        }}>Start</button>
-        <button onClick={()=>setEndlessSettingsOpen(false)}>Cancel</button>
-      </div>
-    </div>
-  )}
-
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
@@ -1274,7 +907,6 @@ const labelByMidi = useMemo(() => {
   <button
     className="toggle-bar"
     onClick={() => setIsBarCollapsed(b => !b)}
-    onClick={toggleFullScreenBar}
     aria-label={isBarCollapsed ? "Show options" : "Hide options"}
   >
     {isBarCollapsed ? ">" : "<"}
@@ -1282,198 +914,70 @@ const labelByMidi = useMemo(() => {
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
     {/* indicateur MIDI */}
-    <div
-      className="midi-status"
-      title={
-        midiConnected
-          ? "MIDI piano connected"
-          : "No MIDI piano detected (not supported in Firefox)"
-      }
-    >
-      <img
-        src={midiConnected ? "/midi_on.png" : "/midi_off.png"}
-        alt="MIDI status"
-        draggable="false"
-        width={24}
-        height={24}
-      />
+    <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
+      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
     </div>
-
-    {mode === "piano" && (
-      <>
-        <label>
-          Theme{" "}
-          <select value={theme} onChange={e=>setTheme(e.target.value)}>
-            {Object.keys(THEMES)
-              // 1) on enlève Game Mode
-              .filter(t => t !== "Game Mode")
-              // 2) on n’affiche pas le thème temporaire Bad Apple si non chargé
-              .filter(t => t !== TEMP_THEME_KEY)
-              .map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))
-            }
-          </select>
-
-        </label>
-  
-        <label>
-          Instrument{" "}
-          <select
-            value={instrument}
-            onChange={(e) => setInstrument(e.target.value)}
-          >
-            {Object.keys(INSTR).map((i) => (
-              <option key={i}>{i}</option>
-            ))}
-          </select>
-        </label>
-  
-        <label style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          <input
-            type="checkbox"
-            checked={sustain}
-            onChange={(e) => setSustain(e.target.checked)}
-          />{" "}
-          Sustain
-        </label>
-  
-        <label>
-          Vol{" "}
-          <input
-            type="range"
-            min="0"
-            max="200"
-            value={volume}
-            onChange={(e) => setVolume(+e.target.value)}
-          />
-        </label>
-  
-        <button onClick={togglePlay} disabled={!midiData}>
-          {playing ? "Pause" : "Play"}
-        </button>
-  
-        <button onClick={openLibrary}>Load…</button>
-        <button onClick={unloadMidi} disabled={!midiData}>
-          Clear
-        </button>
-  
-        {/* input caché pour import manuel */}
-        <input
-          type="file"
-          accept=".mid"
-          hidden
-          ref={fileInputRef}
-          onChange={(e) => {
-            handleFile(e);
-            closeLibrary();
-          }}
-        />
-  
-        <input
-          className="prog"
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-          value={progress}
-          onChange={(e) => onScrub(e.target.valueAsNumber)}
-          disabled={!midiData}
-        />
-      </>
-    )}
-
-    {mode==="rythme" && endlessActive && (
-      <>
-        <div>Score: {score}</div>
-        <div>Combo: {combo}</div>
-        <div className="health-bar">
-          <div className="fill" style={{ width: `${health*100}%` }}></div>
-        </div>
-      </>
-    )}
-
-
-    {mode === "rythme" && !endlessSettingsOpen && !endlessActive && (
-      <button onClick={() => setEndlessSettingsOpen(true)}>
-        Endless Mode
-      </button>
-    )}
-
-
-    {/* bouton de bascule Piano ↔ Jeu */}
-    <button
-      onClick={() =>
-        setMode((m) => (m === "piano" ? "rythme" : "piano"))
-      }
-    >
-      {mode === "piano" ? "Game Mode" : "Piano Mode"}
+    <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
+    <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
+      <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
+    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
+    <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
+    {/* Bouton principal : Charger (importer ou choisir) */}
+    <button onClick={openLibrary}>
+      Load…
     </button>
-  
-    {/* A propos */}
+    <button onClick={unloadMidi} disabled={!midiData}>
+        Clear
+    </button>
+
+    {/* input caché pour import manuel */}
+    <input
+      type="file"
+      accept=".mid"
+      hidden
+      ref={fileInputRef}
+      onChange={e => {
+        handleFile(e);    // <-- on passe l’événement, pas e.target.files[0]
+        closeLibrary();
+      }}
+    />
+
+    <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
+
     <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div className="about-content">
         <h4>About This Site</h4>
-  
+
         <p>
-          Piano Visuals brings a realistic virtual piano right into your browser.
-          Built with React and Tone.js, it supports touch, computer keyboard,
-          and USB-MIDI controllers for an authentic playing experience. You can
-          import your own MIDI files or choose from a growing library of demo
-          songs, instantly visualizing each note as it lights up on the
-          full-screen keyboard.
+          Piano Visuals brings a realistic virtual piano right into your browser. Built
+          with React and Tone.js, it supports touch, computer keyboard, and USB-MIDI
+          controllers for an authentic playing experience. You can import your own
+          MIDI files or choose from a growing library of demo songs, instantly
+          visualizing each note as it lights up on the full-screen keyboard.
         </p>
-  
+
         <p>
           The responsive design adapts seamlessly to desktops, tablets, and mobile
           devices in both landscape and portrait modes. Volume and sustain controls
-          let you shape your sound, while customizable themes and instrument
-          voices (piano, harpsichord, banjo, violin, etc.) allow for endless
-          creative exploration.
+          let you shape your sound, while customizable themes and instrument voices
+          (piano, harpsichord, banjo, violin, etc.) allow for endless creative
+          exploration.
         </p>
-  
+
         <p>
           We update the site regularly with new demo tracks, improved sound
-          libraries, and performance optimizations. Whether you’re learning to
-          read music, practicing for a recital, or just having fun, Piano Visuals
-          aims to make playing and studying piano more accessible than ever.
+          libraries, and performance optimizations. Whether you’re learning to read
+          music, practicing for a recital, or just having fun, Piano Visuals aims to
+          make playing and studying piano more accessible than ever.
         </p>
       </div>
     </details>
   </div>
 
-  {mode === "piano" ? (
-    /* ======= ÉCRAN PIANO ======= */
-    <>
-      <canvas ref={canvasRef}></canvas>
-      <div
-        className="piano"
-        ref={pianoRef}
-        onPointerDown={pDown}
-        onPointerMove={pMove}
-        onPointerUp={pUp}
-        onPointerCancel={pUp}
-      >
-        {keys}
-      </div>
-    </>
-  ) : (
-    /* ======= ÉCRAN JEU DE RYTHME ======= */
-    <>
-      <canvas ref={canvasRef}></canvas>
-      <div
-        className="piano"
-        ref={pianoRef}
-        onPointerDown={pDown}
-        onPointerMove={pMove}
-        onPointerUp={pUp}
-        onPointerCancel={pUp}
-      >
-        {keys}
-      </div>
-    </>
-  )}
+  <canvas ref={canvasRef}></canvas>
+
+  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   
   </>);
 }
