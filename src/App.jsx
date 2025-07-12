@@ -634,9 +634,7 @@ export default function App(){
     );
   
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-      if (mode !== "piano") {
-      // on _ne_ dessine _pas_ les barres montantes
-      } else if (!midiData) {
+    if (!midiData) {
       const pressedMidis = [
         ...kbdSet.current,
         ...Array.from(pointerMap.current.values()),
@@ -768,7 +766,16 @@ export default function App(){
   };
   
   // ==== Hook animation ====
-
+  useEffect(() => {
+    if (!endlessActive) return;
+    let rafId;
+    const loop = () => {
+      drawBars();
+      rafId = requestAnimationFrame(loop);
+    };
+    loop();
+    return () => cancelAnimationFrame(rafId);
+  }, [endlessActive, fallingNotes, midiData]);
   
   // ==== Hook spawn & move ====
   useEffect(() => {
