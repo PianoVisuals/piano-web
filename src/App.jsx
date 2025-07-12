@@ -296,7 +296,8 @@ export default function App(){
   const [score, setScore]       = useState(0);
   const [combo, setCombo]       = useState(0);
   const [health, setHealth]     = useState(1);    // 0→1 barre de vie
-  const [fallingNotes, setFallingNotes] = useState([]); // liste des notes à l’écran
+  const fallingNotesRef = useRef([]);
+  const [, setTick] = useState(0);  // juste pour forcer un render périodique
 
 
 
@@ -619,6 +620,51 @@ export default function App(){
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
 
   
+  useEffect(() => {
+    if (!endlessActive) return;
+    // 1) Ref pour stocker les barres
+    //    (si tu ne l'as pas déjà) :
+    //    const fallingNotesRef = useRef([]);
+    //    const [, setTick] = useState(0);
+  
+    const spawnMs = { easy:600, normal:400, hard:250 }[difficulty];
+    const speed   = { easy:1.5, normal:2.5, hard:4.0 }[difficulty] * 0.4;
+  
+    const loopId = setInterval(() => {
+      // a) spawn
+      const pool = (whiteOnly
+        ? OCTAVE_MIDIS.filter(m=>WHITE.includes(m%12))
+        : OCTAVE_MIDIS
+      ).filter(m=>GAME_MIDIS.has(m));
+      const midi = pool[Math.floor(Math.random()*pool.length)];
+      fallingNotesRef.current.push({ midi, y: 0 });
+  
+      // b) move & purge
+      const whiteH = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
+      );
+      const barH = whiteH * 2;
+      const next = [];
+      for (const note of fallingNotesRef.current) {
+        note.y += speed;
+        if (note.y < window.innerHeight + barH) next.push(note);
+        else {
+          // MISS
+          setCombo(0);
+          setHealth(h=>Math.max(0,h-0.05));
+          setScore(s=>s-10);
+        }
+      }
+      fallingNotesRef.current = next;
+  
+      // c) tick pour React (score/PV)
+      setTick(t=>t+1);
+    }, 1000/60);
+  
+    return () => clearInterval(loopId);
+  }, [endlessActive, difficulty, whiteOnly]);
+  
+
   const drawBars = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -765,18 +811,8 @@ export default function App(){
     }
   };
   
-  // ==== Hook animation ====
-  useEffect(() => {
-    if (!endlessActive) return;
-    let rafId;
-    const loop = () => {
-      drawBars();
-      rafId = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => cancelAnimationFrame(rafId);
-  }, [endlessActive, fallingNotes, midiData]);
-  
+$
+
   // ==== Hook spawn & move ====
   useEffect(() => {
     if (!endlessActive) return;
@@ -791,6 +827,22 @@ export default function App(){
       setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
     }, spawnIntervalMap[difficulty]);
   
+
+
+    useEffect(() => {
+      if (!endlessActive) return;
+      const spawnMs = {easy:600,normal:400,hard:250}[difficulty];
+      const speed   = {easy:1.5,normal:2.5,hard:4.0}[difficulty] * 0.4;
+      const loopId = setInterval(() => {
+        // 1) spawn → fallingNotesRef.current.push(...)
+        // 2) déplacement & purge → modifier fallingNotesRef.current en place
+        // 3) setTick(t=>t+1) pour actualiser UI score/PV
+      }, 1000/60);
+      return () => clearInterval(loopId);
+    }, [endlessActive, difficulty, whiteOnly]);
+
+
+
     // move & cleanup
     const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
     const speed = baseSpeedMap[difficulty];
@@ -819,8 +871,12 @@ export default function App(){
     };
   }, [endlessActive, difficulty, whiteOnly]);
 
-
-
+  requestAnimationFrame(() => {
+    setScore(s => /*...*/);
+    setCombo(c => /*...*/);
+    setHealth(h => /*...*/);
+  });
+  
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
