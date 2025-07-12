@@ -302,7 +302,7 @@ export default function App(){
   const [combo, setCombo]       = useState(0);
   const [health, setHealth]     = useState(1);    // 0→1 barre de vie
   const fallingNotesRef = useRef([]);   // contiendra tes notes qui tombent
-  const [, setTick]       = useState(0); // simple compteur pour forcer un petit render
+  const [, setTick] = useState(0); // simple compteur pour forcer un petit render
 
 
 
@@ -781,7 +781,7 @@ export default function App(){
     };
     loop();
     return () => cancelAnimationFrame(rafId);
-  }, [endlessActive, fallingNotes, midiData]);
+  }, [endlessActive]);
   
 
 
