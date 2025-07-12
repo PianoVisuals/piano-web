@@ -783,9 +783,10 @@ export default function App(){
     // spawn
     const spawnIntervalMap = { easy: 600, normal: 400, hard: 250 };
     const spawnId = setInterval(() => {
-      const pool = whiteOnly
-        ? KEYS.filter((m) => WHITE.includes(m % 12))
-        : KEYS;
+      const pool = (whiteOnly
+          ? OCTAVE_MIDIS.filter((m) => WHITE.includes(m % 12))
+          : OCTAVE_MIDIS
+      ).filter((m) => GAME_MIDIS.has(m)); // et on garde la map clavier
       const midi = pool[Math.floor(Math.random() * pool.length)];
       setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
     }, spawnIntervalMap[difficulty]);
