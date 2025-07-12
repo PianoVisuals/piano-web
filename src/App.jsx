@@ -851,11 +851,11 @@ const labelByMidi = useMemo(() => {
     padding-right: 0.5rem;    /* pour le scroll */
   }
   .about-content h4 {
-    font-size: 1.2rem;        /* titre un peu plus petit aussi */
-    margin-bottom: 0.5rem;
+    font-size: 1.7rem;        /* titre un peu plus petit aussi */
+    margin-bottom: 1rem;
   }
   .about-content p {
-    margin: 0.75rem 0;        /* espacement vertical réduit */
+    margin: 1rem 0;        /* espacement vertical réduit */
   }
 
   .about-content {
