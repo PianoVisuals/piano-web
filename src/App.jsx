@@ -239,11 +239,11 @@ export default function App(){
 
   const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
 
-  const highlight = useCallback((midi, on) => {
+  const highlight = (midi, on) => {
     if (mode !== "piano") return;
     const el = document.querySelector(`[data-midi='${midi}']`);
     if (el) el.classList.toggle("active", on);
-  }, [mode])
+  };
 
 
   const pianoRef=useRef(null); const canvasRef=useRef(null);
@@ -600,8 +600,8 @@ export default function App(){
     // décale de LEAD pour que le son démarre quand les barres touchent le clavier
     partRef.current = new Tone.Part((time, note) => {
       synthRef.current.triggerAttackRelease(note.name, note.duration, time, note.velocity);
-      Tone.Draw.schedule(()=>highlight(n2m(note.name),true),time);
-      Tone.Draw.schedule(()=>highlight(n2m(note.name),false),time+note.duration);
+      Tone.Draw.schedule(() => highlight(n2m(note.name), true), time);
+      Tone.Draw.schedule(() => highlight(n2m(note.name), false), time + note.duration);
     }, events.map(n => ({ time: n.time + LEAD, name: n.name, duration: n.duration, velocity: n.velocity })));
 
     partRef.current.start(0);
@@ -939,6 +939,7 @@ export default function App(){
       pointerMap.current.delete(e.pointerId);
     }
   };
+
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
 
