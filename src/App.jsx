@@ -235,6 +235,10 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
+  const borderColor = "#000";   // contour noir, ou une couleur de ton thème
+  const borderWidth = 1.5;      // épaisseur en pixels
+
+
   // pour gérer le thème temporaire de Bad Apple
   const prevThemeRef = useRef(null);
 
@@ -599,6 +603,10 @@ export default function App(){
           ctx.fillStyle = grad;
           ctx.fill();
   
+          ctx.lineWidth   = borderWidth;
+          ctx.strokeStyle = borderColor;
+          ctx.stroke();
+
           // reset
           ctx.shadowBlur  = 0;
           ctx.globalAlpha = 1;
