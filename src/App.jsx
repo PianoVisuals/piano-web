@@ -198,25 +198,25 @@ const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: 
 const texts = {
   en: {
     summary: "ⓘ",
-    title: "About This Site",
+    title: "Help & Info",
     paragraphs: [
-      `At the very top, a small piano icon lights up whenever you plug in a USB-MIDI keyboard—so you’ll know it’s connected (Firefox doesn’t support this feature). Next to it, the “Theme” menu lets you change the look: dark mode, neon, retro, and more. Use the “Instrument” menu to pick your sound: acoustic grand piano, harpsichord, banjo, violin, and over 50 others. Turn “Sustain” on to hold notes, adjust volume with the slider, then click “Play” to start or pause.`,
+      `At the very top, a small piano icon lights up whenever you plug in a USB-MIDI keyboard so you’ll know it’s connected (Firefox doesn’t support this feature). Next to it, the “Theme” menu lets you change the look: dark mode, neon, retro, and more. Use the “Instrument” menu to pick your sound: acoustic grand piano, harpsichord, banjo, violin, and over 50 others. Turn “Sustain” on to hold notes, adjust volume with the slider, then click “Play” to start or pause.`,
 
-      `Press “Load…” to select a .mid file from your computer, or choose one of our ready-to-play demos. When your file loads, a progress bar appears—drag it to move forward or backward in the song. As the music plays, each key lights up and a colored bar drops in time with the note, creating a fun visual guide.`,
+      `Press “Load…” to select a .mid file from your computer, or choose one of our ready-to-play demos. When your file loads, a progress bar appears drag it to move forward or backward in the song. As the music plays, each key lights up and a colored bar drops in time with the note, creating a fun visual guide.`,
 
-      `Want more songs? Visit BitMidi or FreeMIDI.org to download free .mid files, then import them here to play and visualize instantly. Whether you’re practicing a piece, learning new tunes, or just having fun, this site gives you an interactive piano right in your browser.`
+      `Want more songs? Visit BitMidi.com or FreeMIDI.org to download free .mid files, then import them here to play and visualize instantly. Whether you’re practicing a piece, learning new tunes, or just having fun, this site gives you an interactive piano right in your browser.`
     ]
   },
 
   fr: {
     summary: "ⓘ",
-    title: "À propos de ce site",
+    title: "Aide & Infos",
     paragraphs: [
       `En haut à gauche, une petite icône de piano s’allume dès que vous branchez un clavier USB-MIDI (Firefox ne le prend pas en charge). À sa droite, le menu « Theme » change l’apparence : sombre, néon, rétro, etc. Le menu « Instrument » vous propose plus de 50 sons : piano à queue, clavecin, banjo, violon… Activez « Sustain » pour faire tenir les notes, ajustez le volume avec le curseur, puis cliquez sur « Play » pour démarrer ou mettre en pause.`,
 
       `Cliquez sur « Load… » pour choisir un fichier .mid sur votre ordinateur, ou essayez un de nos démos intégrés. Dès qu’un fichier est chargé, une barre de progression apparaît : glissez-la pour avancer ou reculer dans la musique. Pendant la lecture, chaque touche s’illumine et une barre colorée descend au rythme des notes, offrant un guide visuel ludique.`,
 
-      `Vous cherchez plus de morceaux ? Rendez-vous sur BitMidi ou FreeMIDI.org pour télécharger des fichiers .mid gratuits, puis importez-les ici pour jouer et visualiser instantanément. Que vous répétiez un morceau, appreniez de nouvelles mélodies ou jouiez pour le plaisir, ce site vous offre un piano interactif directement dans votre navigateur.`
+      `Vous cherchez plus de morceaux ? Rendez-vous sur BitMidi.com ou FreeMIDI.org pour télécharger des fichiers .mid gratuits, puis importez-les ici pour jouer et visualiser instantanément. Que vous répétiez un morceau, appreniez de nouvelles mélodies ou jouiez pour le plaisir, ce site vous offre un piano interactif directement dans votre navigateur.`
     ]
   }
 };
