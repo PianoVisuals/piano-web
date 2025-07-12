@@ -1028,7 +1028,7 @@ const labelByMidi = useMemo(() => {
     <details className="about" ref={aboutRef}>
       <summary>{summary}</summary>
       <div className="about-content">
-        <h4>{title}</h4>s les paragraphes
+        <h4>{title}</h4>
         {paragraphs.map((p, i) => (
           <p key={i} dangerouslySetInnerHTML={{ __html: p }} />
         ))}
