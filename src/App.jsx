@@ -634,7 +634,7 @@ export default function App(){
     );
   
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-    if (mode !== "rythme" && !midiData) {
+    if (mode === "piano" && !midiData) {
       const pressedMidis = [
         ...kbdSet.current,
         ...Array.from(pointerMap.current.values()),
