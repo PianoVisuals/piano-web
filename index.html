@@ -3,28 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Titre de l’onglet -->
   <title>Midi Piano Web Visual</title>
-
-  <!-- Favicon / icônes -->
   <link rel="icon" type="image/png" href="/logo32.png" />
   <link rel="apple-touch-icon" href="/logo180.png" />
-
-  <!--  Balise globale AdSense -->
-  <script async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443"
-          crossorigin="anonymous"></script>
-
-  <!--  Bandeau consentement (RGPD)  -->
-  <script async
-          src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
+  <!-- AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443" crossorigin="anonymous"></script>
+  <script async src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
 </head>
 
 <body>
+  <!-- Contenu statique visible par Google -->
+  <header>
+    <h1>Bienvenue sur Midi Piano Web Visual</h1>
+    <p>
+      Piano Visuals vous permet de jouer et de visualiser vos fichiers MIDI
+      directement dans le navigateur. Choisissez un thème, un instrument,
+      importez un fichier .mid ou utilisez nos démos, puis laissez tomber
+      les barres sur le clavier !
+    </p>
+  </header>
+
+  <section id="about">
+    <h2>À propos de ce projet</h2>
+    <p>
+      Développé en React et Tone.js, ce site supporte le tactile, le clavier
+      d’ordinateur et les contrôleurs MIDI USB pour une expérience réaliste
+      de piano virtuel. Idéal pour l’apprentissage, la pratique ou le fun !
+    </p>
+  </section>
+
+  <!-- ici React montera ton appli -->
   <div id="root"></div>
 
-  <!--  Entrée Vite / React  -->
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
