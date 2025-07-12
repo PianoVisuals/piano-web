@@ -15,6 +15,7 @@
           src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
 
   <style>
+    /* Styles globaux */
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
@@ -22,30 +23,63 @@
       color: #fff;
       text-align: center;
     }
-    /* Header d’introduction */
-    header#intro {
+    #root {
+      padding-top: 2rem;
+    }
+
+    /* Bouton info */
+    #info-btn {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* Overlay modal */
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      z-index: 9;
+    }
+    #modal.open {
+      display: flex;
+    }
+
+    /* Contenu modal */
+    .modal-content {
       position: relative;
-      padding: 3rem 1rem;
-      max-width: 800px;
-      margin: 2rem auto;
-      background: rgba(0, 0, 0, 0.75);
+      background: #222;
+      padding: 2rem;
       border-radius: 8px;
-    }
-    header#intro h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-    .about-content {
-      text-align: left;
-      margin: 0 auto;
       max-width: 700px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      text-align: left;
     }
-    .about-content p {
-      font-size: 1rem;
-      line-height: 1.6;
+    .modal-content h1 {
+      margin-top: 0;
+      font-size: 2rem;
+      color: #fff;
+    }
+    .modal-content p {
       margin: 1rem 0;
+      line-height: 1.5;
+      color: #ddd;
     }
-    #close-btn {
+
+    /* Bouton fermer */
+    .close-btn {
       position: absolute;
       top: 1rem;
       right: 1rem;
@@ -55,52 +89,63 @@
       font-size: 1.5rem;
       cursor: pointer;
     }
-    /* Décaler l’app React sous le header */
-    #root {
-      padding-top: 2rem;
-    }
   </style>
 </head>
 
 <body>
-  <header id="intro">
-    <button id="close-btn" aria-label="Close">×</button>
-    <h1>About Midi Piano Web Visual</h1>
-    <div class="about-content">
+  <!-- Bouton pour ouvrir le modal -->
+  <button id="info-btn" aria-label="About">ⓘ</button>
+
+  <!-- Fenêtre modale -->
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <button class="close-btn" aria-label="Close">×</button>
+      <h1 id="modal-title">About Midi Piano Web Visual</h1>
       <p>
-        Midi Piano Web Visual delivers a stunning virtual piano right in your browser.  
-        Powered by React and Tone.js, it seamlessly supports touch gestures, computer- 
-        keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.  
-        Import your own MIDI files or pick from our growing demo library—and watch as animated  
-        bars cascade onto a full-screen keyboard in perfect sync.
+        Midi Piano Web Visual delivers a stunning virtual piano right in your browser.
+        Powered by React and Tone.js, it seamlessly supports touch gestures, computer-
+        keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.
       </p>
       <p>
-        Designed for every device—from desktop to tablet to smartphone—the interface adapts  
-        fluidly in both landscape and portrait modes. Control volume and sustain with intuitive  
-        sliders, and explore dozens of instrument voices (acoustic grand piano, harpsichord,  
+        Import your own MIDI files or pick from our growing demo library—and watch as animated
+        bars cascade onto a full-screen keyboard in perfect sync. Each note you play lights
+        up the key and triggers a vivid falling-bar animation, making both learning and
+        performance highly engaging.
+      </p>
+      <p>
+        Designed for every device—from desktop to tablet to smartphone—the interface adapts
+        fluidly in both landscape and portrait modes. Control volume and sustain with intuitive
+        sliders, and explore dozens of instrument voices (acoustic grand piano, harpsichord,
         banjo, violin, and more) alongside customizable color themes.
       </p>
       <p>
-        We continuously update with fresh demo tracks, optimized soundfonts, and performance  
-        enhancements. Whether you’re learning to read sheet music, rehearsing for an upcoming  
-        recital, or simply jamming for fun, Midi Piano Web Visual makes practice engaging,  
+        We continuously update with fresh demo tracks, optimized soundfonts, and performance
+        enhancements. Whether you’re learning to read sheet music, rehearsing for an upcoming
+        recital, or simply jamming for fun, Midi Piano Web Visual makes practice engaging,
         accessible, and visually captivating.
       </p>
       <p>
-        Ready to start? Click “Load…” to import a MIDI file or choose a demo, and let the  
+        Ready to start? Click “Load…” to import a MIDI file or choose a demo, and let the
         magic of falling note bars transform your musical experience.
       </p>
     </div>
-  </header>
+  </div>
 
   <!-- L’application React montera ici -->
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 
   <script>
-    // Bouton pour fermer l’intro
-    document.getElementById('close-btn').addEventListener('click', () => {
-      document.getElementById('intro').style.display = 'none';
+    // Contrôles du modal
+    const infoBtn = document.getElementById('info-btn');
+    const modal   = document.getElementById('modal');
+    const closeBtn = modal.querySelector('.close-btn');
+
+    infoBtn.addEventListener('click', () => modal.classList.add('open'));
+    closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+    // Fermer aussi si on clique en dehors du contenu
+    modal.addEventListener('click', e => {
+      if (e.target === modal) modal.classList.remove('open');
     });
   </script>
 </body>
