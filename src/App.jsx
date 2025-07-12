@@ -842,6 +842,22 @@ const labelByMidi = useMemo(() => {
   .about summary::-webkit-details-marker {
     display: none;
   }
+
+  .about-content {
+    font-size: 0.9rem;        /* taille de police 90 % de la normale */
+    line-height: 1.4;         /* pour compacter un peu l’interligne */
+    max-height: 70vh;         /* hauteur maxi pour ne pas dépasser */
+    overflow-y: auto;         /* scroll si trop long */
+    padding-right: 0.5rem;    /* pour le scroll */
+  }
+  .about-content h4 {
+    font-size: 1.2rem;        /* titre un peu plus petit aussi */
+    margin-bottom: 0.5rem;
+  }
+  .about-content p {
+    margin: 0.75rem 0;        /* espacement vertical réduit */
+  }
+
   .about-content {
     position: absolute;         /* superpose le contenu */
     top: 2.5rem;                /* juste en dessous de la barre */
