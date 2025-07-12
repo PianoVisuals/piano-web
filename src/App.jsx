@@ -768,16 +768,7 @@ export default function App(){
   };
   
   // ==== Hook animation ====
-  useEffect(() => {
-    if (!endlessActive) return;
-    let rafId;
-    const loop = () => {
-      drawBars();
-      rafId = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => cancelAnimationFrame(rafId);
-  }, [endlessActive, fallingNotes, midiData, mode]);  // ← on ajoute mode
+
   
   // ==== Hook spawn & move ====
   useEffect(() => {
