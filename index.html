@@ -6,6 +6,7 @@
   <title>Midi Piano Web Visual</title>
   <link rel="icon" type="image/png" href="/logo32.png" />
   <link rel="apple-touch-icon" href="/logo180.png" />
+
   <!-- AdSense -->
   <script async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443"
@@ -21,22 +22,28 @@
       color: #fff;
       text-align: center;
     }
-    header {
+    /* Header d’introduction */
+    header#intro {
       position: relative;
-      padding: 4rem 1rem;
+      padding: 3rem 1rem;
       max-width: 800px;
-      margin: 0 auto 2rem;
-      background: rgba(0, 0, 0, 0.7);
+      margin: 2rem auto;
+      background: rgba(0, 0, 0, 0.75);
       border-radius: 8px;
     }
-    header h1 {
+    header#intro h1 {
       font-size: 2.5rem;
       margin-bottom: 1rem;
     }
-    header p {
-      font-size: 1.1rem;
+    .about-content {
+      text-align: left;
+      margin: 0 auto;
+      max-width: 700px;
+    }
+    .about-content p {
+      font-size: 1rem;
       line-height: 1.6;
-      margin: 0.5rem 0;
+      margin: 1rem 0;
     }
     #close-btn {
       position: absolute;
@@ -48,7 +55,7 @@
       font-size: 1.5rem;
       cursor: pointer;
     }
-    /* Décaler l'app React sous le header */
+    /* Décaler l’app React sous le header */
     #root {
       padding-top: 2rem;
     }
@@ -58,24 +65,40 @@
 <body>
   <header id="intro">
     <button id="close-btn" aria-label="Close">×</button>
-    <h1>Discover Midi Piano Web Visual</h1>
-    <p>
-      Turn your MIDI files into a live piano experience in the browser.  
-      Just pick a theme, choose an instrument sound, and upload your .mid or  
-      select one of our demos.
-    </p>
-    <p>
-      Watch colorful note bars fall onto a full-screen virtual piano  
-      while you play with touch, keyboard, or USB-MIDI.  
-      Fine-tune volume and sustain for the perfect performance.
-    </p>
+    <h1>About Midi Piano Web Visual</h1>
+    <div class="about-content">
+      <p>
+        Midi Piano Web Visual delivers a stunning virtual piano right in your browser.  
+        Powered by React and Tone.js, it seamlessly supports touch gestures, computer- 
+        keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.  
+        Import your own MIDI files or pick from our growing demo library—and watch as animated  
+        bars cascade onto a full-screen keyboard in perfect sync.
+      </p>
+      <p>
+        Designed for every device—from desktop to tablet to smartphone—the interface adapts  
+        fluidly in both landscape and portrait modes. Control volume and sustain with intuitive  
+        sliders, and explore dozens of instrument voices (acoustic grand piano, harpsichord,  
+        banjo, violin, and more) alongside customizable color themes.
+      </p>
+      <p>
+        We continuously update with fresh demo tracks, optimized soundfonts, and performance  
+        enhancements. Whether you’re learning to read sheet music, rehearsing for an upcoming  
+        recital, or simply jamming for fun, Midi Piano Web Visual makes practice engaging,  
+        accessible, and visually captivating.
+      </p>
+      <p>
+        Ready to start? Click “Load…” to import a MIDI file or choose a demo, and let the  
+        magic of falling note bars transform your musical experience.
+      </p>
+    </div>
   </header>
 
-  <!-- Ici React montera l'application -->
+  <!-- L’application React montera ici -->
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 
   <script>
+    // Bouton pour fermer l’intro
     document.getElementById('close-btn').addEventListener('click', () => {
       document.getElementById('intro').style.display = 'none';
     });
