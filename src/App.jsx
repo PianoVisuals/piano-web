@@ -832,14 +832,9 @@ export default function App(){
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = e => {
+      // … votre logique de synthé/game…
       if (mode === "piano") {
-        // ————— mode Piano : attaque + highlight DOM
-        if (e.repeat) return;
-        if (e.code === "Space" && midiData) {
-          e.preventDefault();
-          togglePlay();
-          return;
-        }
+        // attaque + highlight
         const note = PC_MAP[e.code];
         if (!note) return;
         const midi = n2m(note);
@@ -848,11 +843,10 @@ export default function App(){
         synthRef.current.triggerAttack(note);
         highlight(midi, true);
       } else {
-        // ————— mode Jeu : on tente un hit
+        // mode jeu → uniquement onHit, pas de highlight
         const note = PC_MAP[e.code];
         if (!note) return;
-        const midi = n2m(note);
-        onHit(midi);
+        onHit(n2m(note));
       }
     };
   
