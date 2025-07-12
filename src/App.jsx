@@ -775,7 +775,7 @@ export default function App(){
     };
     loop();
     return () => cancelAnimationFrame(rafId);
-  }, [endlessActive, fallingNotes, midiData]);
+  }, [endlessActive, mode, midiData]);
   
   // ==== Hook spawn & move ====
   useEffect(() => {
