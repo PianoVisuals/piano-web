@@ -1037,17 +1037,18 @@ const labelByMidi = useMemo(() => {
 
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
 
-    <details id="about-react" className="about" ref={aboutRef}>
+    <details className="about" ref={aboutRef}>
       <summary>ⓘ</summary>
       <div
-        className="about-content"
-        dangerouslySetInnerHTML={{
-          __html:
-            `<h4>${title}</h4>` +
-            paragraphs.map(p => `<p>${p}</p>`).join("")
-        }}
-      />
+          className="about-content"
+          // pour que ton JSX accepte le HTML dans les paragraphes
+          dangerouslySetInnerHTML={{
+            __html: `<h4>${title}</h4>` +
+                    paragraphs.map(p => `<p>${p}</p>`).join("")
+          }}
+        />
     </details>
+  </div>
 
   <canvas ref={canvasRef}></canvas>
 
