@@ -239,52 +239,46 @@ export default function App(){
 
 
 
-  export default function App() {
-    const aboutRef = useRef(null);
-  
-    // 1) Détection de la langue
-    const isFr = navigator.language && navigator.language.startsWith("fr");
-  
-    // 2) Textes en anglais et en français
-    const texts = {
-      en: {
-        summary: "ⓘ",
-        title: "About This Site",
-        paragraphs: [
-          `At the top you’ll see a little piano icon that lights up whenever a USB-MIDI keyboard is plugged in (note: MIDI keyboard is not supported in Firefox).  
-           Next, use the Theme dropdown to switch between dark, neon, retro and other visual styles.  
-           The Instrument menu lets you choose from acoustic grand piano, harpsichord, banjo, violin—and over 50 more soundfonts.  
-           Toggle Sustain on or off, adjust the volume slider, and hit Play to start or pause playback.`,
-          `Click “Load…” to import your own .mid files from your computer, or choose one of the built-in demos.  
-           Once a file is loaded, a progress bar appears—drag it to scrub through the song and watch each note light up its key in perfect sync with the animated falling bars.`,
-          `If you’re looking for more MIDI tracks, check out sites like 
-           <a href="https://bitmidi.com" target="_blank" rel="noopener">BitMidi</a> or 
-           <a href="https://freemidi.org" target="_blank" rel="noopener">FreeMIDI.org</a>.  
-           Simply download any .mid, then import it here to instantly visualize and play along.`
-        ]
-      },
-      fr: {
-        summary: "ⓘ",
-        title: "À propos de ce site",
-        paragraphs: [
-          `En haut, une petite icône de piano s’illumine dès qu’un clavier USB-MIDI est détecté (non pris en charge sur Firefox).  
-           Utilisez ensuite le sélecteur Thème pour passer du mode sombre au mode néon, rétro, etc.  
-           Le menu Instrument vous donne accès à plus de 50 sons : piano à queue, clavecin, banjo, violon…  
-           Activez ou non le Sustain, réglez le volume, puis appuyez sur Play pour lancer ou mettre en pause.`,
-          `Cliquez sur « Load… » pour importer vos propres fichiers .mid depuis votre ordinateur, ou choisissez un morceau de la bibliothèque intégrée.  
-           Une fois chargé, une barre de progression apparaît : glissez-la pour parcourir le morceau, et regardez chaque note illuminer sa touche en parfaite synchronisation avec l’animation.`,
-          `Pour trouver davantage de fichiers MIDI, essayez des sites comme 
-           <a href="https://bitmidi.com" target="_blank" rel="noopener">BitMidi</a> ou 
-           <a href="https://freemidi.org" target="_blank" rel="noopener">FreeMIDI.org</a>.  
-           Téléchargez simplement un .mid, puis importez-le ici pour le visualiser et jouer en direct.`
-        ]
-      }
-    };
-  
-    // 3) Choix de la langue
-    const lang = isFr ? "fr" : "en";
-    const { summary, title, paragraphs } = texts[lang];
-  
+  const aboutRef = useRef(null);
+
+  // 1) Détection de la langue
+  const isFr = navigator.language && navigator.language.startsWith("fr");
+
+  // 2) Textes en anglais et en français
+  const texts = {
+    en: {
+      summary: "ⓘ",
+      title: "About This Site",
+      paragraphs: [
+        `At the top you’ll see a little piano icon that lights up whenever a USB-MIDI keyboard is plugged in (note: MIDI keyboard is not supported in Firefox).  
+         Next, use the Theme dropdown to switch between dark, neon, retro and other visual styles.  
+         The Instrument menu lets you choose from acoustic grand piano, harpsichord, banjo, violin—and over 50 more soundfonts.  
+         Toggle Sustain on or off, adjust the volume slider, and hit Play to start or pause playback.`,
+        `Click “Load…” to import your own .mid files from your computer, or choose one of the built-in demos.  
+         Once a file is loaded, a progress bar appears—drag it to scrub through the song and watch each note light up its key in perfect sync with the animated falling bars.`,
+        `If you’re looking for more MIDI tracks, check out sites like 
+         <a href="https://bitmidi.com" target="_blank" rel="noopener">BitMidi</a> or 
+         <a href="https://freemidi.org" target="_blank" rel="noopener">FreeMIDI.org</a>.  
+         Simply download any .mid, then import it here to instantly visualize and play along.`
+      ]
+    },
+    fr: {
+      summary: "ⓘ",
+      title: "À propos de ce site",
+      paragraphs: [
+        `En haut, une petite icône de piano s’illumine dès qu’un clavier USB-MIDI est détecté (non pris en charge sur Firefox).  
+         Utilisez ensuite le sélecteur Thème pour passer du mode sombre au mode néon, rétro, etc.  
+         Le menu Instrument vous donne accès à plus de 50 sons : piano à queue, clavecin, banjo, violon…  
+         Activez ou non le Sustain, réglez le volume, puis appuyez sur Play pour lancer ou mettre en pause.`,
+        `Cliquez sur « Load… » pour importer vos propres fichiers .mid depuis votre ordinateur, ou choisissez un morceau de la bibliothèque intégrée.  
+         Une fois chargé, une barre de progression apparaît : glissez-la pour parcourir le morceau, et regardez chaque note illuminer sa touche en parfaite synchronisation avec l’animation.`,
+        `Pour trouver davantage de fichiers MIDI, essayez des sites comme 
+         <a href="https://bitmidi.com" target="_blank" rel="noopener">BitMidi</a> ou 
+         <a href="https://freemidi.org" target="_blank" rel="noopener">FreeMIDI.org</a>.  
+         Téléchargez simplement un .mid, puis importez-le ici pour le visualiser et jouer en direct.`
+      ]
+    }
+  };  
   
   
   
