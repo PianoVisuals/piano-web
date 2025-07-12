@@ -704,21 +704,29 @@ export default function App(){
   useEffect(()=>{
     if(!navigator.requestMIDIAccess) return;
     navigator.requestMIDIAccess().then(acc=>{
-      // connexion initiale
       setMidiConnected(acc.inputs.size > 0);
-      // écoute des changements (connect / disconnect)
       acc.onstatechange = ()=> setMidiConnected(acc.inputs.size > 0);
-      // mapping des messages
+  
       acc.inputs.forEach(inp=>{
         inp.onmidimessage = ({data})=>{
-          const [st,note,vel]=data;
-          const cmd=st&0xf0;
-          if(cmd===0x90&&vel){
-            synthRef.current.triggerAttack(m2n(note),undefined,vel/127);
-            highlight(note,true);
-          } else if(cmd===0x80||(cmd===0x90&&!vel)){
+          const [st, note, vel] = data;
+          const cmd = st & 0xf0;
+  
+          if ((cmd === 0x90 && vel) || (cmd === 0x80 && vel > 0 && false)) {
+            // NOTE ON
+            synthRef.current.triggerAttack(m2n(note), undefined, vel/127);
+            highlight(note, true);
+  
+            // **Ajout** au set pour les barres montantes
+            kbdSet.current.add(note);
+          }
+          else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
+            // NOTE OFF
             synthRef.current.triggerRelease(m2n(note));
-            highlight(note,false);
+            highlight(note, false);
+  
+            // **Suppression** du set
+            kbdSet.current.delete(note);
           }
         };
       });
