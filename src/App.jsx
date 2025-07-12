@@ -993,6 +993,12 @@ const labelByMidi = useMemo(() => {
  <style>{`
 
 
+  :root[data-mode="rythme"] .active.white,
+  :root[data-mode="rythme"] .active.black {
+    /* on retire fond + lueur */
+    background: none !important;
+    box-shadow: none !important;
+  }
 
 
 
@@ -1253,12 +1259,6 @@ const labelByMidi = useMemo(() => {
   }
 
 
-  :root[data-mode="rythme"] .active.white,
-  :root[data-mode="rythme"] .active.black {
-    /* on retire fond + lueur */
-    background: none !important;
-    box-shadow: none !important;
-  }
 
 
 
