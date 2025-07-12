@@ -831,43 +831,43 @@ export default function App(){
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
-    const down = e => {
-      // … votre logique de synthé/game…
-      if (mode === "piano") {
-        // attaque + highlight
-        const note = PC_MAP[e.code];
-        if (!note) return;
-        const midi = n2m(note);
-        if (kbdSet.current.has(midi)) return;
-        kbdSet.current.add(midi);
-        synthRef.current.triggerAttack(note);
-        highlight(midi, true);
-      } else {
-        // mode jeu → uniquement onHit, pas de highlight
-        const note = PC_MAP[e.code];
-        if (!note) return;
-        onHit(n2m(note));
-      }
-    };
-  
-    const up = e => {
-      if (mode !== "piano") return;
-      // ————— mode Piano seulement : release + un-highlight
+    const down = (e) => {
+      if (e.repeat) return;
       const note = PC_MAP[e.code];
       if (!note) return;
-      const midi = n2m(note);
-      kbdSet.current.delete(midi);
+      const midi = Tone.Frequency(note).toMidi();
+
+      // 1) toujours jouer le son
+      synthRef.current.triggerAttack(note);
+
+      // 2) toujours highlight, quel que soit mode
+      highlight(midi, true);
+
+      // 3) si mode jeu, onHit, sinon on joue normalement
+      if (mode === "rythme" && endlessActive) {
+        onHit(midi);
+      } else {
+        kbdSet.current.add(midi);
+      }
+    };
+
+    const up = (e) => {
+      const note = PC_MAP[e.code];
+      if (!note) return;
+      const midi = Tone.Frequency(note).toMidi();
+
       synthRef.current.triggerRelease(note);
       highlight(midi, false);
+      kbdSet.current.delete(midi);
     };
-  
+
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [mode, midiData]);
+  }, [mode, endlessActive]);
 
 
   // --- Web MIDI ----------------------------------------------------
