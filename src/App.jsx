@@ -1252,6 +1252,17 @@ const labelByMidi = useMemo(() => {
     height:100%; background:#0f0; transition:width 0.1s;
   }
 
+
+  :root[data-mode="rythme"] .active.white,
+  :root[data-mode="rythme"] .active.black {
+    /* on retire fond + lueur */
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+
+
+
 `}</style>
 
 
