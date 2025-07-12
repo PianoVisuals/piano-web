@@ -240,9 +240,10 @@ export default function App(){
   const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
 
   const highlight = (midi, on) => {
-    if (mode !== "piano") return;
-    const el = document.querySelector(`[data-midi='${midi}']`);
-    if (el) el.classList.toggle("active", on);
+    // toujours faire le toggle, quelle que soit la valeur de mode
+    document
+      .querySelector(`[data-midi='${midi}']`)
+      ?.classList.toggle("active", on);
   };
 
 
