@@ -640,7 +640,7 @@ export default function App(){
     );
   
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-    if (!midiData) {
+    if (mode === "piano" && !midiData) {
       const pressedMidis = [
         ...kbdSet.current,
         ...Array.from(pointerMap.current.values()),
