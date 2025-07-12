@@ -250,7 +250,7 @@ export default function App(){
 
 
 
-  const popsRef = useRef([]);  
+
 
 
   const onHit = (midi) => {
@@ -276,22 +276,6 @@ export default function App(){
       setScore(s => s + Math.round(100 * diffMult * whiteMult));
       setCombo(c => c + 1);
       setHealth(h => Math.min(1, h + 0.01 * combo));
-
-
-      const keyEl = document.querySelector(`[data-midi='${midi}']`);
-      if (keyEl) {
-        const rect = keyEl.getBoundingClientRect();
-        // milieu haut de la barre :
-        const x = rect.left + rect.width / 2;
-        const y = rect.top;
-        popsRef.current.push({ x, y, start: performance.now() });
-      }
-
-      // retirer la note
-      fallingNotesRef.current = fallingNotesRef.current.filter(n => n !== bestNote);
-      return;
-
-
     } else {
       // MISS
       setScore(s => s - 10);
@@ -649,29 +633,6 @@ export default function App(){
         .getPropertyValue("--white-h")
     );
   
-
-    // ——— dessin des pops ———
-    const now = performance.now();
-    const DURATION = 300; // ms de l’animation pop
-    ctx.save();
-    popsRef.current = popsRef.current.filter(pop => {
-      const t = (now - pop.start) / DURATION;
-      if (t >= 1) return false; // on jette la pop terminée
-    
-      // cercle qui grandit et s’estompe
-      const maxR =  parseFloat(getComputedStyle(document.documentElement)
-                        .getPropertyValue("--white-w")) * 0.8;
-      const r = maxR * t;
-      ctx.beginPath();
-      ctx.arc(pop.x, pop.y, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255,255,255,${1 - t})`;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      return true;
-    });
-    ctx.restore();
-
-
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
     if (!midiData) {
       const pressedMidis = [
@@ -863,33 +824,24 @@ export default function App(){
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
-      if (e.code === "Space") {
-        if (midiData && mode === "piano") {
-          e.preventDefault();
-          togglePlay();
-        }
-        return;
-      }
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
+  
+      // 1) Si on est en mode rythme ET endless actif, on gère le hit
+      if (mode === "rythme" && endlessActive) {
+        onHit(midi);
+        return; // on ne joue pas le son "piano"
+      }
 
-      // 1) Jouer le son + visuel **toujours**, sauf si déjà en train  
+      // 2) Sinon (mode piano ou game sans endless), on joue comme avant
       if (!kbdSet.current.has(midi)) {
         kbdSet.current.add(midi);
         synthRef.current.triggerAttack(note);
         highlight(midi, true);
       }
-
-      // 2) Si on est en Endless Mode, on score et on **ne pas** refaire le triggerAttack
-      if (mode === "rythme" && endlessActive) {
-        onHit(midi);
-        return;
-      }
-
-      // 3) Sinon (mode Piano ou game sans endless), on continue comme avant…
     };
-
+  
     const up = (e) => {
       const note = PC_MAP[e.code];
       if (!note) return;
@@ -905,7 +857,7 @@ export default function App(){
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [mode, endlessActive, midiData]);
+  }, [mode, endlessActive]);
 
 
   // --- Web MIDI ----------------------------------------------------
@@ -936,7 +888,20 @@ export default function App(){
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
   const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
-  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);synthRef.current.triggerAttack(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
+  const pDown = e => {
+    const m = midiAt(e.clientX, e.clientY);
+    if (m == null) return;
+  
+    if (mode === "rythme" && endlessActive) {
+      onHit(m);
+      return;
+    }
+
+    pointerMap.current.set(e.pointerId, m);
+    synthRef.current.triggerAttack(m2n(m));
+    highlight(m, true);
+    pianoRef.current.setPointerCapture(e.pointerId);
+  };
   const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
   const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
