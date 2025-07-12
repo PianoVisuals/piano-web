@@ -235,6 +235,10 @@ async function loadDemo(name) {
 
 export default function App(){
   // refs & state ----------------------------------------------------
+
+
+  const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
+
   const pianoRef=useRef(null); const canvasRef=useRef(null);
   const synthRef=useRef(null); const partRef=useRef(null);
   const pointerMap=useRef(new Map()); const kbdSet=useRef(new Set());
@@ -313,7 +317,7 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
-  const [mode, setMode] = useState("piano"); // "piano" ou "rythme"
+
 
   const OCTAVE_START = Tone.Frequency("C4").toMidi();
   // les 12 notes de C4 à B4
@@ -897,6 +901,7 @@ export default function App(){
 
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
+
     const highlight = (m, on) => {
       if (mode !== "piano") return;
       document
