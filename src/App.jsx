@@ -250,7 +250,7 @@ export default function App(){
 
 
 
-
+  const popsRef = useRef([]);  
 
 
   const onHit = (midi) => {
@@ -276,6 +276,22 @@ export default function App(){
       setScore(s => s + Math.round(100 * diffMult * whiteMult));
       setCombo(c => c + 1);
       setHealth(h => Math.min(1, h + 0.01 * combo));
+
+
+      const keyEl = document.querySelector(`[data-midi='${midi}']`);
+      if (keyEl) {
+        const rect = keyEl.getBoundingClientRect();
+        // milieu haut de la barre :
+        const x = rect.left + rect.width / 2;
+        const y = rect.top;
+        popsRef.current.push({ x, y, start: performance.now() });
+      }
+
+      // retirer la note
+      fallingNotesRef.current = fallingNotesRef.current.filter(n => n !== bestNote);
+      return;
+
+
     } else {
       // MISS
       setScore(s => s - 10);
@@ -633,6 +649,29 @@ export default function App(){
         .getPropertyValue("--white-h")
     );
   
+
+    // ——— dessin des pops ———
+    const now = performance.now();
+    const DURATION = 300; // ms de l’animation pop
+    ctx.save();
+    popsRef.current = popsRef.current.filter(pop => {
+      const t = (now - pop.start) / DURATION;
+      if (t >= 1) return false; // on jette la pop terminée
+    
+      // cercle qui grandit et s’estompe
+      const maxR =  parseFloat(getComputedStyle(document.documentElement)
+                        .getPropertyValue("--white-w")) * 0.8;
+      const r = maxR * t;
+      ctx.beginPath();
+      ctx.arc(pop.x, pop.y, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${1 - t})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      return true;
+    });
+    ctx.restore();
+
+
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
     if (!midiData) {
       const pressedMidis = [
