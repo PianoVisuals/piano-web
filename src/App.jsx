@@ -271,16 +271,21 @@ export default function App(){
     if (bestNote && bestDist < 30) {
       // HIT
       setFallingNotes(ns => ns.filter(n => n !== bestNote));
-      const diffMult = { easy: 0.5, normal: 1, hard: 2 }[difficulty];
-      const whiteMult = whiteOnly ? 0.5 : 1;
-      setScore(s => s + Math.round(100 * diffMult * whiteMult));
-      setCombo(c => c + 1);
-      setHealth(h => Math.min(1, h + 0.01 * combo));
+
+      requestAnimationFrame(() => {
+        const diffMult = { easy: 0.5, normal: 1, hard: 2 }[difficulty];
+        const whiteMult = whiteOnly ? 0.5 : 1;
+        setScore(s => s + Math.round(100 * diffMult * whiteMult));
+        setCombo(c => c + 1);
+        setHealth(h => Math.min(1, h + 0.01 * combo));
+      });
     } else {
       // MISS
-      setScore(s => s - 10);
-      setCombo(0);
-      setHealth(h => Math.max(0, h - 0.05));
+      requestAnimationFrame(() => {
+        setScore(s => s - 10);
+        setCombo(0);
+        setHealth(h => Math.max(0, h - 0.05));
+      });
     }
   };
 
@@ -296,7 +301,8 @@ export default function App(){
   const [score, setScore]       = useState(0);
   const [combo, setCombo]       = useState(0);
   const [health, setHealth]     = useState(1);    // 0→1 barre de vie
-  const [fallingNotes, setFallingNotes] = useState([]); // liste des notes à l’écran
+  const fallingNotesRef = useRef([]);   // contiendra tes notes qui tombent
+  const [, setTick]       = useState(0); // simple compteur pour forcer un petit render
 
 
 
@@ -675,28 +681,28 @@ export default function App(){
       }
     }
   
-    // ─── 2) BARRES ENDLESS MODE ───
+    // ─── Endless Mode bars ───
     if (endlessActive) {
       ctx.save();
-      // pas de clip
-      const barH = whiteH * 2;
-      fallingNotes.forEach((note) => {
+      const whiteH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h"));
+      const barH   = whiteH * 2;
+
+      for (const note of fallingNotesRef.current) {
         const keyEl = document.querySelector(`[data-midi='${note.midi}']`);
-        if (!keyEl) return;
+        if (!keyEl) continue;
         const rect = keyEl.getBoundingClientRect();
         const barW = rect.width * 0.6;
-        const x = rect.left + (rect.width - barW) / 2;
-        const y = note.y;
+        const x    = rect.left + (rect.width - barW)/2;
+        const y    = note.y;
         const baseColor = WHITE.includes(note.midi % 12)
           ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
           : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
         ctx.fillStyle = baseColor;
         ctx.fillRect(x, y - barH, barW, barH);
-        // contour
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth   = 1.5;
         ctx.strokeStyle = "#000";
         ctx.strokeRect(x, y - barH, barW, barH);
-      });
+      }
       ctx.restore();
     }
   
@@ -777,46 +783,48 @@ export default function App(){
     return () => cancelAnimationFrame(rafId);
   }, [endlessActive, fallingNotes, midiData]);
   
+
+
   // ==== Hook spawn & move ====
   useEffect(() => {
     if (!endlessActive) return;
-    // spawn
-    const spawnIntervalMap = { easy: 2000, normal: 1000, hard: 500 };
-    const spawnId = setInterval(() => {
+
+    // 1) on calcule spawn + vitesse
+    const spawnMs = { easy:600, normal:400, hard:250 }[difficulty];
+    const speed   = { easy:1.5, normal:2.5, hard:4.0 }[difficulty] * 0.4;
+    const whiteH  = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h"));
+    const barH    = () => whiteH() * 2;
+
+    // 2) boucle à ~60fps qui spawne et déplace
+    const id = setInterval(() => {
+      // a) spawn sur l’octave et map clavier
       const pool = (whiteOnly
-          ? OCTAVE_MIDIS.filter((m) => WHITE.includes(m % 12))
-          : OCTAVE_MIDIS
-      ).filter((m) => GAME_MIDIS.has(m)); // et on garde la map clavier
-      const midi = pool[Math.floor(Math.random() * pool.length)];
-      setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
-    }, spawnIntervalMap[difficulty]);
-  
-    // move & cleanup
-    const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
-    const speed = baseSpeedMap[difficulty];
-    const moveId = setInterval(() => {
-      const whiteH = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
-      );
-      const barH = whiteH * 2;
-      setFallingNotes((notes) =>
-        notes
-          .map((n) => ({ ...n, y: n.y + speed }))
-          .filter((n) => {
-            if (n.y < window.innerHeight + barH) return true;
-            // MISS
-            setCombo(0);
-            setHealth((h) => Math.max(0, h - 0.05));
-            setScore((s) => s - 10);
-            return false;
-          })
-      );
-    }, 1000 / 60);
-  
-    return () => {
-      clearInterval(spawnId);
-      clearInterval(moveId);
-    };
+        ? OCTAVE_MIDIS.filter(m=>WHITE.includes(m%12))
+        : OCTAVE_MIDIS
+      ).filter(m=>GAME_MIDIS.has(m));
+      const midi = pool[Math.floor(Math.random()*pool.length)];
+      fallingNotesRef.current.push({ midi, y: 0 });
+
+      // b) déplacement + purge hors écran
+      const next = [];
+      for (const note of fallingNotesRef.current) {
+        note.y += speed;
+        if (note.y < window.innerHeight + barH()) {
+          next.push(note);
+        } else {
+          // MISS
+          setCombo(0);
+          setHealth(h=>Math.max(0,h-0.05));
+          setScore(s=>s-10);
+        }
+      }
+      fallingNotesRef.current = next;
+
+      // c) forcer un petit render pour score/PV
+      setTick(t=>t+1);
+    }, 1000/60);
+
+    return () => clearInterval(id);
   }, [endlessActive, difficulty, whiteOnly]);
 
 
