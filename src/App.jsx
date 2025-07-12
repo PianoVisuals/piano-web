@@ -831,35 +831,34 @@ export default function App(){
 
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
-    const down = (e) => {
-      if (e.code === "Space") {
-        if (midiData && mode === "piano") {
+    const down = e => {
+      if (mode === "piano") {
+        // ————— mode Piano : attaque + highlight DOM
+        if (e.repeat) return;
+        if (e.code === "Space" && midiData) {
           e.preventDefault();
           togglePlay();
+          return;
         }
-        return;
-      }
-      const note = PC_MAP[e.code];
-      if (!note) return;
-      const midi = n2m(note);
-
-      // 1) Jouer le son + visuel **toujours**, sauf si déjà en train  
-      if (!kbdSet.current.has(midi)) {
+        const note = PC_MAP[e.code];
+        if (!note) return;
+        const midi = n2m(note);
+        if (kbdSet.current.has(midi)) return;
         kbdSet.current.add(midi);
         synthRef.current.triggerAttack(note);
         highlight(midi, true);
-      }
-
-      // 2) Si on est en Endless Mode, on score et on **ne pas** refaire le triggerAttack
-      if (mode === "rythme" && endlessActive) {
+      } else {
+        // ————— mode Jeu : on tente un hit
+        const note = PC_MAP[e.code];
+        if (!note) return;
+        const midi = n2m(note);
         onHit(midi);
-        return;
       }
-
-      // 3) Sinon (mode Piano ou game sans endless), on continue comme avant…
     };
-
-    const up = (e) => {
+  
+    const up = e => {
+      if (mode !== "piano") return;
+      // ————— mode Piano seulement : release + un-highlight
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
@@ -874,7 +873,7 @@ export default function App(){
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [mode, endlessActive, midiData]);
+  }, [mode, midiData]);
 
 
   // --- Web MIDI ----------------------------------------------------
