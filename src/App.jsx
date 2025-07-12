@@ -237,7 +237,7 @@ export default function App(){
 
 
 
-  import React, { useRef } from "react";
+
 
   export default function App() {
     const aboutRef = useRef(null);
