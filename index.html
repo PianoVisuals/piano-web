@@ -81,34 +81,10 @@
   <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
       <button class="close-btn" aria-label="Close">×</button>
-      <h1 id="modal-title">About Midi Piano Web Visual</h1>
-      <p>
-        Midi Piano Web Visual delivers a stunning virtual piano right in your browser.
-        Powered by React and Tone.js, it seamlessly supports touch gestures, computer-
-        keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.
-      </p>
-      <p>
-        Import your own MIDI files or pick from our growing demo library—and watch as animated
-        bars cascade onto a full-screen keyboard in perfect sync. Each note you play lights
-        up the key and triggers a vivid falling-bar animation, making both learning and
-        performance highly engaging.
-      </p>
-      <p>
-        Designed for every device—from desktop to tablet to smartphone—the interface adapts
-        fluidly in both landscape and portrait modes. Control volume and sustain with intuitive
-        sliders, and explore dozens of instrument voices (acoustic grand piano, harpsichord,
-        banjo, violin, and more) alongside customizable color themes.
-      </p>
-      <p>
-        We continuously update with fresh demo tracks, optimized soundfonts, and performance
-        enhancements. Whether you’re learning to read sheet music, rehearsing for an upcoming
-        recital, or simply jamming for fun, Midi Piano Web Visual makes practice engaging,
-        accessible, and visually captivating.
-      </p>
-      <p>
-        Ready to start? Click “Load…” to import a MIDI file or choose a demo, and let the
-        magic of falling note bars transform your musical experience.
-      </p>
+      <h1 id="modal-title"></h1>
+      <div id="modal-body">
+        <!-- Les paragraphes seront injectés ici -->
+      </div>
     </div>
   </div>
 
@@ -117,12 +93,49 @@
   <script type="module" src="/src/main.jsx"></script>
 
   <script>
-    // Bouton pour fermer la modal une seule fois
+    // Contenus en anglais et en français
+    const content = {
+      en: {
+        title: "About Midi Piano Web Visual",
+        paragraphs: [
+          "Midi Piano Web Visual delivers a stunning virtual piano right in your browser. Powered by React and Tone.js, it seamlessly supports touch gestures, computer-keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.",
+          "Import your own MIDI files or choose from our ever-expanding music library, and watch as each note you play instantly lights up its corresponding key. This responsive glow makes both practice and performance feel immersive and visually engaging.",
+          "Designed for every device from desktop to tablet to smartphone, the interface adapts fluidly in both landscape and portrait modes. Control volume and sustain with intuitive sliders, and explore dozens of instrument voices (acoustic grand piano, harpsichord, banjo, violin, and more) alongside customizable color themes.",
+          "We continuously update with fresh demo tracks, optimized soundfonts, and performance enhancements. Whether you’re learning to read sheet music, rehearsing for an upcoming recital, or simply jamming for fun, Midi Piano Web Visual makes practice engaging, accessible, and visually captivating.",
+          "Ready to start? Click “Load…” to import a MIDI file or choose a demo, and let the magic of falling note bars transform your musical experience."
+        ]
+      },
+      fr: {
+        title: "À propos de Midi Piano Web Visual",
+        paragraphs: [
+          "Midi Piano Web Visual vous offre un piano virtuel époustouflant directement dans votre navigateur. Propulsé par React et Tone.js, il prend en charge les gestes tactiles, les raccourcis clavier et les contrôleurs MIDI USB pour reproduire la sensation d’un vrai piano.",
+          "Importez vos propres fichiers MIDI ou choisissez parmi notre bibliothèque musicale en constante expansion, et regardez chaque note que vous jouez illuminer instantanément la touche correspondante. Cette lueur réactive rend la pratique et la performance immersives et visuellement captivantes.",
+          "Conçu pour tous les appareils, du bureau à la tablette en passant par le smartphone, l’interface s’adapte avec fluidité en modes paysage et portrait. Contrôlez le volume et le sustain à l’aide de curseurs intuitifs, et explorez des dizaines de voix d’instruments (piano à queue acoustique, clavecin, banjo, violon, etc.) ainsi que des thèmes de couleurs personnalisables.",
+          "Nous mettons régulièrement à jour avec de nouveaux morceaux démo, des soundfonts optimisés et des améliorations de performance. Que vous appreniez à lire une partition, répétiez pour un prochain récital ou que vous jouiez simplement pour le plaisir, Midi Piano Web Visual rend la pratique engageante, accessible et visuellement époustouflante.",
+          "Prêt à commencer ? Cliquez sur “Load…” pour importer un fichier MIDI ou choisir une démo, et laissez la magie des barres de notes tomber transformer votre expérience musicale."
+        ]
+      }
+    };
+
+    // Détermination de la langue
+    const userLang = navigator.language.startsWith("fr") ? "fr" : "en";
+    document.documentElement.lang = userLang;
+
+    // Injection du contenu dans la modal
+    const { title, paragraphs } = content[userLang];
+    document.getElementById("modal-title").textContent = title;
+    const body = document.getElementById("modal-body");
+    paragraphs.forEach(text => {
+      const p = document.createElement("p");
+      p.textContent = text;
+      body.appendChild(p);
+    });
+
+    // Fonctionnement du bouton fermer (une seule fois)
     const modal   = document.getElementById('modal');
     const closeBtn = modal.querySelector('.close-btn');
-
     closeBtn.addEventListener('click', () => {
-      modal.remove(); // supprime complètement la modal, impossible de rouvrir
+      modal.remove();
     });
   </script>
 </body>
