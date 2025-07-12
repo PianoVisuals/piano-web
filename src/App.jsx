@@ -824,7 +824,6 @@ export default function App(){
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
-      // 1) Gestion Espace pour Play/Pause MIDI (mode Piano)
       if (e.code === "Space") {
         if (midiData && mode === "piano") {
           e.preventDefault();
@@ -832,37 +831,33 @@ export default function App(){
         }
         return;
       }
-  
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
-  
-      // 2) Endless Mode actif → on score la frappe
+
+      // 1) Jouer le son + visuel **toujours**, sauf si déjà en train  
+      if (!kbdSet.current.has(midi)) {
+        kbdSet.current.add(midi);
+        synthRef.current.triggerAttack(note);
+        highlight(midi, true);
+      }
+
+      // 2) Si on est en Endless Mode, on score et on **ne pas** refaire le triggerAttack
       if (mode === "rythme" && endlessActive) {
         onHit(midi);
         return;
       }
-  
-      // 3) Mode Piano (ou Game Mode inactif) → ancien comportement
-      if (e.repeat) return;
-      if (kbdSet.current.has(midi)) return;
-      kbdSet.current.add(midi);
-      synthRef.current.triggerAttack(note);
-      highlight(midi, true);
+
+      // 3) Sinon (mode Piano ou game sans endless), on continue comme avant…
     };
 
     const up = (e) => {
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
-  
-      // Mode Piano → release normal
-      if (mode === "piano") {
-        kbdSet.current.delete(midi);
-        synthRef.current.triggerRelease(note);
-        highlight(midi, false);
-      }
-      // En Endless, on ne gère pas le release (pas de son)
+      kbdSet.current.delete(midi);
+      synthRef.current.triggerRelease(note);
+      highlight(midi, false);
     };
   
     window.addEventListener("keydown", down);
