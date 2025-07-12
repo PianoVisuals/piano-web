@@ -781,7 +781,7 @@ export default function App(){
   useEffect(() => {
     if (!endlessActive) return;
     // spawn
-    const spawnIntervalMap = { easy: 600, normal: 400, hard: 250 };
+    const spawnIntervalMap = { easy: 2000, normal: 1000, hard: 500 };
     const spawnId = setInterval(() => {
       const pool = (whiteOnly
           ? OCTAVE_MIDIS.filter((m) => WHITE.includes(m % 12))
