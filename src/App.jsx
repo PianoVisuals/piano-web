@@ -271,21 +271,16 @@ export default function App(){
     if (bestNote && bestDist < 30) {
       // HIT
       setFallingNotes(ns => ns.filter(n => n !== bestNote));
-
-      requestAnimationFrame(() => {
-        const diffMult = { easy: 0.5, normal: 1, hard: 2 }[difficulty];
-        const whiteMult = whiteOnly ? 0.5 : 1;
-        setScore(s => s + Math.round(100 * diffMult * whiteMult));
-        setCombo(c => c + 1);
-        setHealth(h => Math.min(1, h + 0.01 * combo));
-      });
+      const diffMult = { easy: 0.5, normal: 1, hard: 2 }[difficulty];
+      const whiteMult = whiteOnly ? 0.5 : 1;
+      setScore(s => s + Math.round(100 * diffMult * whiteMult));
+      setCombo(c => c + 1);
+      setHealth(h => Math.min(1, h + 0.01 * combo));
     } else {
       // MISS
-      requestAnimationFrame(() => {
-        setScore(s => s - 10);
-        setCombo(0);
-        setHealth(h => Math.max(0, h - 0.05));
-      });
+      setScore(s => s - 10);
+      setCombo(0);
+      setHealth(h => Math.max(0, h - 0.05));
     }
   };
 
@@ -301,8 +296,7 @@ export default function App(){
   const [score, setScore]       = useState(0);
   const [combo, setCombo]       = useState(0);
   const [health, setHealth]     = useState(1);    // 0→1 barre de vie
-  const fallingNotesRef = useRef([]);   // contiendra tes notes qui tombent
-  const [, setTick] = useState(0); // simple compteur pour forcer un petit render
+  const [fallingNotes, setFallingNotes] = useState([]); // liste des notes à l’écran
 
 
 
@@ -640,7 +634,7 @@ export default function App(){
     );
   
     // ─── 1) BARRES MONTANTES (aucun MIDI chargé) ───
-    if (mode === "piano" && !midiData) {
+    if (!midiData) {
       const pressedMidis = [
         ...kbdSet.current,
         ...Array.from(pointerMap.current.values()),
@@ -681,28 +675,28 @@ export default function App(){
       }
     }
   
-    // ─── Endless Mode bars ───
+    // ─── 2) BARRES ENDLESS MODE ───
     if (endlessActive) {
       ctx.save();
-      const whiteH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h"));
-      const barH   = whiteH * 2;
-
-      for (const note of fallingNotesRef.current) {
+      // pas de clip
+      const barH = whiteH * 2;
+      fallingNotes.forEach((note) => {
         const keyEl = document.querySelector(`[data-midi='${note.midi}']`);
-        if (!keyEl) continue;
+        if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
         const barW = rect.width * 0.6;
-        const x    = rect.left + (rect.width - barW)/2;
-        const y    = note.y;
+        const x = rect.left + (rect.width - barW) / 2;
+        const y = note.y;
         const baseColor = WHITE.includes(note.midi % 12)
           ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
           : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
         ctx.fillStyle = baseColor;
         ctx.fillRect(x, y - barH, barW, barH);
-        ctx.lineWidth   = 1.5;
+        // contour
+        ctx.lineWidth = 1.5;
         ctx.strokeStyle = "#000";
         ctx.strokeRect(x, y - barH, barW, barH);
-      }
+      });
       ctx.restore();
     }
   
@@ -781,50 +775,48 @@ export default function App(){
     };
     loop();
     return () => cancelAnimationFrame(rafId);
-  }, [endlessActive]);
+  }, [endlessActive, fallingNotes, midiData]);
   
-
-
   // ==== Hook spawn & move ====
   useEffect(() => {
     if (!endlessActive) return;
-
-    // 1) on calcule spawn + vitesse
-    const spawnMs = { easy:600, normal:400, hard:250 }[difficulty];
-    const speed   = { easy:1.5, normal:2.5, hard:4.0 }[difficulty] * 0.4;
-    const whiteH  = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h"));
-    const barH    = () => whiteH() * 2;
-
-    // 2) boucle à ~60fps qui spawne et déplace
-    const id = setInterval(() => {
-      // a) spawn sur l’octave et map clavier
+    // spawn
+    const spawnIntervalMap = { easy: 2000, normal: 1000, hard: 500 };
+    const spawnId = setInterval(() => {
       const pool = (whiteOnly
-        ? OCTAVE_MIDIS.filter(m=>WHITE.includes(m%12))
-        : OCTAVE_MIDIS
-      ).filter(m=>GAME_MIDIS.has(m));
-      const midi = pool[Math.floor(Math.random()*pool.length)];
-      fallingNotesRef.current.push({ midi, y: 0 });
-
-      // b) déplacement + purge hors écran
-      const next = [];
-      for (const note of fallingNotesRef.current) {
-        note.y += speed;
-        if (note.y < window.innerHeight + barH()) {
-          next.push(note);
-        } else {
-          // MISS
-          setCombo(0);
-          setHealth(h=>Math.max(0,h-0.05));
-          setScore(s=>s-10);
-        }
-      }
-      fallingNotesRef.current = next;
-
-      // c) forcer un petit render pour score/PV
-      setTick(t=>t+1);
-    }, 1000/60);
-
-    return () => clearInterval(id);
+          ? OCTAVE_MIDIS.filter((m) => WHITE.includes(m % 12))
+          : OCTAVE_MIDIS
+      ).filter((m) => GAME_MIDIS.has(m)); // et on garde la map clavier
+      const midi = pool[Math.floor(Math.random() * pool.length)];
+      setFallingNotes((notes) => [...notes, { midi, y: 0 }]);
+    }, spawnIntervalMap[difficulty]);
+  
+    // move & cleanup
+    const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
+    const speed = baseSpeedMap[difficulty];
+    const moveId = setInterval(() => {
+      const whiteH = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--white-h")
+      );
+      const barH = whiteH * 2;
+      setFallingNotes((notes) =>
+        notes
+          .map((n) => ({ ...n, y: n.y + speed }))
+          .filter((n) => {
+            if (n.y < window.innerHeight + barH) return true;
+            // MISS
+            setCombo(0);
+            setHealth((h) => Math.max(0, h - 0.05));
+            setScore((s) => s - 10);
+            return false;
+          })
+      );
+    }, 1000 / 60);
+  
+    return () => {
+      clearInterval(spawnId);
+      clearInterval(moveId);
+    };
   }, [endlessActive, difficulty, whiteOnly]);
 
 
@@ -832,42 +824,49 @@ export default function App(){
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
-      if (e.repeat) return;
+      if (e.code === "Space") {
+        if (midiData && mode === "piano") {
+          e.preventDefault();
+          togglePlay();
+        }
+        return;
+      }
       const note = PC_MAP[e.code];
       if (!note) return;
-      const midi = Tone.Frequency(note).toMidi();
+      const midi = n2m(note);
 
-      // 1) toujours jouer le son
-      synthRef.current.triggerAttack(note);
+      // 1) Jouer le son + visuel **toujours**, sauf si déjà en train  
+      if (!kbdSet.current.has(midi)) {
+        kbdSet.current.add(midi);
+        synthRef.current.triggerAttack(note);
+        highlight(midi, true);
+      }
 
-      // 2) toujours highlight, quel que soit mode
-      highlight(midi, true);
-
-      // 3) si mode jeu, onHit, sinon on joue normalement
+      // 2) Si on est en Endless Mode, on score et on **ne pas** refaire le triggerAttack
       if (mode === "rythme" && endlessActive) {
         onHit(midi);
-      } else {
-        kbdSet.current.add(midi);
+        return;
       }
+
+      // 3) Sinon (mode Piano ou game sans endless), on continue comme avant…
     };
 
     const up = (e) => {
       const note = PC_MAP[e.code];
       if (!note) return;
-      const midi = Tone.Frequency(note).toMidi();
-
+      const midi = n2m(note);
+      kbdSet.current.delete(midi);
       synthRef.current.triggerRelease(note);
       highlight(midi, false);
-      kbdSet.current.delete(midi);
     };
-
+  
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [mode, endlessActive]);
+  }, [mode, endlessActive, midiData]);
 
 
   // --- Web MIDI ----------------------------------------------------
@@ -897,50 +896,10 @@ export default function App(){
 
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
-    const highlight = (m, on) => {
-      if (mode !== "piano") return;
-      document
-        .querySelector(`[data-midi='${m}']`)
-        ?.classList.toggle("active", on);
-    };
-    const pDown = e => {
-    const midi = midiAt(e.clientX, e.clientY);
-    if (midi == null) return;
-  
-    pointerMap.current.set(e.pointerId, midi);
-    synthRef.current.triggerAttack(m2n(midi));
-  
-    // highlight uniquement en mode piano
-    if (mode === "piano") highlight(midi, true);
-  
-    pianoRef.current.setPointerCapture(e.pointerId);
-  };
-  
-  const pMove = e => {
-    if (!pointerMap.current.has(e.pointerId)) return;
-    const prev = pointerMap.current.get(e.pointerId);
-    const now = midiAt(e.clientX, e.clientY);
-    if (now === prev) return;
-  
-    // release visuel/son en piano
-    synthRef.current.triggerRelease(m2n(prev));
-    if (mode === "piano") highlight(prev, false);
-  
-    if (now != null) {
-      pointerMap.current.set(e.pointerId, now);
-      synthRef.current.triggerAttack(m2n(now));
-      if (mode === "piano") highlight(now, true);
-    }
-  };
-
-  const pUp = e => {
-    const midi = pointerMap.current.get(e.pointerId);
-    pointerMap.current.delete(e.pointerId);
-    if (midi != null) {
-      synthRef.current.triggerRelease(m2n(midi));
-      if (mode === "piano") highlight(midi, false);
-    }
-  };
+  const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
+  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);synthRef.current.triggerAttack(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
+  const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
+  const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
