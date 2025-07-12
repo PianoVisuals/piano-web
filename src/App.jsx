@@ -1038,7 +1038,7 @@ const labelByMidi = useMemo(() => {
     <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
 
     <details className="about" ref={aboutRef}>
-      <summary>{summary}</summary>
+      <summary>ⓘ</summary>
       <div
           className="about-content"
           // pour que ton JSX accepte le HTML dans les paragraphes
