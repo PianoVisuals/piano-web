@@ -793,7 +793,7 @@ export default function App(){
   
     // move & cleanup
     const baseSpeedMap = { easy: 1.5, normal: 2.5, hard: 4.0 };
-    const speed = baseSpeedMap[difficulty] * 0.4;
+    const speed = baseSpeedMap[difficulty];
     const moveId = setInterval(() => {
       const whiteH = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue("--white-h")
