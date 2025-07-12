@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,34 +7,59 @@
   <link rel="icon" type="image/png" href="/logo32.png" />
   <link rel="apple-touch-icon" href="/logo180.png" />
   <!-- AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443" crossorigin="anonymous"></script>
-  <script async src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
+  <script async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443"
+          crossorigin="anonymous"></script>
+  <script async
+          src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      padding: 4rem 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    header p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    /* Décaler le reste sous le header */
+    #root {
+      padding-top: 2rem;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Contenu statique visible par Google -->
   <header>
-    <h1>Bienvenue sur Midi Piano Web Visual</h1>
+    <h1>Welcome to Midi Piano Web Visual</h1>
     <p>
-      Piano Visuals vous permet de jouer et de visualiser vos fichiers MIDI
-      directement dans le navigateur. Choisissez un thème, un instrument,
-      importez un fichier .mid ou utilisez nos démos, puis laissez tomber
-      les barres sur le clavier !
+      Midi Piano Web Visual brings your MIDI files to life in the browser.  
+      Choose from a variety of themes, pick an instrument voice,  
+      and simply drop your .mid file—or select one of our demos—to  
+      watch falling note bars light up a full-screen virtual piano.  
+      Perfect for learning to read music, practicing, or just having fun!
+    </p>
+    <p>
+      With touch, computer-keyboard, and USB-MIDI support,  
+      plus customizable volume and sustain controls,  
+      it’s never been easier to play and visualize your favorite tunes.
     </p>
   </header>
 
-  <section id="about">
-    <h2>À propos de ce projet</h2>
-    <p>
-      Développé en React et Tone.js, ce site supporte le tactile, le clavier
-      d’ordinateur et les contrôleurs MIDI USB pour une expérience réaliste
-      de piano virtuel. Idéal pour l’apprentissage, la pratique ou le fun !
-    </p>
-  </section>
-
-  <!-- ici React montera ton appli -->
+  <!-- React montera ton appli ici -->
   <div id="root"></div>
-
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
