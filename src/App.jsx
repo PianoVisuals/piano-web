@@ -2,7 +2,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
-
+import * as Tone from "tone";
+import html2canvas from "html2canvas";
 
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
@@ -262,39 +263,53 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
+  const offscreenCanvas = useRef(document.createElement("canvas"));
+  const offCtx        = useRef(offscreenCanvas.current.getContext("2d"));
+
+
   const [showModal, setShowModal]     = useState(false);
 
   const [recorder, setRecorder] = useState(null);
   const [pendingBlobUrl, setBlobUrl]  = useState(null);
 
   const startRecording = async () => {
-    // 1) Demande la capture de l'onglet courant
-    const displayStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { cursor: "always" },
-      audio: false
-    });
+    // ¾ – dimensionne ton offscreen à la taille de la zone à capturer
+    const wrapper = containerRef.current; // ou le ref qui entoure tout ton UI
+    const { width, height } = wrapper.getBoundingClientRect();
+    offscreenCanvas.current.width  = width;
+    offscreenCanvas.current.height = height;
   
-    // 2) Récupère l’audio du synth
+    // ¾ – boucle html2canvas
+    let animId;
+    const drawLoop = async () => {
+      const snap = await html2canvas(wrapper, { backgroundColor: null });
+      offCtx.current.clearRect(0,0,width,height);
+      offCtx.current.drawImage(snap, 0, 0, width, height);
+      animId = requestAnimationFrame(drawLoop);
+    };
+    drawLoop();
+  
+    // ¾ – mix audio de Tone.js comme avant
     const audioDest = Tone.context.createMediaStreamDestination();
     synthRef.current.connect(audioDest);
   
-    // 3) Fusionne la vidéo écran + audio synth
+    // ¾ – capture le flux du offscreen + audio
+    const videoStream = offscreenCanvas.current.captureStream(30);
     const mixed = new MediaStream([
-      ...displayStream.getVideoTracks(),
+      ...videoStream.getVideoTracks(),
       ...audioDest.stream.getAudioTracks()
     ]);
   
-    // 4) MediaRecorder sur le flux mixé
+    // ¾ – MediaRecorder idem avant
     const rec = new MediaRecorder(mixed);
     const chunks = [];
     rec.ondataavailable = e => chunks.push(e.data);
     rec.onstop = () => {
+      cancelAnimationFrame(animId);
       const blob = new Blob(chunks, { type: "video/mp4" });
       const url  = URL.createObjectURL(blob);
       setBlobUrl(url);
       setShowModal(true);
-      // arrête la capture d’écran
-      displayStream.getTracks().forEach(t => t.stop());
     };
     rec.start();
     setRecorder(rec);
