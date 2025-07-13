@@ -2,7 +2,11 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+import FFmpeg from "@ffmpeg/ffmpeg";
+
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({ log: true });
+
 
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
@@ -24,7 +28,7 @@ const DEMOS = [
 ];
 
 
-const ffmpeg = createFFmpeg({ log: true });
+
 
 // === AdSense -------------------------------------------------------------
 const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si différent
