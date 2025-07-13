@@ -265,7 +265,7 @@ export default function App(){
   const [showModal, setShowModal]     = useState(false);
 
   const [recorder, setRecorder] = useState(null);
-  const [pendingBlobUrl, setPendingBlobUrl] = useState(null);
+  const [pendingBlobUrl, setBlobUrl]  = useState(null);
 
   const startRecording = () => {
     const canvas = canvasRef.current;
