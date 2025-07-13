@@ -1045,6 +1045,35 @@ const labelByMidi = useMemo(() => {
     }
   }
 
+  @media (max-width: 480px) {
+    .top {
+      padding: 0.25rem 0.5rem;
+      gap: 0.5rem;
+    }
+    .toolbar-item {
+      height: 2rem;
+      font-size: 0.75rem;
+      gap: 0.25rem;
+      min-width: auto;        /* évite que chaque item soit trop large */
+      }
+    .toolbar-item select,
+    .toolbar-item input[type="range"] {
+      height: 1.2rem;
+    }
+    .toolbar-item img {
+      height: 1.2rem;
+    }
+    /* 3) On peut cacher les labels pour gagner de la place */
+    .toolbar-item label {
+      display: none;
+    }
+    /* Nouvel icone pour sustain si on veut (optionnel) */
+    .toolbar-item input[type="checkbox"] + span {
+      display: none;
+    }
+  }
+
+
 
 `}</style>
   {showLibrary && (
