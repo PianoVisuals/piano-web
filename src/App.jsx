@@ -348,6 +348,20 @@ export default function App(){
 
     
   
+  useEffect(() => {
+    const initMIDI = async () => {
+      try {
+        const acc = await navigator.requestMIDIAccess();
+        // ta logique midi…
+      } catch (err) {
+        console.warn("MIDI non disponible ou permissions refusées", err);
+          setMidiConnected(false);
+      }
+    };
+    if (navigator.requestMIDIAccess) initMIDI();
+  }, []);
+
+
   
 
   const borderColor = "#000";   // contour noir, ou une couleur de ton thème
@@ -1215,138 +1229,141 @@ const labelByMidi = useMemo(() => {
 
 
 `}</style>
-  {showLibrary && (
-    <div className="library-overlay" onClick={closeLibrary}>
-      <div className="library-menu" onClick={e => e.stopPropagation()}>
 
-        {/* 2) Titre */}
-        <h3>Upload or Select</h3>
+  <div ref={containerRef} style={{ position: "relative", height: "100vh" }}>
+    {showLibrary && (
+      <div className="library-overlay" onClick={closeLibrary}>
+        <div className="library-menu" onClick={e => e.stopPropagation()}>
+  
+          {/* 2) Titre */}
+          <h3>Upload or Select</h3>
+  
+          {/* 3) Upload file */}
+          <button onClick={() => fileInputRef.current.click()}>
+            Upload MIDI File
+          </button>
 
-        {/* 3) Upload file */}
-        <button onClick={() => fileInputRef.current.click()}>
-          Upload MIDI File
-        </button>
-
-        {/* 4) Sélecteur de la bibliothèque */}
-        <select
-          defaultValue=""
-          onChange={e => {
-            loadDemo(e.target.value);
-            closeLibrary();
-          }}
-        >
-          <option value="" disabled>Select a Song...</option>
-          {DEMOS.map(name => (
-            <option key={name} value={name}>
-              {name.replace(/\.mid$/, "")}
-            </option>
-          ))}
+          {/* 4) Sélecteur de la bibliothèque */}
+          <select
+            defaultValue=""
+            onChange={e => {
+              loadDemo(e.target.value);
+              closeLibrary();
+            }}
+          >
+            <option value="" disabled>Select a Song...</option>
+            {DEMOS.map(name => (
+              <option key={name} value={name}>
+                {name.replace(/\.mid$/, "")}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    )}
+  
+    <button
+      className="toggle-bar"
+      onClick={() => setIsBarCollapsed(b => !b)}
+      onClick={toggleFullScreenBar}
+      aria-label={isBarCollapsed ? "Show options" : "Hide options"}
+    >
+      {isBarCollapsed ? ">" : "<"}
+    </button>
+  
+    <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
+      <div className="toolbar-item">
+        <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
+      </div>
+  
+      <div className="toolbar-item">
+        <label>Theme</label>
+        <select value={theme} onChange={e => setTheme(e.target.value)}>
+          {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
         </select>
       </div>
-    </div>
-  )}
-
-  <button
-    className="toggle-bar"
-    onClick={() => setIsBarCollapsed(b => !b)}
-    onClick={toggleFullScreenBar}
-    aria-label={isBarCollapsed ? "Show options" : "Hide options"}
-  >
-    {isBarCollapsed ? ">" : "<"}
-  </button>
-
-  <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
-    <div className="toolbar-item">
-      <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
-    </div>
-
-    <div className="toolbar-item">
-      <label>Theme</label>
-      <select value={theme} onChange={e => setTheme(e.target.value)}>
-        {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
-      </select>
-    </div>
-  
-    <div className="toolbar-item">
-      <label>Instrument</label>
-      <select value={instrument} onChange={e => setInstrument(e.target.value)}>
-        {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
-      </select>
-    </div>
-  
-    <div className="toolbar-item">
-      <label>
-        <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
-        Sustain
-      </label>
-    </div>
-  
-    <div className="toolbar-item">
-      <label>Vol</label>
+    
+      <div className="toolbar-item">
+        <label>Instrument</label>
+        <select value={instrument} onChange={e => setInstrument(e.target.value)}>
+          {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+        </select>
+      </div>
+    
+      <div className="toolbar-item">
+        <label>
+          <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
+          Sustain
+        </label>
+      </div>
+    
+      <div className="toolbar-item">
+        <label>Vol</label>
+        <input
+          type="range"
+          min="0"
+          max="500"
+          value={volume}
+          onChange={e => setVolume(+e.target.value)}
+          className="slider volume-slider"
+        />
+      </div>
+    
+      <button onClick={togglePlay} disabled={!midiData}>
+        {playing ? "Pause" : "Play"}
+      </button>
+    
+      <button onClick={openLibrary}>Load…</button>
+      <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
+    
       <input
         type="range"
         min="0"
-        max="500"
-        value={volume}
-        onChange={e => setVolume(+e.target.value)}
-        className="slider volume-slider"
+        max="1"
+        step="0.001"
+        value={progress}
+        onChange={e => onScrub(e.target.valueAsNumber)}
+        disabled={!midiData}
+        className="slider progress-slider"
       />
+    
+      <button onClick={toggleRecording}>
+        {recorder
+          ? isFr ? "Arrêter l’enregistrement" : "Stop Recording"
+          : isFr ? "Enregistrer" : "Record"}
+      </button>
+  
+  
+      <details className="about" ref={aboutRef}>
+        <summary>{summary}</summary>
+        <div className="about-content">
+          <h4>{title}</h4>
+          {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
+        </div>
+      </details>
     </div>
-  
-    <button onClick={togglePlay} disabled={!midiData}>
-      {playing ? "Pause" : "Play"}
-    </button>
-  
-    <button onClick={openLibrary}>Load…</button>
-    <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
-  
-    <input
-      type="range"
-      min="0"
-      max="1"
-      step="0.001"
-      value={progress}
-      onChange={e => onScrub(e.target.valueAsNumber)}
-      disabled={!midiData}
-      className="slider progress-slider"
-    />
-  
-    <button onClick={toggleRecording}>
-      {recorder
-        ? isFr ? "Arrêter l’enregistrement" : "Stop Recording"
-        : isFr ? "Enregistrer" : "Record"}
-    </button>
-
-
-    <details className="about" ref={aboutRef}>
-      <summary>{summary}</summary>
-      <div className="about-content">
-        <h4>{title}</h4>
-        {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
-      </div>
-    </details>
-  </div>
-  
-  <canvas ref={canvasRef}></canvas>
-  {showModal && (
-    <div className="record-modal">
-      <div className="record-modal-content">
-        <h3>{isFr ? "Enregistrement terminé !" : "Recording Complete!"}</h3>
-        <p>
-          {isFr
-            ? "Voulez-vous télécharger la vidéo MP4 de votre session ?"
-            : "Do you want to download the MP4 video of your session?"}
-        </p>
-        <div className="record-modal-actions">
-          <button onClick={handleDownload}>
-            {isFr ? "Télécharger" : "Download"}
-          </button>
-          <button onClick={handleCancel}>
-            {isFr ? "Annuler" : "Cancel"}
-          </button>
+    
+    <canvas ref={canvasRef}></canvas>
+    {showModal && (
+      <div className="record-modal">
+        <div className="record-modal-content">
+          <h3>{isFr ? "Enregistrement terminé !" : "Recording Complete!"}</h3>
+          <p>
+            {isFr
+              ? "Voulez-vous télécharger la vidéo MP4 de votre session ?"
+              : "Do you want to download the MP4 video of your session?"}
+          </p>
+          <div className="record-modal-actions">
+            <button onClick={handleDownload}>
+              {isFr ? "Télécharger" : "Download"}
+            </button>
+            <button onClick={handleCancel}>
+              {isFr ? "Annuler" : "Cancel"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+  </div>
   )}
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
