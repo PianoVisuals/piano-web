@@ -261,14 +261,10 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
-  const [playbackRate, setPlaybackRate] = useState(1);
-  
 
-  useEffect(() => {
-    Tone.Transport.bpm.value = 120 * playbackRate; 
-    // ou, si tu veux changer globalement la vitesse
-    Tone.Transport.swing = playbackRate; 
-  }, [playbackRate]);
+
+
+
 
 
 
@@ -1218,20 +1214,6 @@ const labelByMidi = useMemo(() => {
       className="slider progress-slider"
     />
   
-    <div className="toolbar-item">
-      <label htmlFor="speed-select">Speed</label>
-      <select
-        id="speed-select"
-        value={playbackRate}
-        onChange={e => setPlaybackRate(+e.target.value)}
-      >
-        {[0.5, 0.75, 1, 1.25, 1.5, 2].map(v => (
-          <option key={v} value={v}>{v}×</option>
-        ))}
-      </select>
-    </div>
-
-
     <details className="about" ref={aboutRef}>
       <summary>{summary}</summary>
       <div className="about-content">
