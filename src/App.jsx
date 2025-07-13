@@ -265,38 +265,32 @@ export default function App(){
 
 
   const [recorder, setRecorder] = useState(null);
+  const [pendingBlobUrl, setPendingBlobUrl] = useState(null);
 
   const startRecording = () => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error("Le canvas n'est pas encore monté");
-      return;
-    }
+    if (!canvas) return console.error("Canvas non monté");
 
-    // 1) Récupère le flux vidéo du canvas
-    const videoStream = canvas.captureStream(60); 
-    // 2) Récupère le flux audio du synth
-    const audioDest = Tone.context.createMediaStreamDestination();
+    const videoStream = canvas.captureStream(60);
+    const audioDest   = Tone.context.createMediaStreamDestination();
     synthRef.current.connect(audioDest);
 
-    // 3) Fusionne les deux
-    const mixedStream = new MediaStream([
+    const mixed = new MediaStream([
       ...videoStream.getVideoTracks(),
       ...audioDest.stream.getAudioTracks()
     ]);
 
-    // 4) Initialise le MediaRecorder
-    const rec = new MediaRecorder(mixedStream);
+    const rec = new MediaRecorder(mixed);
     const chunks = [];
+
     rec.ondataavailable = e => chunks.push(e.data);
+
     rec.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/mp4' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'recording.mp4';
-      a.click();
+      const blob = new Blob(chunks, { type: "video/mp4" });
+      const url  = URL.createObjectURL(blob);
+      setPendingBlobUrl(url);           // stocke l’URL pour la popup
     };
+
     rec.start();
     setRecorder(rec);
   };
@@ -308,12 +302,21 @@ export default function App(){
     }
   };
 
+  const toggleRecording = () => recorder ? stopRecording() : startRecording();
 
-  const toggleRecording = () => {
-    if (recorder) stopRecording();
-    else startRecording();
-  };
-
+  // Lorsque pendingBlobUrl est défini, on propose le téléchargement
+  if (pendingBlobUrl) {
+    // Utilisation de window.confirm pour la démo
+    const download = window.confirm("Enregistrement terminé ! Voulez-vous télécharger la vidéo ?");
+    if (download) {
+      const a = document.createElement("a");
+      a.href = pendingBlobUrl;
+      a.download = "session.mp4";
+      a.click();
+    }
+    URL.revokeObjectURL(pendingBlobUrl);
+    setPendingBlobUrl(null);
+  }
 
 
   const isFr = navigator.language.startsWith("fr");
