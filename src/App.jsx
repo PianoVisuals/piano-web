@@ -461,25 +461,32 @@ export default function App(){
 
   // MIDI import ----------------------------------------------------
   const handleFile = async (eOrFile) => {
-    // si on a un File direct, on le prend, sinon on en extrait un du event
-    const file = eOrFile instanceof File
-      ? eOrFile
-      : (eOrFile.target && eOrFile.target.files[0]);
-
-    if (!file) return;   // pas de fichier → on sort
-
     try {
+      const file = eOrFile instanceof File
+        ? eOrFile
+        : (eOrFile.target && eOrFile.target.files[0]);
+      if (!file) {
+        console.warn("handleFile : pas de fichier trouvé");
+        return;
+      }
+      console.log("handleFile – lecture du fichier :", file);
+  
       const arr = await file.arrayBuffer();
+      console.log("handleFile – arrayBuffer reçu, longueur :", arr.byteLength);
+  
       const midi = new Midi(arr);
+      console.log("handleFile – objet Midi créé, duration :", midi.duration);
+  
       setMidiData(midi);
       setDuration(midi.duration + LEAD);
       preparePart(midi);
-    } catch (err) {
-      console.error("Err MIDI :", err);
-      alert("Unable to play this MIDI.");
+    }
+    catch (err) {
+      console.error("Erreur dans handleFile :", err);
+      alert("Erreur lors de la lecture du MIDI : " + err.message);
     }
   };
-
+  
 
   const clearAllActive = () => {
     // désactive visuellement + soniquement chaque note “allumée”
