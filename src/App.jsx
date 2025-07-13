@@ -1073,7 +1073,27 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-
+  .toggle-bar {
+    display: none;               /* par défaut masqué */
+    position: fixed;
+    top: 0.25rem;
+    left: 0.25rem;
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    z-index: 20;
+    cursor: pointer;
+  }
+  
+  /* en paysage mobile tactile, on le montre */
+  @media (orientation: landscape) and (pointer: coarse) {
+    .toggle-bar {
+      display: block !important;
+    }
+  }
 
 `}</style>
   {showLibrary && (
