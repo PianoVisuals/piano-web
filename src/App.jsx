@@ -273,20 +273,39 @@ export default function App(){
 
   const startRecording = async () => {
     const wrapper = containerRef.current;
-    if (!wrapper) {
-      console.error("containerRef non monté");
-      return;
-    }
-    const { width, height } = wrapper.getBoundingClientRect();
-    offscreenCanvas.current.width  = width;
-    offscreenCanvas.current.height = height;
+    if (!wrapper) return console.error("containerRef non monté");
   
-    // ¾ – boucle html2canvas
+    // Taille
+    const { width, height } = wrapper.getBoundingClientRect();
+    const offscreen       = document.createElement("canvas");
+    offscreen.width       = width;
+    offscreen.height      = height;
+    const offCtx          = offscreen.getContext("2d");
+  
     let animId;
     const drawLoop = async () => {
+      // 1) Snapshot du DOM (sans le <canvas> ou avec, mais souvent vide)
       const snap = await html2canvas(wrapper, { backgroundColor: null });
-      offCtx.current.clearRect(0,0,width,height);
-      offCtx.current.drawImage(snap, 0, 0, width, height);
+  
+      // 2) On vide l'offscreen et on y colle le DOM
+      offCtx.clearRect(0, 0, width, height);
+      offCtx.drawImage(snap, 0, 0, width, height);
+  
+      // 3) On récupère l'image réelle de ton piano canvas et on la superpose
+      const realCanvas = canvasRef.current;
+      if (realCanvas) {
+        // coordonnées dans le wrapper
+        const rect = realCanvas.getBoundingClientRect();
+        // dessine à la même position
+        offCtx.drawImage(
+          realCanvas,
+          rect.left - wrapper.offsetLeft,
+          rect.top  - wrapper.offsetTop,
+          rect.width,
+          rect.height
+        );
+      }
+  
       animId = requestAnimationFrame(drawLoop);
     };
     drawLoop();
