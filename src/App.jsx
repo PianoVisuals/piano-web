@@ -262,14 +262,14 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
-
+  const [showModal, setShowModal]     = useState(false);
 
   const [recorder, setRecorder] = useState(null);
   const [pendingBlobUrl, setPendingBlobUrl] = useState(null);
 
   const startRecording = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return console.error("Canvas non monté");
+    if (!canvas) return;
 
     const videoStream = canvas.captureStream(60);
     const audioDest   = Tone.context.createMediaStreamDestination();
@@ -282,42 +282,42 @@ export default function App(){
 
     const rec = new MediaRecorder(mixed);
     const chunks = [];
-
     rec.ondataavailable = e => chunks.push(e.data);
-
     rec.onstop = () => {
       const blob = new Blob(chunks, { type: "video/mp4" });
       const url  = URL.createObjectURL(blob);
-      setPendingBlobUrl(url);           // stocke l’URL pour la popup
+      setBlobUrl(url);
+      setShowModal(true);
     };
-
     rec.start();
     setRecorder(rec);
   };
 
   const stopRecording = () => {
-    if (recorder) {
-      recorder.stop();
-      setRecorder(null);
-    }
+    recorder?.stop();
+    setRecorder(null);
   };
 
-  const toggleRecording = () => recorder ? stopRecording() : startRecording();
+  const toggleRecording = () =>
+    recorder ? stopRecording() : startRecording();
 
-  // Lorsque pendingBlobUrl est défini, on propose le téléchargement
-  if (pendingBlobUrl) {
-    // Utilisation de window.confirm pour la démo
-    const download = window.confirm("Enregistrement terminé ! Voulez-vous télécharger la vidéo ?");
-    if (download) {
-      const a = document.createElement("a");
-      a.href = pendingBlobUrl;
-      a.download = "session.mp4";
-      a.click();
-    }
-    URL.revokeObjectURL(pendingBlobUrl);
-    setPendingBlobUrl(null);
-  }
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = pendingBlobUrl;
+    a.download = "session.mp4";
+    a.click();
+    cleanup();
+  };
 
+  const handleCancel = () => {
+    cleanup();
+  };
+
+  const cleanup = () => {
+    pendingBlobUrl && URL.revokeObjectURL(pendingBlobUrl);
+    setBlobUrl(null);
+    setShowModal(false);
+  };
 
   const isFr = navigator.language.startsWith("fr");
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
@@ -1266,7 +1266,9 @@ const labelByMidi = useMemo(() => {
     />
   
     <button onClick={toggleRecording}>
-      {recorder ? 'Stop & Download' : 'Record'}
+      {recorder
+        ? isFr ? "Arrêter l’enregistrement" : "Stop Recording"
+        : isFr ? "Enregistrer" : "Record"}
     </button>
 
 
@@ -1280,6 +1282,26 @@ const labelByMidi = useMemo(() => {
   </div>
   
   <canvas ref={canvasRef}></canvas>
+  {showModal && (
+    <div className="record-modal">
+      <div className="record-modal-content">
+        <h3>{isFr ? "Enregistrement terminé !" : "Recording Complete!"}</h3>
+        <p>
+          {isFr
+            ? "Voulez-vous télécharger la vidéo MP4 de votre session ?"
+            : "Do you want to download the MP4 video of your session?"}
+        </p>
+        <div className="record-modal-actions">
+          <button onClick={handleDownload}>
+            {isFr ? "Télécharger" : "Download"}
+          </button>
+          <button onClick={handleCancel}>
+            {isFr ? "Annuler" : "Cancel"}
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   
