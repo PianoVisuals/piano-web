@@ -275,34 +275,43 @@ export default function App(){
     const wrapper = containerRef.current;
     if (!wrapper) return console.error("containerRef non monté");
   
-    // Taille
-    const { width, height } = wrapper.getBoundingClientRect();
-    const offscreen       = document.createElement("canvas");
-    offscreen.width       = width;
-    offscreen.height      = height;
-    const offCtx          = offscreen.getContext("2d");
+    // 1) dimensions du wrapper
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const width  = wrapperRect.width;
+    const height = wrapperRect.height;
   
+    // 2) création du canvas off-screen
+    const offscreen = document.createElement("canvas");
+    offscreen.width  = width;
+    offscreen.height = height;
+    const offCtx = offscreen.getContext("2d");
+  
+    // 3) boucle de snapshot + compositing
     let animId;
     const drawLoop = async () => {
-      // 1) Snapshot du DOM (sans le <canvas> ou avec, mais souvent vide)
-      const snap = await html2canvas(wrapper, { backgroundColor: null });
-  
-      // 2) On vide l'offscreen et on y colle le DOM
+      // a) snapshot du DOM sans les canvas
+      const snap = await html2canvas(wrapper, {
+        backgroundColor: null,
+        allowTaint: true,
+        useCORS: true,
+        width,
+        height
+      });
       offCtx.clearRect(0, 0, width, height);
       offCtx.drawImage(snap, 0, 0, width, height);
   
-      // 3) On récupère l'image réelle de ton piano canvas et on la superpose
+      // b) récupération et calcul de la position réelle du piano-canvas
       const realCanvas = canvasRef.current;
       if (realCanvas) {
-        // coordonnées dans le wrapper
-        const rect = realCanvas.getBoundingClientRect();
-        // dessine à la même position
+        const canvasRect = realCanvas.getBoundingClientRect();
+        // coordonnées RELATIVES au wrapper
+        const x = canvasRect.left - wrapperRect.left;
+        const y = canvasRect.top  - wrapperRect.top;
         offCtx.drawImage(
           realCanvas,
-          rect.left - wrapper.offsetLeft,
-          rect.top  - wrapper.offsetTop,
-          rect.width,
-          rect.height
+          x, y,
+          canvasRect.width,
+          canvasRect.height
         );
       }
   
@@ -310,18 +319,18 @@ export default function App(){
     };
     drawLoop();
   
-    // ¾ – mix audio de Tone.js comme avant
+    // 4) création du flux audio
     const audioDest = Tone.context.createMediaStreamDestination();
     synthRef.current.connect(audioDest);
   
-    // ¾ – capture le flux du offscreen + audio
-    const videoStream = offscreenCanvas.current.captureStream(30);
+    // 5) fusion vidéo/audio
+    const videoStream = offscreen.captureStream(30);
     const mixed = new MediaStream([
       ...videoStream.getVideoTracks(),
       ...audioDest.stream.getAudioTracks()
     ]);
   
-    // ¾ – MediaRecorder idem avant
+    // 6) MediaRecorder
     const rec = new MediaRecorder(mixed);
     const chunks = [];
     rec.ondataavailable = e => chunks.push(e.data);
@@ -335,7 +344,7 @@ export default function App(){
     rec.start();
     setRecorder(rec);
   };
-
+  
   const stopRecording = () => {
     recorder?.stop();
     setRecorder(null);
