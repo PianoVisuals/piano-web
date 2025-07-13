@@ -308,6 +308,14 @@ export default function App(){
     }
   };
 
+
+  const toggleRecording = () => {
+    if (recorder) stopRecording();
+    else startRecording();
+  };
+
+
+
   const isFr = navigator.language.startsWith("fr");
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
 
@@ -1255,7 +1263,7 @@ const labelByMidi = useMemo(() => {
     />
   
     <button onClick={toggleRecording}>
-      {isRecording ? 'Stop & Download' : 'Record'}
+      {recorder ? 'Stop & Download' : 'Record'}
     </button>
 
 
