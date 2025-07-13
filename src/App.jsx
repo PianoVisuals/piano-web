@@ -262,7 +262,14 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
-
+  // place ce code dans ton composant, par ex. juste après le useEffect qui gère volume
+  useEffect(() => {
+    const slider = document.querySelector('.volume');
+    if (slider) {
+      const percent = (volume / 200) * 100;
+      slider.style.setProperty('--volume-percent', `${percent}%`);
+    }
+  }, [volume]);
 
 
 
@@ -982,35 +989,32 @@ const labelByMidi = useMemo(() => {
 
   .slider {
     -webkit-appearance: none;
+    appearance: none;
     background: transparent;
+    margin: 0 0.5rem;
     cursor: pointer;
   }
 
-
-  /* ========== Volume Slider ========== */
-  .volume-slider {
+  /* ===== Volume ===== */
+  .volume {
     width: 100px;
-    height: 8px;
-    background: #444;
-    border-radius: 4px;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(
+      to right,
+      #4da6ff var(--volume-percent, 0%),
+      #444 var(--volume-percent, 0%)
+    );
   }
-  
-  .volume-slider::-webkit-slider-thumb {
+  /* Thumb invisible pour volume, on remplit tout via background */
+  .volume::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #4da6ff;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    margin-top: -4px; /* centrer le thumb */
+    width: 0;
+    height: 0;
   }
-  
-  .volume-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: #4da6ff;
-    border: 2px solid #fff;
-    border-radius: 50%;
+  .volume::-moz-range-thumb {
+    width: 0;
+    height: 0;
   }
   
 /* ===== Progression ===== */
