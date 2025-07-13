@@ -61,7 +61,7 @@ const THEMES = {
     barB: "rgba(255,182,193,0.7)", 
     actW: "#f9acf5", 
     actB: "#f988e6",
-    bgGradient: "linear-gradient(45deg, #ff80ab, #ffb6c1)", // Dégradé pastel doux
+    bgGradient: "linear-gradient(45deg, #f1c2d7, #f8c1d6)", // Doux dégradé pastel
     animated: true
   },
   "Retro":        { 
@@ -97,7 +97,7 @@ const THEMES = {
     barB: "rgba(133,120,68,0.8)", 
     actW: "#b89918", 
     actB: "#87731f",
-    bgGradient: "linear-gradient(45deg, #f1c5b8, #e1b44c)", // Subtil et lumineux, un équilibre parfait
+    bgGradient: "linear-gradient(45deg, #f1c5b8, #e1b44c)", // Subtil et lumineux
     animated: true
   },
   "Ocean":        { 
@@ -973,7 +973,7 @@ const labelByMidi = useMemo(() => {
   
   /* Dégradé animé spécifique */
   .animated-bg {
-    animation: gradientAnimation 1s ease-in-out infinite;
+    animation: gradientAnimation 15s ease-in-out infinite;
   }
   
   @keyframes gradientAnimation {
