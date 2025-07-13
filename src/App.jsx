@@ -1,8 +1,8 @@
 // @ts-nocheck
-import React, { useRef, useState, useEffect, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
-import html2canvas from "html2canvas";
+
 
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
@@ -260,134 +260,19 @@ export default function App(){
   const [progress,setProgress]=useState(0);
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
-  const containerRef = useRef(null);
-
-  const offscreenCanvas = useRef(document.createElement("canvas"));
-  const offCtx        = useRef(offscreenCanvas.current.getContext("2d"));
 
 
-  const [showModal, setShowModal]     = useState(false);
-
-  const [recorder, setRecorder] = useState(null);
-  const [pendingBlobUrl, setBlobUrl]  = useState(null);
-
-  const startRecording = async () => {
-    const width  = window.innerWidth;
-    const height = window.innerHeight;
-  
-    // on prépare l'offscreen
-    const offscreen = document.createElement("canvas");
-    offscreen.width  = width;
-    offscreen.height = height;
-    const offCtx = offscreen.getContext("2d");
-  
-    let animId;
-    const drawLoop = async () => {
-      // 1) snapshot de tout le body
-      const snap = await html2canvas(document.body, {
-        backgroundColor: null,
-        allowTaint: true,
-        useCORS:    true,
-        width, height,
-        x:0, y:0,
-        windowWidth: width,
-        windowHeight: height
-      });
-      offCtx.clearRect(0, 0, width, height);
-      offCtx.drawImage(snap, 0, 0, width, height);
-  
-      // 2) superposer le canvas des barres
-      const realCanvas = canvasRef.current;
-      if (realCanvas) {
-        offCtx.drawImage(realCanvas, 0, 0, width, height);
-      }
-  
-      // 3) dessiner les touches DOM actives
-      document.querySelectorAll(".piano .active").forEach(el => {
-        const r = el.getBoundingClientRect();
-        // relative à (0,0) de la page
-        offCtx.fillStyle = window.getComputedStyle(el).backgroundColor || "rgba(255,255,0,0.3)";
-        offCtx.globalAlpha = 0.6;
-        offCtx.fillRect(r.left, r.top, r.width, r.height);
-        offCtx.globalAlpha = 1;
-      });
-  
-      animId = requestAnimationFrame(drawLoop);
-    };
-    drawLoop();
-  
-    // audio + MediaRecorder comme avant
-    const audioDest = Tone.context.createMediaStreamDestination();
-    synthRef.current.connect(audioDest);
-
-    const videoStream = offscreen.captureStream(30);
-    const mixed = new MediaStream([
-      ...videoStream.getVideoTracks(),
-      ...audioDest.stream.getAudioTracks()
-    ]);
-  
-    const rec = new MediaRecorder(mixed);
-    const chunks = [];
-    rec.ondataavailable = e => chunks.push(e.data);
-    rec.onstop = () => {
-      cancelAnimationFrame(animId);
-      const blob = new Blob(chunks, { type: "video/mp4" });
-      const url  = URL.createObjectURL(blob);
-      setBlobUrl(url);
-      setShowModal(true);
-    };
-    rec.start();
-    setRecorder(rec);
-  };
-  
 
 
-  
-  const stopRecording = () => {
-    recorder?.stop();
-    setRecorder(null);
-  };
 
-  const toggleRecording = () =>
-    recorder ? stopRecording() : startRecording();
 
-  const handleDownload = () => {
-    const a = document.createElement("a");
-    a.href = pendingBlobUrl;
-    a.download = "session.mp4";
-    a.click();
-    cleanup();
-  };
 
-  const handleCancel = () => {
-    cleanup();
-  };
-
-  const cleanup = () => {
-    pendingBlobUrl && URL.revokeObjectURL(pendingBlobUrl);
-    setBlobUrl(null);
-    setShowModal(false);
-  };
 
   const isFr = navigator.language.startsWith("fr");
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
 
     
   
-  useEffect(() => {
-    const initMIDI = async () => {
-      try {
-        const acc = await navigator.requestMIDIAccess();
-        // ta logique midi…
-      } catch (err) {
-        console.warn("MIDI non disponible ou permissions refusées", err);
-          setMidiConnected(false);
-      }
-    };
-    if (navigator.requestMIDIAccess) initMIDI();
-  }, []);
-
-
   
 
   const borderColor = "#000";   // contour noir, ou une couleur de ton thème
@@ -1229,170 +1114,118 @@ const labelByMidi = useMemo(() => {
   }
 
 
-  .record-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    justify-content: center;  /* centre horizontalement */
-    align-items: center;      /* centre verticalement */
-    z-index: 1000;
-  }
-  
-  .record-modal-content {
-    background: #222;
-    color: #fff;
-    padding: 1.5rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 360px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    /* on supprime tout positionnement absolu ou transform ici */
-  }
+
 
 
 `}</style>
+  {showLibrary && (
+    <div className="library-overlay" onClick={closeLibrary}>
+      <div className="library-menu" onClick={e => e.stopPropagation()}>
 
-  <div ref={containerRef} style={{ position: "relative", height: "100vh" }}>
-    {showLibrary && (
-      
-      <div className="library-overlay" onClick={closeLibrary}>
-        <div className="library-menu" onClick={e => e.stopPropagation()}>
-  
-          {/* 2) Titre */}
-          <h3>Upload or Select</h3>
-  
-          {/* 3) Upload file */}
-          <button onClick={() => fileInputRef.current.click()}>
-            Upload MIDI File
-          </button>
+        {/* 2) Titre */}
+        <h3>Upload or Select</h3>
 
-          {/* 4) Sélecteur de la bibliothèque */}
-          <select
-            defaultValue=""
-            onChange={e => {
-              loadDemo(e.target.value);
-              closeLibrary();
-            }}
-          >
-            <option value="" disabled>Select a Song...</option>
-            {DEMOS.map(name => (
-              <option key={name} value={name}>
-                {name.replace(/\.mid$/, "")}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-    )}
-  
-    <button
-      className="toggle-bar"
-      onClick={() => setIsBarCollapsed(b => !b)}
-      onClick={toggleFullScreenBar}
-      aria-label={isBarCollapsed ? "Show options" : "Hide options"}
-    >
-      {isBarCollapsed ? ">" : "<"}
-    </button>
-  
-    <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
-      <div className="toolbar-item">
-        <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
-      </div>
-  
-      <div className="toolbar-item">
-        <label>Theme</label>
-        <select value={theme} onChange={e => setTheme(e.target.value)}>
-          {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+        {/* 3) Upload file */}
+        <button onClick={() => fileInputRef.current.click()}>
+          Upload MIDI File
+        </button>
+
+        {/* 4) Sélecteur de la bibliothèque */}
+        <select
+          defaultValue=""
+          onChange={e => {
+            loadDemo(e.target.value);
+            closeLibrary();
+          }}
+        >
+          <option value="" disabled>Select a Song...</option>
+          {DEMOS.map(name => (
+            <option key={name} value={name}>
+              {name.replace(/\.mid$/, "")}
+            </option>
+          ))}
         </select>
       </div>
-    
-      <div className="toolbar-item">
-        <label>Instrument</label>
-        <select value={instrument} onChange={e => setInstrument(e.target.value)}>
-          {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
-        </select>
-      </div>
-    
-      <div className="toolbar-item">
-        <label>
-          <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
-          Sustain
-        </label>
-      </div>
-    
-      <div className="toolbar-item">
-        <label>Vol</label>
-        <input
-          type="range"
-          min="0"
-          max="500"
-          value={volume}
-          onChange={e => setVolume(+e.target.value)}
-          className="slider volume-slider"
-        />
-      </div>
-    
-      <button onClick={togglePlay} disabled={!midiData}>
-        {playing ? "Pause" : "Play"}
-      </button>
-    
-      <button onClick={openLibrary}>Load…</button>
-      <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
-    
+    </div>
+  )}
+
+  <button
+    className="toggle-bar"
+    onClick={() => setIsBarCollapsed(b => !b)}
+    onClick={toggleFullScreenBar}
+    aria-label={isBarCollapsed ? "Show options" : "Hide options"}
+  >
+    {isBarCollapsed ? ">" : "<"}
+  </button>
+
+  <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
+    <div className="toolbar-item">
+      <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
+    </div>
+
+    <div className="toolbar-item">
+      <label>Theme</label>
+      <select value={theme} onChange={e => setTheme(e.target.value)}>
+        {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+      </select>
+    </div>
+  
+    <div className="toolbar-item">
+      <label>Instrument</label>
+      <select value={instrument} onChange={e => setInstrument(e.target.value)}>
+        {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+      </select>
+    </div>
+  
+    <div className="toolbar-item">
+      <label>
+        <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
+        Sustain
+      </label>
+    </div>
+  
+    <div className="toolbar-item">
+      <label>Vol</label>
       <input
         type="range"
         min="0"
-        max="1"
-        step="0.001"
-        value={progress}
-        onChange={e => onScrub(e.target.valueAsNumber)}
-        disabled={!midiData}
-        className="slider progress-slider"
+        max="500"
+        value={volume}
+        onChange={e => setVolume(+e.target.value)}
+        className="slider volume-slider"
       />
-    
-      <button onClick={toggleRecording}>
-        {recorder
-          ? isFr ? "Arrêter l’enregistrement" : "Stop Recording"
-          : isFr ? "Enregistrer" : "Record"}
-      </button>
-  
-  
-      <details className="about" ref={aboutRef}>
-        <summary>{summary}</summary>
-        <div className="about-content">
-          <h4>{title}</h4>
-          {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
-        </div>
-      </details>
     </div>
-    <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-    <canvas ref={canvasRef}></canvas>
-    {showModal && (
-      <div className="record-modal">
-        <div className="record-modal-content">
-          <h3>{isFr ? "Enregistrement terminé !" : "Recording Complete!"}</h3>
-          <p>
-            {isFr
-              ? "Voulez-vous télécharger la vidéo MP4 de votre session ?"
-              : "Do you want to download the MP4 video of your session?"}
-          </p>
-          <div className="record-modal-actions">
-            <button onClick={handleDownload}>
-              {isFr ? "Télécharger" : "Download"}
-            </button>
-            <button onClick={handleCancel}>
-              {isFr ? "Annuler" : "Cancel"}
-            </button>
-          </div>
-        </div>
+  
+    <button onClick={togglePlay} disabled={!midiData}>
+      {playing ? "Pause" : "Play"}
+    </button>
+  
+    <button onClick={openLibrary}>Load…</button>
+    <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
+  
+    <input
+      type="range"
+      min="0"
+      max="1"
+      step="0.001"
+      value={progress}
+      onChange={e => onScrub(e.target.valueAsNumber)}
+      disabled={!midiData}
+      className="slider progress-slider"
+    />
+  
+    <details className="about" ref={aboutRef}>
+      <summary>{summary}</summary>
+      <div className="about-content">
+        <h4>{title}</h4>
+        {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
       </div>
-    
-    )}
+    </details>
   </div>
+  
+  <canvas ref={canvasRef}></canvas>
 
-    </>);
+  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
+  
+  </>);
 }
