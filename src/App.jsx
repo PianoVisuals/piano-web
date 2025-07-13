@@ -263,9 +263,25 @@ export default function App(){
 
 
 
+  const stream = canvasRef.current.captureStream(60); // 60fps
+  const audioDest = Tone.context.createMediaStreamDestination();
+  synthRef.current.connect(audioDest);
+  const combined = new MediaStream([...stream.getVideoTracks(), ...audioDest.stream.getAudioTracks()]);
+  const recorder = new MediaRecorder(combined);
+  const chunks = [];
+  recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'session.mp4'; a.click();
+  };
+  recorder.start();
 
-
-
+  const blob = new Blob([midiData.toArray()], { type: 'audio/midi' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'track.mid'; a.click();
 
 
   const isFr = navigator.language.startsWith("fr");
@@ -1214,6 +1230,11 @@ const labelByMidi = useMemo(() => {
       className="slider progress-slider"
     />
   
+    <button onClick={toggleRecording}>
+      {isRecording ? 'Stop & Download' : 'Record'}
+    </button>
+
+
     <details className="about" ref={aboutRef}>
       <summary>{summary}</summary>
       <div className="about-content">
