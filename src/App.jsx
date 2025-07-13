@@ -2,10 +2,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
-import FFmpeg from "@ffmpeg/ffmpeg";
-
-const { createFFmpeg, fetchFile } = FFmpeg;
-const ffmpeg = createFFmpeg({ log: true });
 
 
 // nom des fichiers .mid que tu as mis dans public/demos/
@@ -26,8 +22,6 @@ const DEMOS = [
   "Lumière - Clair Obscur Expedition 33.mid"
 
 ];
-
-
 
 
 // === AdSense -------------------------------------------------------------
@@ -268,10 +262,6 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
-
-  const [webmUrl, setWebmUrl]        = useState(null);
-  const [mp4Url, setMp4Url]          = useState(null);
-  const [loadingConvert, setLoading] = useState(false);
   const [showModal, setShowModal]     = useState(false);
 
   const [recorder, setRecorder] = useState(null);
@@ -311,7 +301,13 @@ export default function App(){
   const toggleRecording = () =>
     recorder ? stopRecording() : startRecording();
 
-
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = pendingBlobUrl;
+    a.download = "session.mp4";
+    a.click();
+    cleanup();
+  };
 
   const handleCancel = () => {
     cleanup();
@@ -322,60 +318,6 @@ export default function App(){
     setBlobUrl(null);
     setShowModal(false);
   };
-
-
- // 1) Conversion WebM → MP4 avec ffmpeg.wasm
-  const convertToMp4 = async () => {
-    setLoading(true);
-    if (!ffmpeg.isLoaded()) {
-      await ffmpeg.load();
-    }
-    // Télécharge les données WebM
-    const webmData = await fetchFile(webmUrl);
-    ffmpeg.FS("writeFile", "in.webm", webmData);
-    // Lance la conversion H.264/AAC
-    await ffmpeg.run(
-      "-i", "in.webm",
-      "-c:v", "libx264",
-      "-c:a", "aac",
-      "out.mp4"
-    );
-    // Récupère le MP4 en mémoire
-    const data = ffmpeg.FS("readFile", "out.mp4");
-    const blob = new Blob([data.buffer], { type: "video/mp4" });
-    const url  = URL.createObjectURL(blob);
-    setMp4Url(url);
-    setLoading(false);
-  };
-
-  // 2) Gestion de l’arrêt d’enregistrement
-  const handleStop = () => {
-    recorder.stop();
-    setRecorder(null);
-    // webmUrl est généré dans rec.onstop
-  };
-
-  // 3) Quand l’utilisateur clique sur “Télécharger”
-  const handleDownload = async () => {
-    // Si on n’a pas encore converti, on le fait
-    if (!mp4Url) {
-      await convertToMp4();
-    }
-    // Puis on déclenche le téléchargement
-    const a = document.createElement("a");
-    a.href = mp4Url;
-    a.download = "session.mp4";
-    a.click();
-    // Cleanup
-    URL.revokeObjectURL(webmUrl);
-    URL.revokeObjectURL(mp4Url);
-    setWebmUrl(null);
-    setMp4Url(null);
-  };
-
-
-
-
 
   const isFr = navigator.language.startsWith("fr");
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
@@ -1224,31 +1166,6 @@ const labelByMidi = useMemo(() => {
 
 
 
-  .record-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    justify-content: center;  /* centre horizontalement */
-    align-items: center;      /* centre verticalement */
-    z-index: 1000;
-  }
-  
-  .record-modal-content {
-    background: #222;
-    color: #fff;
-    padding: 1.5rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 360px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    /* on supprime tout positionnement absolu ou transform ici */
-  }
-
-
 
 
 `}</style>
@@ -1285,10 +1202,8 @@ const labelByMidi = useMemo(() => {
 
   <button
     className="toggle-bar"
-    onClick={() => {
-      setIsBarCollapsed(b => !b);
-      toggleFullScreenBar();
-    }}
+    onClick={() => setIsBarCollapsed(b => !b)}
+    onClick={toggleFullScreenBar}
     aria-label={isBarCollapsed ? "Show options" : "Hide options"}
   >
     {isBarCollapsed ? ">" : "<"}
@@ -1367,7 +1282,7 @@ const labelByMidi = useMemo(() => {
   </div>
   
   <canvas ref={canvasRef}></canvas>
-  {webmUrl && (
+  {showModal && (
     <div className="record-modal">
       <div className="record-modal-content">
         <h3>{isFr ? "Enregistrement terminé !" : "Recording Complete!"}</h3>
@@ -1377,25 +1292,18 @@ const labelByMidi = useMemo(() => {
             : "Do you want to download the MP4 video of your session?"}
         </p>
         <div className="record-modal-actions">
-          <button
-            onClick={handleDownload}
-            disabled={loadingConvert}
-          >
-            {loadingConvert
-              ? isFr ? "Conversion en cours…" : "Converting…"
-              : isFr ? "Télécharger MP4" : "Download MP4"}
+          <button onClick={handleDownload}>
+            {isFr ? "Télécharger" : "Download"}
           </button>
-          <button onClick={() => setWebmUrl(null)}>
+          <button onClick={handleCancel}>
             {isFr ? "Annuler" : "Cancel"}
           </button>
         </div>
       </div>
     </div>
   )}
-  <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   
-
   </>);
 }
