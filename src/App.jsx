@@ -53,6 +53,39 @@ const THEMES = {
   "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
   "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
   "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
+
+
+  "Sunset Gradient": {
+    bgGradient: "linear-gradient(135deg, #ff5e4d 0%, #ffc371 100%)",
+    barW: "rgba(255,94,77,0.7)", barB: "rgba(255,188,117,0.7)",
+    actW: "#ff5e4d", actB: "#ffc371"
+  },
+  "Aurora Animated": {
+    bgGradient: "linear-gradient(60deg, #08133b, #0f0f1a, #08133b)",
+    barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",
+    actW: "#6affed", actB: "#4482ff",
+    animated: true
+  },
+  "Dusk Waves": {
+    bgGradient: "radial-gradient(circle at top, #2c3e50, #4ca1af)",
+    barW: "rgba(76,161,175,0.7)", barB: "rgba(44,62,80,0.7)",
+    actW: "#4ca1af", actB: "#2c3e50"
+  },
+  "Rainbow Pulse": {
+    bgGradient: "linear-gradient(90deg, #e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6)",
+    barW: "rgba(255,255,255,0.7)", barB: "rgba(0,0,0,0.7)",
+    actW: "#ffffff", actB: "#000000",
+    animated: true
+  },
+  "Deep Space": {
+    bgGradient: "linear-gradient(180deg, #000428, #004e92)",
+    barW: "rgba(153,153,255,0.7)", barB: "rgba(51,51,102,0.7)",
+    actW: "#9999ff", actB: "#333366"
+  }
+
+
+
+
 };
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
@@ -448,11 +481,38 @@ export default function App(){
 
 
   // appliquer thème -------------------------------------------------
-  useEffect(()=>{
-    const c = THEMES[theme];
-    Object.entries({bg:c.bg,"bar-w":c.barW,"bar-b":c.barB,"act-w":c.actW,"act-b":c.actB}).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
-  },[theme]);
-
+  useEffect(() => {
+    const themeDef = THEMES[theme];
+  
+    // 1) Si le thème a un dégradé, on applique le dégradé et retire le fond uni
+    if (themeDef.bgGradient) {
+      document.documentElement.style.setProperty('--bg', 'none'); // Désactive le fond uni
+      document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient); // Active le dégradé
+      document.documentElement.classList.add('use-gradient'); // Ajoute une classe pour les dégradés
+    } else {
+      document.documentElement.style.setProperty('--bg', themeDef.bg); // Fond uni
+      document.documentElement.style.setProperty('--bg-gradient', 'none'); // Désactive le dégradé
+      document.documentElement.classList.remove('use-gradient'); // Retire la classe
+    }
+  
+    // 2) Animation du fond si le thème a l'animation activée
+    if (themeDef.animated) {
+      document.body.classList.add('animated-bg'); // Ajoute l'animation
+    } else {
+      document.body.classList.remove('animated-bg'); // Retire l'animation
+    }
+  
+    // 3) Mise à jour des couleurs des barres et de l'activation
+    document.documentElement.style.setProperty('--bar-w', themeDef.barW);
+    document.documentElement.style.setProperty('--bar-b', themeDef.barB);
+    document.documentElement.style.setProperty('--act-w', themeDef.actW);
+    document.documentElement.style.setProperty('--act-b', themeDef.actB);
+  }, [theme]); // Réagit aux changements de thème
+  
+  // Appliquer la gestion du resize pour recalculer les styles selon la taille
+  window.addEventListener("resize", setCSSVars);
+  setCSSVars();
+  
   // inject AdSense auto‑ads once -----------------------------------
   useEffect(()=>{
     if(!window.adsbygoogle && !document.querySelector(`script[data-ad-client='${ADSENSE_ID}']`)){
@@ -781,6 +841,37 @@ const labelByMidi = useMemo(() => {
 
   return(<>
  <style>{`
+
+
+  :root {
+    --bg: #111;
+    --bg-gradient: none;
+    --use-gradient: 0; /* 0 = off, 1 = on */
+  }
+  
+  /* Appliquer le fond */
+  body {
+    background: var(--bg);
+    background-image: var(--bg-gradient);
+    background-size: 200% 200%;
+    transition: background 0.5s ease;
+  }
+  
+  /* Si animé, on déplace le dégradé */
+  @keyframes bgPan {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Quand animated = true */
+  body.animated {
+    animation: bgPan 10s ease infinite;
+  }
+
+
+
+
 
   :root {
     /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
