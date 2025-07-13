@@ -252,7 +252,7 @@ export default function App(){
   const [isBarCollapsed, setIsBarCollapsed] = useState(false);
   const [instrument,setInstrument]=useState("Grand Piano");
   const [theme,setTheme]=useState("Classic");
-  const [volume,setVolume]=useState(300);
+  const [volume,setVolume]=useState(250);
   const [sustain,setSustain]=useState(false);
   const [midiData,setMidiData]=useState(null); // Midi object
   const [duration,setDuration]=useState(0);
