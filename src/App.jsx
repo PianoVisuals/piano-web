@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import html2canvas from "html2canvas";
@@ -260,7 +260,7 @@ export default function App(){
   const [progress,setProgress]=useState(0);
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
-
+  const containerRef = useRef(null);
 
   const offscreenCanvas = useRef(document.createElement("canvas"));
   const offCtx        = useRef(offscreenCanvas.current.getContext("2d"));
