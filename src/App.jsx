@@ -52,41 +52,11 @@ const THEMES = {
   "Monochrome":   { bg: "#1c1c1c",  barW: "rgba(200,200,200,0.6)", barB: "rgba(100,100,100,0.6)", actW: "#c8c8c8", actB: "#646464" },
   "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
   "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
-  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" },
-
-
-  "Sunset Gradient": {
-    bgGradient: "linear-gradient(135deg, #ff5e4d 0%, #ffc371 100%)",
-    barW: "rgba(255,94,77,0.7)", barB: "rgba(255,188,117,0.7)",
-    actW: "#ff5e4d", actB: "#ffc371"
-  },
-  "Aurora Animated": {
-    bgGradient: "linear-gradient(60deg, #08133b, #0f0f1a, #08133b)",
-    barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",
-    actW: "#6affed", actB: "#4482ff",
-    animated: true
-  },
-  "Dusk Waves": {
-    bgGradient: "radial-gradient(circle at top, #2c3e50, #4ca1af)",
-    barW: "rgba(76,161,175,0.7)", barB: "rgba(44,62,80,0.7)",
-    actW: "#4ca1af", actB: "#2c3e50"
-  },
-  "Rainbow Pulse": {
-    bgGradient: "linear-gradient(90deg, #e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6)",
-    barW: "rgba(255,255,255,0.7)", barB: "rgba(0,0,0,0.7)",
-    actW: "#ffffff", actB: "#000000",
-    animated: true
-  },
-  "Deep Space": {
-    bgGradient: "linear-gradient(180deg, #000428, #004e92)",
-    barW: "rgba(153,153,255,0.7)", barB: "rgba(51,51,102,0.7)",
-    actW: "#9999ff", actB: "#333366"
-  }
-
-
+  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
 
 
 };
+
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
@@ -843,31 +813,10 @@ const labelByMidi = useMemo(() => {
  <style>{`
 
 
- @keyframes bgAnimation {
-   0% {
-     background-position: 0% 50%;
-   }
-   50% {
-     background-position: 100% 50%;
-   }
-   100% {
-     background-position: 0% 50%;
-   }
- }
- 
- /* Appliquer l'animation quand un thème a l'option animée */
- body.animated-bg {
-   animation: bgAnimation 10s ease infinite;
-   background-size: 200% 200%; /* Ce contrôle donne l'effet de mouvement du dégradé */
- }
 
 
 
-  :root {
-    --bg: #111;
-    --bg-gradient: none;
-    --use-gradient: 0; /* 0 = off, 1 = on */
-  }
+
   
   /* Appliquer le fond */
   body {
@@ -877,17 +826,8 @@ const labelByMidi = useMemo(() => {
     transition: background 0.5s ease;
   }
   
-  /* Si animé, on déplace le dégradé */
-  @keyframes bgPan {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  /* Quand animated = true */
-  body.animated {
-    animation: bgPan 10s ease infinite;
-  }
+
+
 
 
 
