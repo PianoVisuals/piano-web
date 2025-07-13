@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
-import * as Tone from "tone";
 import html2canvas from "html2canvas";
 
 // nom des fichiers .mid que tu as mis dans public/demos/
