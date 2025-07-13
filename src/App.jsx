@@ -41,7 +41,15 @@ const THEMES = {
   "Night":        { bg: "#000",     barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",   actW: "#b799f9", actB: "#ca84e0" },
   "Candy":        { bg: "#222",     barW: "rgba(255,105,180,0.7)", barB: "rgba(255,182,193,0.7)", actW: "#f9acf5", actB: "#f988e6" },
   "Retro":        { bg: "#282828",  barW: "rgba(255,165,0,0.7)",   barB: "rgba(0,255,170,0.7)",   actW: "#ffd166", actB: "#06d6a0" },
-  "Neon":         { bg: "#050912",  barW: "rgba(57,255,20,0.8)",   barB: "rgba(0,255,255,0.8)",   actW: "#39ff14", actB: "#00e5ff" },
+  "Neon": { 
+    bg: "#050912", 
+    barW: "rgba(57,255,20,0.8)", 
+    barB: "rgba(0,255,255,0.8)", 
+    actW: "#39ff14", 
+    actB: "#00e5ff", 
+    bgGradient: "linear-gradient(45deg, #ff5e4d, #ffd166)", // Gradient avec transition fluide
+    animated: true // Animation activée
+  },
   "Hell":         { bg: "#4d2525",  barW: "rgba(40,15,15,0.8)",    barB: "rgba(0,0,0,0.8)",       actW: "#871414", actB: "#5e1d1d" },
   "Heaven":       { bg: "#aba693",  barW: "rgba(214,191,96,0.8)",  barB: "rgba(133,120,68,0.8)",  actW: "#b89918", actB: "#87731f" },
 
@@ -454,22 +462,22 @@ export default function App(){
   useEffect(() => {
     const themeDef = THEMES[theme];
   
-    // 1) Si le thème a un dégradé, on applique le dégradé et retire le fond uni
+    // 1) Si le thème a un dégradé animé, on applique le dégradé et on active l'animation
     if (themeDef.bgGradient) {
-      document.documentElement.style.setProperty('--bg', 'none');
+      document.documentElement.style.setProperty('--bg', 'none'); // Enlever fond simple
       document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient);
-      document.documentElement.classList.add('use-gradient');
+      document.documentElement.classList.add('use-gradient'); // Ajoute la classe pour l'animation
     } else {
       document.documentElement.style.setProperty('--bg', themeDef.bg);
       document.documentElement.style.setProperty('--bg-gradient', 'none');
-      document.documentElement.classList.remove('use-gradient');
+      document.documentElement.classList.remove('use-gradient'); // Retirer l'animation
     }
-
+  
     // 2) Animation du fond si le thème a l'animation activée
     if (themeDef.animated) {
-      document.body.classList.add('animated-bg'); // Ajoute l'animation
+      document.body.classList.add('animated-bg'); // Ajoute l'animation si activée
     } else {
-      document.body.classList.remove('animated-bg'); // Retire l'animation
+      document.body.classList.remove('animated-bg'); // Retire l'animation si non activée
     }
   
     // 3) Mise à jour des couleurs des barres et de l'activation
@@ -479,6 +487,11 @@ export default function App(){
     document.documentElement.style.setProperty('--act-b', themeDef.actB);
   }, [theme]); // Réagit aux changements de thème
     
+
+
+
+
+
   // inject AdSense auto‑ads once -----------------------------------
   useEffect(()=>{
     if(!window.adsbygoogle && !document.querySelector(`script[data-ad-client='${ADSENSE_ID}']`)){
@@ -814,23 +827,19 @@ const labelByMidi = useMemo(() => {
 
 
   
-  /* Appliquer le fond */
   body {
-    background: var(--bg);
-    background-image: var(--bg-gradient);
-    background-size: 200% 200%;
-    transition: background 0.5s ease;
+    background: var(--bg, #111); /* Fond de base */
+    transition: background 1s ease-in-out; /* Transition fluide */
   }
-  
 
-  body {
-    background: linear-gradient(45deg, #ff5e4d, #ffd166); /* Valeurs par défaut */
-    background-size: 400% 400%;
-    animation: gradientAnimation 15s ease infinite;
-    transition: background 1s ease-in-out; /* Transition douce */
+  /* Appliquer le fond animé quand le thème est activé */
+  .use-gradient {
+    background: var(--bg-gradient); /* Dégradé dynamique */
+    background-size: 400% 400%; /* Étend le gradient */
+    animation: gradientAnimation 20s ease infinite; /* Animation lente */
   }
   
-  /* Animation du dégradé */
+  /* Animation du fond dégradé pour un effet fluide */
   @keyframes gradientAnimation {
     0% {
       background-position: 0% 50%;
@@ -842,7 +851,11 @@ const labelByMidi = useMemo(() => {
       background-position: 0% 50%;
     }
   }
-
+  
+  /* Dans le cas où le thème n'a pas de gradient, on applique un fond uni */
+  body:not(.use-gradient) {
+    background: var(--bg);
+  }
 
 
 
