@@ -510,6 +510,8 @@ export default function App(){
     partRef.current.start(0);
     Tone.Transport.seconds = 0;
     setProgress(0);
+  
+  };
 
 
 
