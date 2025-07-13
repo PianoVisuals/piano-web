@@ -52,7 +52,7 @@ const THEMES = {
   "Monochrome":   { bg: "#1c1c1c",  barW: "rgba(200,200,200,0.6)", barB: "rgba(100,100,100,0.6)", actW: "#c8c8c8", actB: "#646464" },
   "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
   "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
-  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
+  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" },
 
 
   "Sunset Gradient": {
