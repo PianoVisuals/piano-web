@@ -827,7 +827,25 @@ const labelByMidi = useMemo(() => {
   }
   
 
-
+  body {
+    background: linear-gradient(45deg, #ff5e4d, #ffd166); /* Valeurs par défaut */
+    background-size: 400% 400%;
+    animation: gradientAnimation 15s ease infinite;
+    transition: background 1s ease-in-out; /* Transition douce */
+  }
+  
+  /* Animation du dégradé */
+  @keyframes gradientAnimation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 
 
 
