@@ -272,8 +272,11 @@ export default function App(){
   const [pendingBlobUrl, setBlobUrl]  = useState(null);
 
   const startRecording = async () => {
-    // ¾ – dimensionne ton offscreen à la taille de la zone à capturer
-    const wrapper = containerRef.current; // ou le ref qui entoure tout ton UI
+    const wrapper = containerRef.current;
+    if (!wrapper) {
+      console.error("containerRef non monté");
+      return;
+    }
     const { width, height } = wrapper.getBoundingClientRect();
     offscreenCanvas.current.width  = width;
     offscreenCanvas.current.height = height;
