@@ -267,19 +267,24 @@ export default function App(){
   const [recorder, setRecorder] = useState(null);
   const [pendingBlobUrl, setBlobUrl]  = useState(null);
 
-  const startRecording = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const videoStream = canvas.captureStream(60);
-    const audioDest   = Tone.context.createMediaStreamDestination();
+  const startRecording = async () => {
+    // 1) Demande la capture de l'onglet courant
+    const displayStream = await navigator.mediaDevices.getDisplayMedia({
+      video: { cursor: "always" },
+      audio: false
+    });
+  
+    // 2) Récupère l’audio du synth
+    const audioDest = Tone.context.createMediaStreamDestination();
     synthRef.current.connect(audioDest);
-
+  
+    // 3) Fusionne la vidéo écran + audio synth
     const mixed = new MediaStream([
-      ...videoStream.getVideoTracks(),
+      ...displayStream.getVideoTracks(),
       ...audioDest.stream.getAudioTracks()
     ]);
-
+  
+    // 4) MediaRecorder sur le flux mixé
     const rec = new MediaRecorder(mixed);
     const chunks = [];
     rec.ondataavailable = e => chunks.push(e.data);
@@ -288,6 +293,8 @@ export default function App(){
       const url  = URL.createObjectURL(blob);
       setBlobUrl(url);
       setShowModal(true);
+      // arrête la capture d’écran
+      displayStream.getTracks().forEach(t => t.stop());
     };
     rec.start();
     setRecorder(rec);
