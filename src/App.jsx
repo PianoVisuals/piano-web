@@ -37,24 +37,23 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 
 // ===== Thèmes ===========================================================
 const THEMES = {
-  "Classic":      { bg: "#111111", barW: "rgba(0,150,255,0.6)",  barB: "rgba(0,200,150,0.6)",  actW: "#3faff9", actB: "#3b89bc" },
-  "Night":        { bg: "#000000", barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",  actW: "#b799f9", actB: "#ca84e0" },
+  "Classic":      { bg: "#111",     barW: "rgba(0,150,255,0.6)",   barB: "rgba(0,200,150,0.6)",   actW: "#3faff9", actB: "#3b89bc" },
+  "Night":        { bg: "#000",     barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",   actW: "#b799f9", actB: "#ca84e0" },
+  "Candy":        { bg: "#222",     barW: "rgba(255,105,180,0.7)", barB: "rgba(255,182,193,0.7)", actW: "#f9acf5", actB: "#f988e6" },
+  "Retro":        { bg: "#282828",  barW: "rgba(255,165,0,0.7)",   barB: "rgba(0,255,170,0.7)",   actW: "#ffd166", actB: "#06d6a0" },
+  "Neon":         { bg: "#050912",  barW: "rgba(57,255,20,0.8)",   barB: "rgba(0,255,255,0.8)",   actW: "#39ff14", actB: "#00e5ff" },
+  "Hell":         { bg: "#4d2525",  barW: "rgba(40,15,15,0.8)",    barB: "rgba(0,0,0,0.8)",       actW: "#871414", actB: "#5e1d1d" },
+  "Heaven":       { bg: "#aba693",  barW: "rgba(214,191,96,0.8)",  barB: "rgba(133,120,68,0.8)",  actW: "#b89918", actB: "#87731f" },
 
-  // Centré sur une couleur unique avec nuances
-  "Ocean Breeze": { bg: "#012b44", barW: "rgba(3,169,244,0.6)",  barB: "rgba(0,105,192,0.6)",  actW: "#03a9f4", actB: "#0069c0" },
-  "Sunset Glow":  { bg: "#3b0a45", barW: "rgba(255,94,58,0.7)",  barB: "rgba(255,195,113,0.7)", actW: "#ff5e3a", actB: "#ffc371" },
-  "Forest Canopy":{ bg: "#1b2f1b", barW: "rgba(111,192,111,0.6)",barB: "rgba(34,85,34,0.6)",   actW: "#6fc06f", actB: "#225522" },
-
-  // Combinaisons contrastées
-  "Cyberpunk":    { bg: "#0f0f17", barW: "rgba(255,20,147,0.8)",barB: "rgba(0,255,255,0.8)",  actW: "#ff1493", actB: "#00ffff" },
-  "Autumn Leaves":{ bg: "#3e1e02", barW: "rgba(255,140,0,0.7)", barB: "rgba(165,42,42,0.7)",  actW: "#ff8c00", actB: "#a52a2a" },
-  "Aurora":       { bg: "#0a0021", barW: "rgba(0,255,204,0.7)", barB: "rgba(102,51,153,0.7)", actW: "#00ffcc", actB: "#663399" },
-
-  // Pastel & doux
-  "Pastel Dream": { bg: "#f0eef5", barW: "rgba(255,182,193,0.6)",barB: "rgba(173,216,230,0.6)",actW: "#ffb6c1", actB: "#add8e6" },
-  "Vintage Sepia":{ bg: "#2b1b0b", barW: "rgba(210,180,140,0.7)",barB: "rgba(160,82,45,0.7)", actW: "#d2b48c", actB: "#a0522d" }
+  "Ocean":        { bg: "#002b36",  barW: "rgba(38,139,210,0.7)",  barB: "rgba(7,54,66,0.7)",     actW: "#268bd2", actB: "#073642" },
+  "Forest":       { bg: "#1b2f24",  barW: "rgba(133,193,85,0.7)",  barB: "rgba(42,92,47,0.7)",    actW: "#85c155", actB: "#2a5c2f" },
+  "Sunset":       { bg: "#3e1f47",  barW: "rgba(255,94,77,0.7)",   barB: "rgba(255,188,117,0.7)", actW: "#ff5e4d", actB: "#ffbc75" },
+  "PastelDream":  { bg: "#f2e9e4",  barW: "rgba(255,179,186,0.6)", barB: "rgba(255,223,186,0.6)", actW: "#ffb3ba", actB: "#ffdfba" },
+  "Monochrome":   { bg: "#1c1c1c",  barW: "rgba(200,200,200,0.6)", barB: "rgba(100,100,100,0.6)", actW: "#c8c8c8", actB: "#646464" },
+  "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
+  "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
+  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
 };
-
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
