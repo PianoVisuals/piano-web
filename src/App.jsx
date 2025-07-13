@@ -453,21 +453,32 @@ export default function App(){
   // appliquer thème -------------------------------------------------
   useEffect(() => {
     const themeDef = THEMES[theme];
-
-    // Modifier les couleurs de fond du dégradé dynamiquement
-    const gradientColors = `${theme.actW}, ${theme.actB}`;
-    document.body.style.background = `linear-gradient(45deg, ${gradientColors})`;
-
-    // Appliquer la transition et l'animation du fond dégradé
-    document.body.style.transition = "background 1s ease-in-out";
-
-
-
-
-
-
-
   
+    // 1) Si le thème a un dégradé, on applique le dégradé et retire le fond uni
+    if (themeDef.bgGradient) {
+      document.documentElement.style.setProperty('--bg', 'none');
+      document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient);
+      document.documentElement.classList.add('use-gradient');
+    } else {
+      document.documentElement.style.setProperty('--bg', themeDef.bg);
+      document.documentElement.style.setProperty('--bg-gradient', 'none');
+      document.documentElement.classList.remove('use-gradient');
+    }
+
+    // 2) Animation du fond si le thème a l'animation activée
+    if (themeDef.animated) {
+      document.body.classList.add('animated-bg'); // Ajoute l'animation
+    } else {
+      document.body.classList.remove('animated-bg'); // Retire l'animation
+    }
+  
+    // 3) Mise à jour des couleurs des barres et de l'activation
+    document.documentElement.style.setProperty('--bar-w', themeDef.barW);
+    document.documentElement.style.setProperty('--bar-b', themeDef.barB);
+    document.documentElement.style.setProperty('--act-w', themeDef.actW);
+    document.documentElement.style.setProperty('--act-b', themeDef.actB);
+  }, [theme]); // Réagit aux changements de thème
+    
   // inject AdSense auto‑ads once -----------------------------------
   useEffect(()=>{
     if(!window.adsbygoogle && !document.querySelector(`script[data-ad-client='${ADSENSE_ID}']`)){
