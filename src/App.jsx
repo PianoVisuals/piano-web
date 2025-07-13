@@ -252,7 +252,7 @@ export default function App(){
   const [isBarCollapsed, setIsBarCollapsed] = useState(false);
   const [instrument,setInstrument]=useState("Grand Piano");
   const [theme,setTheme]=useState("Classic");
-  const [volume,setVolume]=useState(100);
+  const [volume,setVolume]=useState(300);
   const [sustain,setSustain]=useState(false);
   const [midiData,setMidiData]=useState(null); // Midi object
   const [duration,setDuration]=useState(0);
@@ -1193,7 +1193,7 @@ const labelByMidi = useMemo(() => {
       <input
         type="range"
         min="0"
-        max="400"
+        max="500"
         value={volume}
         onChange={e => setVolume(+e.target.value)}
         className="slider volume-slider"
