@@ -888,7 +888,14 @@ const labelByMidi = useMemo(() => {
     font-size: 0.85rem;
   }
 
-
+  .about-content {
+    position: absolute;
+    top: 2.5rem;
+    left: 50%;                      /* partir du milieu */
+    transform: translateX(-50%);    /* et reculer de la moitié de sa largeur */
+    /* on garde margin et padding existants */
+    max-width: calc(100vw - 2rem);  /* jamais plus large que l’écran moins un peu de marge */
+  }
 
   /* ——— Styles pour la fenêtre Import/Librairie ——— */
   .library-overlay {
@@ -961,17 +968,7 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-  @media (orientation: landscape) and (pointer: coarse) {
-    .top {
-      position: fixed;
-      bottom: 0 !important;  /* force en bas */
-      top: auto !important;  
-      transform: translateY(0) !important;
-    }
-    .toggle-bar {
-      display: none;         /* cache la petite flèche */
-    }
-  }
+
 
 
   @media (pointer: coarse) and (orientation: portrait) {
@@ -988,22 +985,6 @@ const labelByMidi = useMemo(() => {
     /* Pour les icons / summary du about */
     :root[data-mode="piano"] .top details summary {
       font-size: 1rem !important;
-    }
-  }
-
-
-  .about-content {
-    position: absolute;
-    top: 2.5rem;         /* juste sous la barre */
-    right: 1rem;         /* marge par défaut */
-    left: auto;
-    max-width: 90vw;     /* ne jamais dépasser 90% de la largeur viewport */
-    /* pour le recentrer sur petits écrans : */
-    @media (max-width: 600px) {
-      left: 50%;
-      right: auto;
-      transform: translateX(-50%);
-      max-width: 95vw;
     }
   }
 
@@ -1057,7 +1038,12 @@ const labelByMidi = useMemo(() => {
     background: #444;
   }
   
-    
+  @media (orientation: landscape) and (pointer: coarse) {
+    .top {
+      top: auto;      /* désactive le top */
+      bottom: 0;      /* place la barre en bas */
+    }
+  }  
 
 `}</style>
   {showLibrary && (
