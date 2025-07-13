@@ -973,7 +973,7 @@ const labelByMidi = useMemo(() => {
   
   /* Dégradé animé spécifique */
   .animated-bg {
-    animation: gradientAnimation 15s ease-in-out infinite;
+    animation: gradientAnimation 1s ease-in-out infinite;
   }
   
   @keyframes gradientAnimation {
