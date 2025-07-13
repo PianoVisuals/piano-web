@@ -262,14 +262,7 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
-  // place ce code dans ton composant, par ex. juste après le useEffect qui gère volume
-  useEffect(() => {
-    const slider = document.querySelector('.volume');
-    if (slider) {
-      const percent = (volume / 200) * 100;
-      slider.style.setProperty('--volume-percent', `${percent}%`);
-    }
-  }, [volume]);
+
 
 
 
@@ -987,58 +980,6 @@ const labelByMidi = useMemo(() => {
   }
 
 
-  .slider {
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    margin: 0 0.5rem;
-    cursor: pointer;
-  }
-
-  /* ===== Volume ===== */
-  .volume {
-    width: 100px;
-    height: 6px;
-    border-radius: 3px;
-    background: linear-gradient(
-      to right,
-      #4da6ff var(--volume-percent, 0%),
-      #444 var(--volume-percent, 0%)
-    );
-  }
-  /* Thumb invisible pour volume, on remplit tout via background */
-  .volume::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 0;
-    height: 0;
-  }
-  .volume::-moz-range-thumb {
-    width: 0;
-    height: 0;
-  }
-  
-/* ===== Progression ===== */
-  .progress {
-    width: 33px;           /* 3× moins large qu'une barre normale */
-    height: 6px;
-    background: #444;
-    border-radius: 3px;
-  }
-  /* Thumb carré pour progression */
-  .progress::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 6px;
-    height: 12px;
-      background: #ddd;
-    border-radius: 1px;
-    margin-top: -3px;       /* centre vertical */
-  }
-  .progress::-moz-range-thumb {
-    width: 6px;
-    height: 12px;
-    background: #ddd;
-    border-radius: 1px;
-  }
   
 
 `}</style>
