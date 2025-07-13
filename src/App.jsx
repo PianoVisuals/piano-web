@@ -892,9 +892,9 @@ const labelByMidi = useMemo(() => {
     position: absolute;
     top: 2.5rem;
     left: 50%;                      /* partir du milieu */
-    transform: translateX(-80%);    /* et reculer de la moitié de sa largeur */
+    transform: translateX(-50%);    /* et reculer de la moitié de sa largeur */
     /* on garde margin et padding existants */
-    max-width: calc(100vw - 2rem);  /* jamais plus large que l’écran moins un peu de marge */
+    max-width: calc(100vw - 20rem);  /* jamais plus large que l’écran moins un peu de marge */
   }
 
   /* ——— Styles pour la fenêtre Import/Librairie ——— */
