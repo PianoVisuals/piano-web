@@ -307,13 +307,7 @@ export default function App(){
   const toggleRecording = () =>
     recorder ? stopRecording() : startRecording();
 
-  const handleDownload = () => {
-    const a = document.createElement("a");
-    a.href = pendingBlobUrl;
-    a.download = "session.mp4";
-    a.click();
-    cleanup();
-  };
+
 
   const handleCancel = () => {
     cleanup();
