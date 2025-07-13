@@ -1095,6 +1095,32 @@ const labelByMidi = useMemo(() => {
     }
   }
 
+
+
+  @media (max-width: 600px) {
+    .about-content {
+      position: fixed !important;            /* passe en fixed pour sortir du flow */
+      top: 50% !important;                   /* centre verticalement */
+      left: 50% !important;                  /* centre horizontalement */
+      transform: translate(-50%, -50%) !important;
+      width: calc(100% - 2rem) !important;   /* prend presque toute la largeur */
+      max-width: none !important;            
+      height: auto !important;              
+      max-height: 90vh !important;           /* limite la hauteur pour le scroll */
+      overflow-y: auto !important;           /* scroll interne si besoin */
+      padding: 1.5rem !important;            /* plus d’aération à l’intérieur */
+    }
+    /* On baisse un peu le titre pour laisser de l’espace */
+    .about-content h4 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+
+
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
