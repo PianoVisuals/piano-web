@@ -1363,8 +1363,9 @@ const labelByMidi = useMemo(() => {
           </div>
         </div>
       </div>
-    </div>
-  )}
+    
+    )}
+  </div>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
   
