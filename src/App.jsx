@@ -1013,28 +1013,27 @@ const labelByMidi = useMemo(() => {
     border-radius: 50%;
   }
   
-  /* ========== Progress Slider ========== */
-  .progress-slider {
-    flex: 1;
-    height: 4px;
-    background: #222;
-    border-radius: 2px;
+/* ===== Progression ===== */
+  .progress {
+    width: 33px;           /* 3× moins large qu'une barre normale */
+    height: 6px;
+    background: #444;
+    border-radius: 3px;
   }
-  
-  .progress-slider::-webkit-slider-thumb {
+  /* Thumb carré pour progression */
+  .progress::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 8px;
-    height: 8px;
-    background: #ddd;
-    border-radius: 50%;
-    margin-top: -2px; /* centrer le thumb */
+    width: 6px;
+    height: 12px;
+      background: #ddd;
+    border-radius: 1px;
+    margin-top: -3px;       /* centre vertical */
   }
-  
-  .progress-slider::-moz-range-thumb {
-    width: 8px;
-    height: 8px;
+  .progress::-moz-range-thumb {
+    width: 6px;
+    height: 12px;
     background: #ddd;
-    border-radius: 50%;
+    border-radius: 1px;
   }
   
 
