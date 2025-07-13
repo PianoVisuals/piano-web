@@ -37,18 +37,41 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 
 // ===== Thèmes ===========================================================
 const THEMES = {
-  "Classic":      { bg: "#111",     barW: "rgba(0,150,255,0.6)",   barB: "rgba(0,200,150,0.6)",   actW: "#3faff9", actB: "#3b89bc" },
-  "Night":        { bg: "#000",     barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",   actW: "#b799f9", actB: "#ca84e0" },
-  "Candy":        { bg: "#222",     barW: "rgba(255,105,180,0.7)", barB: "rgba(255,182,193,0.7)", actW: "#f9acf5", actB: "#f988e6" },
-  "Retro":        { bg: "#282828",  barW: "rgba(255,165,0,0.7)",   barB: "rgba(0,255,170,0.7)",   actW: "#ffd166", actB: "#06d6a0" },
-  "Neon": { 
-    bg: "#050912", 
-    barW: "rgba(57,255,20,0.8)", 
-    barB: "rgba(0,255,255,0.8)", 
-    actW: "#39ff14", 
-    actB: "#00e5ff", 
-    bgGradient: "linear-gradient(45deg, #ff5e4d, #ffd166)", // Gradient avec transition fluide
-    animated: true // Animation activée
+  "Classic": {
+    bg: "#111",
+    barW: "rgba(0,150,255,0.6)",
+    barB: "rgba(0,200,150,0.6)",
+    actW: "#3faff9",
+    actB: "#3b89bc",
+    bgGradient: "linear-gradient(45deg, #6a1b9a, #ab47bc)", // Dégradé visible et animé
+    animated: true
+  },
+  "Night": {
+    bg: "#000",
+    barW: "rgba(120,120,255,0.7)",
+    barB: "rgba(180,0,255,0.7)",
+    actW: "#b799f9",
+    actB: "#ca84e0",
+    bgGradient: "linear-gradient(45deg, #004d40, #00796b)", // Un autre dégradé visible
+    animated: true
+  },
+  "Neon": {
+    bg: "#050912",
+    barW: "rgba(57,255,20,0.8)",
+    barB: "rgba(0,255,255,0.8)",
+    actW: "#39ff14",
+    actB: "#00e5ff",
+    bgGradient: "linear-gradient(45deg, #ff5e4d, #ffd166)", // Dégradé avec des couleurs vives
+    animated: true
+  },
+  "Ocean": {
+    bg: "#002b36",
+    barW: "rgba(38,139,210,0.7)",
+    barB: "rgba(7,54,66,0.7)",
+    actW: "#268bd2",
+    actB: "#073642",
+    bgGradient: "linear-gradient(45deg, #00aaff, #0044cc)", // Un fond bleu marin dynamique
+    animated: true
   },
   "Hell":         { bg: "#4d2525",  barW: "rgba(40,15,15,0.8)",    barB: "rgba(0,0,0,0.8)",       actW: "#871414", actB: "#5e1d1d" },
   "Heaven":       { bg: "#aba693",  barW: "rgba(214,191,96,0.8)",  barB: "rgba(133,120,68,0.8)",  actW: "#b89918", actB: "#87731f" },
@@ -462,32 +485,24 @@ export default function App(){
   useEffect(() => {
     const themeDef = THEMES[theme];
   
-    // 1) Si le thème a un dégradé animé, on applique le dégradé et on active l'animation
+    // 1) Si le thème a un dégradé animé, appliquer ce fond et activer l'animation
     if (themeDef.bgGradient) {
-      document.documentElement.style.setProperty('--bg', 'none'); // Enlever fond simple
+      document.documentElement.style.setProperty('--bg', 'none'); // Enlever fond uni
       document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient);
-      document.documentElement.classList.add('use-gradient'); // Ajoute la classe pour l'animation
+      document.documentElement.classList.add('use-gradient'); // Ajouter l'animation du gradient
     } else {
       document.documentElement.style.setProperty('--bg', themeDef.bg);
       document.documentElement.style.setProperty('--bg-gradient', 'none');
       document.documentElement.classList.remove('use-gradient'); // Retirer l'animation
     }
   
-    // 2) Animation du fond si le thème a l'animation activée
-    if (themeDef.animated) {
-      document.body.classList.add('animated-bg'); // Ajoute l'animation si activée
-    } else {
-      document.body.classList.remove('animated-bg'); // Retire l'animation si non activée
-    }
-  
-    // 3) Mise à jour des couleurs des barres et de l'activation
+    // 2) Mise à jour des couleurs des barres et de l'activation du thème
     document.documentElement.style.setProperty('--bar-w', themeDef.barW);
     document.documentElement.style.setProperty('--bar-b', themeDef.barB);
     document.documentElement.style.setProperty('--act-w', themeDef.actW);
     document.documentElement.style.setProperty('--act-b', themeDef.actB);
   }, [theme]); // Réagit aux changements de thème
-    
-
+  
 
 
 
@@ -828,18 +843,18 @@ const labelByMidi = useMemo(() => {
 
   
   body {
-    background: var(--bg, #111); /* Fond de base */
-    transition: background 1s ease-in-out; /* Transition fluide */
-  }
-
-  /* Appliquer le fond animé quand le thème est activé */
-  .use-gradient {
-    background: var(--bg-gradient); /* Dégradé dynamique */
-    background-size: 400% 400%; /* Étend le gradient */
-    animation: gradientAnimation 20s ease infinite; /* Animation lente */
+    background: var(--bg, #111); /* Fond par défaut */
+    transition: background 1s ease-in-out; /* Transition douce */
   }
   
-  /* Animation du fond dégradé pour un effet fluide */
+  /* Appliquer un dégradé avec animation lorsque le thème est activé */
+  .use-gradient {
+    background: var(--bg-gradient); /* Le gradient dynamique visible */
+    background-size: 400% 400%; /* Largeur et hauteur du gradient */
+    animation: gradientAnimation 10s ease infinite; /* Animation lente */
+  }
+  
+  /* Animation du dégradé pour un changement de couleur fluide */
   @keyframes gradientAnimation {
     0% {
       background-position: 0% 50%;
@@ -852,11 +867,10 @@ const labelByMidi = useMemo(() => {
     }
   }
   
-  /* Dans le cas où le thème n'a pas de gradient, on applique un fond uni */
-  body:not(.use-gradient) {
+  /* Si le thème n'a pas de gradient, appliquer une couleur simple */
+    body:not(.use-gradient) {
     background: var(--bg);
   }
-
 
 
 
