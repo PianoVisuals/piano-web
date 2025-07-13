@@ -37,20 +37,22 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 
 // ===== Thèmes ===========================================================
 const THEMES = {
-  "Classic":    { bg: "#111",       barW: "rgba(0,150,255,0.6)",   barB: "rgba(0,200,150,0.6)",   actW: "#3faff9",  actB: "#3b89bc" },
-  "Night":      { bg: "#000",       barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",   actW: "#b799f9",  actB: "#ca84e0" },
-  // … tes autres thèmes existants …
+  "Classic":      { bg: "#111111", barW: "rgba(0,150,255,0.6)",  barB: "rgba(0,200,150,0.6)",  actW: "#3faff9", actB: "#3b89bc" },
+  "Night":        { bg: "#000000", barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",  actW: "#b799f9", actB: "#ca84e0" },
 
-  "Aurora":     { bg: "#0f0821",    barW: "rgba(107,255,197,0.6)", barB: "rgba(32,168,255,0.6)",  actW: "#6bffc5",  actB: "#20a8ff" },
-  "Cyberpunk":  { bg: "#100a14",    barW: "rgba(255,45,135,0.7)",  barB: "rgba(54,0,255,0.7)",    actW: "#ff2d87",  actB: "#3600ff" },
-  "Ember":      { bg: "#1c0b00",    barW: "rgba(255,94,19,0.8)",   barB: "rgba(255,181,71,0.8)",  actW: "#ff5e13",  actB: "#ffb547" },
-  "Arctic":     { bg: "#001f2d",    barW: "rgba(144,255,255,0.7)", barB: "rgba(0,112,187,0.7)",   actW: "#90ffff",  actB: "#0070bb" },
-  "CoralReef":  { bg: "#1a0505",    barW: "rgba(255,99,113,0.7)",  barB: "rgba(255,159,128,0.7)", actW: "#ff6371",  actB: "#ff9f80" },
-  "DeepSpace":  { bg: "#000011",    barW: "rgba(183,147,255,0.6)", barB: "rgba(75,0,130,0.6)",    actW: "#b793ff",  actB: "#4b0082" },
-  "DesertDusk": { bg: "#2b1200",    barW: "rgba(255,202,58,0.7)",  barB: "rgba(194,140,38,0.7)",  actW: "#ffca3a",  actB: "#c28c26" },
-  "JungleNight":{ bg: "#0b1f03",    barW: "rgba(99,255,117,0.6)",  barB: "rgba(0,100,40,0.6)",    actW: "#63ff75",  actB: "#006428" },
-  "MysticRose": { bg: "#2a001f",    barW: "rgba(255,105,180,0.7)", barB: "rgba(147,0,105,0.7)",   actW: "#ff69b4",  actB: "#930069" },
-  "Twilight":   { bg: "#150033",    barW: "rgba(173,123,255,0.6)", barB: "rgba(75,0,130,0.6)",    actW: "#ad7bff",  actB: "#4b0082" }
+  // Centré sur une couleur unique avec nuances
+  "Ocean Breeze": { bg: "#012b44", barW: "rgba(3,169,244,0.6)",  barB: "rgba(0,105,192,0.6)",  actW: "#03a9f4", actB: "#0069c0" },
+  "Sunset Glow":  { bg: "#3b0a45", barW: "rgba(255,94,58,0.7)",  barB: "rgba(255,195,113,0.7)", actW: "#ff5e3a", actB: "#ffc371" },
+  "Forest Canopy":{ bg: "#1b2f1b", barW: "rgba(111,192,111,0.6)",barB: "rgba(34,85,34,0.6)",   actW: "#6fc06f", actB: "#225522" },
+
+  // Combinaisons contrastées
+  "Cyberpunk":    { bg: "#0f0f17", barW: "rgba(255,20,147,0.8)",barB: "rgba(0,255,255,0.8)",  actW: "#ff1493", actB: "#00ffff" },
+  "Autumn Leaves":{ bg: "#3e1e02", barW: "rgba(255,140,0,0.7)", barB: "rgba(165,42,42,0.7)",  actW: "#ff8c00", actB: "#a52a2a" },
+  "Aurora":       { bg: "#0a0021", barW: "rgba(0,255,204,0.7)", barB: "rgba(102,51,153,0.7)", actW: "#00ffcc", actB: "#663399" },
+
+  // Pastel & doux
+  "Pastel Dream": { bg: "#f0eef5", barW: "rgba(255,182,193,0.6)",barB: "rgba(173,216,230,0.6)",actW: "#ffb6c1", actB: "#add8e6" },
+  "Vintage Sepia":{ bg: "#2b1b0b", barW: "rgba(210,180,140,0.7)",barB: "rgba(160,82,45,0.7)", actW: "#d2b48c", actB: "#a0522d" }
 };
 
 // ===== Constantes clavier ================================================= =================================================
