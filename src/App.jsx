@@ -43,7 +43,7 @@ const THEMES = {
     barB: "rgba(0,200,150,0.6)", 
     actW: "#3faff9", 
     actB: "#3b89bc",
-    bgGradient: "linear-gradient(45deg, #111, #222)", // Dégradé subtil, doux
+    bgGradient: "linear-gradient(45deg, #1e1e1e, #333333)", // Subtil dégradé sombre
     animated: true
   },
   "Night":        { 
@@ -52,7 +52,7 @@ const THEMES = {
     barB: "rgba(180,0,255,0.7)", 
     actW: "#b799f9", 
     actB: "#ca84e0",
-    bgGradient: "linear-gradient(45deg, #000, #333)", // Dégradé sobre et profond
+    bgGradient: "linear-gradient(45deg, #0a0a0a, #2a2a2a)", // Dégradé simple, nuit calme
     animated: true
   },
   "Candy":        { 
@@ -61,7 +61,7 @@ const THEMES = {
     barB: "rgba(255,182,193,0.7)", 
     actW: "#f9acf5", 
     actB: "#f988e6",
-    bgGradient: "linear-gradient(45deg, #ff87f6, #ff55aa)", // Dégradé doux et sucré
+    bgGradient: "linear-gradient(45deg, #ff80ab, #ffb6c1)", // Dégradé pastel doux
     animated: true
   },
   "Retro":        { 
@@ -70,7 +70,7 @@ const THEMES = {
     barB: "rgba(0,255,170,0.7)", 
     actW: "#ffd166", 
     actB: "#06d6a0",
-    bgGradient: "linear-gradient(45deg, #ff7b00, #6c6eff)", // Rétro lumineux
+    bgGradient: "linear-gradient(45deg, #6a6a6a, #8c8c8c)", // Style rétro, mais en doux
     animated: true
   },
   "Neon":         { 
@@ -79,7 +79,7 @@ const THEMES = {
     barB: "rgba(0,255,255,0.8)", 
     actW: "#39ff14", 
     actB: "#00e5ff",
-    bgGradient: "linear-gradient(45deg, #39ff14, #00e5ff)", // Dégradé neon vibrant
+    bgGradient: "linear-gradient(45deg, #1e8f50, #00b3ff)", // Neon avec un fond plus doux
     animated: true
   },
   "Hell":         { 
@@ -88,7 +88,7 @@ const THEMES = {
     barB: "rgba(0,0,0,0.8)", 
     actW: "#871414", 
     actB: "#5e1d1d",
-    bgGradient: "linear-gradient(45deg, #5e1d1d, #7a1f1f)", // Effet sombre et chaud
+    bgGradient: "linear-gradient(45deg, #5e1d1d, #7a1f1f)", // Une touche chaude et sobre
     animated: true
   },
   "Heaven":       { 
@@ -97,7 +97,7 @@ const THEMES = {
     barB: "rgba(133,120,68,0.8)", 
     actW: "#b89918", 
     actB: "#87731f",
-    bgGradient: "linear-gradient(45deg, #b89918, #8c7345)", // Ton doré chaud
+    bgGradient: "linear-gradient(45deg, #f1c5b8, #e1b44c)", // Subtil et lumineux, un équilibre parfait
     animated: true
   },
   "Ocean":        { 
@@ -106,7 +106,7 @@ const THEMES = {
     barB: "rgba(7,54,66,0.7)", 
     actW: "#268bd2", 
     actB: "#073642",
-    bgGradient: "linear-gradient(45deg, #00aaff, #0044cc)", // Bleu océan
+    bgGradient: "linear-gradient(45deg, #003366, #006699)", // Océan calme et apaisant
     animated: true
   },
   "Forest":       { 
@@ -115,7 +115,7 @@ const THEMES = {
     barB: "rgba(42,92,47,0.7)", 
     actW: "#85c155", 
     actB: "#2a5c2f",
-    bgGradient: "linear-gradient(45deg, #558d40, #3a6f31)", // Nature et forêt
+    bgGradient: "linear-gradient(45deg, #2c6e3c, #3b8b57)", // Nature profonde, forêt
     animated: true
   },
   "Sunset":       { 
@@ -124,7 +124,7 @@ const THEMES = {
     barB: "rgba(255,188,117,0.7)", 
     actW: "#ff5e4d", 
     actB: "#ffbc75",
-    bgGradient: "linear-gradient(45deg, #ff5e4d, #ffbc75)", // Dégradé inspiré par le coucher de soleil
+    bgGradient: "linear-gradient(45deg, #f7bfbf, #ff9e6d)", // Coucher de soleil doux
     animated: true
   },
   "PastelDream":  { 
@@ -133,7 +133,7 @@ const THEMES = {
     barB: "rgba(255,223,186,0.6)", 
     actW: "#ffb3ba", 
     actB: "#ffdfba",
-    bgGradient: "linear-gradient(45deg, #f2e9e4, #ffb3ba)", // Douceur pastel
+    bgGradient: "linear-gradient(45deg, #f1e6f5, #f9d6e6)", // Pastel doux, agréable et calme
     animated: true
   },
   "Monochrome":   { 
@@ -142,7 +142,7 @@ const THEMES = {
     barB: "rgba(100,100,100,0.6)", 
     actW: "#c8c8c8", 
     actB: "#646464",
-    bgGradient: "linear-gradient(45deg, #1c1c1c, #303030)", // Monochrome discret
+    bgGradient: "linear-gradient(45deg, #1c1c1c, #303030)", // Monochrome simple et élégant
     animated: false
   },
   "Desert":       { 
@@ -151,7 +151,7 @@ const THEMES = {
     barB: "rgba(194,123,40,0.7)", 
     actW: "#e8aa5f", 
     actB: "#c27b28",
-    bgGradient: "linear-gradient(45deg, #e8aa5f, #c27b28)", // Dégradé désert
+    bgGradient: "linear-gradient(45deg, #e0a571, #b5772e)", // Sable chaud, désert
     animated: true
   },
   "Cyberpunk":    { 
@@ -160,7 +160,7 @@ const THEMES = {
     barB: "rgba(0,255,240,0.8)", 
     actW: "#ff00dc", 
     actB: "#00fff0",
-    bgGradient: "linear-gradient(45deg, #ff00dc, #00fff0)", // Cyberpunk néon
+    bgGradient: "linear-gradient(45deg, #8a00d4, #00d4d0)", // Cyberpunk, intense
     animated: true
   },
   "Aurora":       { 
@@ -169,7 +169,7 @@ const THEMES = {
     barB: "rgba(68,130,255,0.7)", 
     actW: "#6affed", 
     actB: "#4482ff",
-    bgGradient: "linear-gradient(45deg, #6affed, #4482ff)", // Auroras polaires
+    bgGradient: "linear-gradient(45deg, #4079b9, #6affed)", // L'aurore lumineuse
     animated: true
   }
 };
@@ -966,6 +966,27 @@ const labelByMidi = useMemo(() => {
     background: var(--bg);
   }
 
+
+  html, body {
+    transition: background 1s ease-in-out;
+  }
+  
+  /* Dégradé animé spécifique */
+  .animated-bg {
+    animation: gradientAnimation 15s ease-in-out infinite;
+  }
+  
+  @keyframes gradientAnimation {
+    0% {
+      background: #000000;
+    }
+    50% {
+      background: #333333;
+    }
+    100% {
+      background: #000000;
+    }
+  }
 
 
 
