@@ -968,12 +968,6 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-  @media (orientation: landscape) and (max-width: 1024px) {
-    .top {
-      bottom: 0 !important;
-      top: auto !important;
-    }
-  }
 
 
   @media (pointer: coarse) and (orientation: portrait) {
@@ -1043,12 +1037,14 @@ const labelByMidi = useMemo(() => {
     background: #444;
   }
   
-  @media (orientation: landscape) and (pointer: coarse) {
+  @media (orientation: portrait) and (pointer: coarse) {
     .top {
-      top: auto;      /* désactive le top */
-      bottom: 0;      /* place la barre en bas */
+      position: fixed !important;
+      top: calc(66vh + var(--white-h)) !important; /* même calcul que dans ton code JS initial */
+      bottom: auto !important;
     }
-  }  
+  }
+
 
 `}</style>
   {showLibrary && (
