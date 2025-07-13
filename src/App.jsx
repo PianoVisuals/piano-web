@@ -968,7 +968,12 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-
+  @media (orientation: landscape) and (max-width: 1024px) {
+    .top {
+      bottom: 0 !important;
+      top: auto !important;
+    }
+  }
 
 
   @media (pointer: coarse) and (orientation: portrait) {
