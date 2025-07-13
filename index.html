@@ -22,7 +22,6 @@
   <script async
           src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
 
-  <!-- Organization JSON-LD -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -72,12 +71,19 @@
       background: transparent; border: none;
       color: #fff; font-size: 1.5rem; cursor: pointer;
     }
-    .privacy-link {
-      display: block; margin-top: 1.5rem;
-      text-align: center; font-size: 0.9rem;
-      color: #4da6ff; text-decoration: none;
+    .modal-content .link-row {
+      margin-top: 1.5rem;
+      text-align: center;
     }
-    .privacy-link:hover { text-decoration: underline; }
+    .modal-content .link-row a {
+      margin: 0 1rem;
+      color: #aaa;           /* liens gris */
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .modal-content .link-row a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -88,7 +94,10 @@
       <button class="close-btn" aria-label="Close">×</button>
       <h1 id="modal-title"></h1>
       <div id="modal-body"></div>
-      <a id="privacy-link" class="privacy-link" href="#">Privacy Policy</a>
+      <div class="link-row">
+        <a id="privacy-link" href="#"></a>
+        <a id="contact-link" href="#"></a>
+      </div>
     </div>
   </div>
 
@@ -109,19 +118,23 @@
           "Ready to start? Click \"Load…\" to import a MIDI file or pick a demo, and let PianoVisual turn your music into a visual show."
         ],
         privacyText: "Privacy Policy",
-        privacyHref: "/privacy.html"
+        privacyHref: "/privacy.html",
+        contactText: "Contact: pianovisualmidi@gmail.com",
+        contactHref: "mailto:pianovisualmidi@gmail.com"
       },
       fr: {
         title: "À propos de PianoVisual",
         paragraphs: [
           "PianoVisual vous offre un piano virtuel époustouflant dans votre navigateur. Propulsé par React et Tone.js, il prend en charge les gestes tactiles, les raccourcis clavier et les contrôleurs USB-MIDI pour reproduire la sensation d’un vrai piano.",
-          "Importez vos fichiers .mid ou choisissez un démonstration intégrée. Une fois chargé, glissez la barre de progression pour parcourir le morceau et regardez chaque note illuminer sa touche en synchronisation avec des barres animées.",
+          "Importez vos fichiers .mid ou choisissez une démonstration intégrée. Une fois chargé, glissez la barre de progression pour parcourir le morceau et regardez chaque note illuminer sa touche en synchronisation avec des barres animées.",
           "Optimisé pour bureau, tablette et smartphone, l’interface s’adapte en modes paysage et portrait. Contrôlez volume et sustain avec des curseurs, et explorez plus de 50 voix d’instruments et thèmes personnalisables.",
           "Des mises à jour régulières apportent de nouveaux morceaux démo, des soundfonts optimisés et des améliorations de performances. Que vous appreniez une partition ou que vous jouiez pour le plaisir, PianoVisual rend l’expérience captivante.",
-          "Prêt à jouer ? Cliquez sur \"Load…\" pour importer un fichier MIDI ou choisir une démo, et laissez PianoVisual transformer votre musique en spectacle visuel."
+          "Prêt à jouer ? Cliquez sur « Load… » pour importer un fichier MIDI ou choisir une démo, et laissez PianoVisual transformer votre musique en spectacle visuel."
         ],
         privacyText: "Politique de confidentialité",
-        privacyHref: "/privacy-fr.html"
+        privacyHref: "/privacy-fr.html",
+        contactText: "Contact : pianovisualmidi@gmail.com",
+        contactHref: "mailto:pianovisualmidi@gmail.com"
       }
     };
 
@@ -130,7 +143,7 @@
     document.documentElement.lang = lang;
 
     // Injecter titre & paragraphes
-    const { title, paragraphs, privacyText, privacyHref } = content[lang];
+    const { title, paragraphs, privacyText, privacyHref, contactText, contactHref } = content[lang];
     document.getElementById("modal-title").textContent = title;
     const body = document.getElementById("modal-body");
     paragraphs.forEach(txt => {
@@ -139,10 +152,13 @@
       body.appendChild(p);
     });
 
-    // Configurer le lien politique
-    const link = document.getElementById("privacy-link");
-    link.textContent = privacyText;
-    link.href = privacyHref;
+    // Configurer les liens
+    const priv = document.getElementById("privacy-link");
+    priv.textContent = privacyText;
+    priv.href = privacyHref;
+    const cont = document.getElementById("contact-link");
+    cont.textContent = contactText;
+    cont.href = contactHref;
 
     // Bouton de fermeture
     document.querySelector(".close-btn")
