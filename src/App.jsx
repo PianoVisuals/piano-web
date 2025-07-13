@@ -483,16 +483,16 @@ export default function App(){
   // appliquer thème -------------------------------------------------
   useEffect(() => {
     const themeDef = THEMES[theme];
-  
+
     // 1) Si le thème a un dégradé, on applique le dégradé et retire le fond uni
     if (themeDef.bgGradient) {
-      document.documentElement.style.setProperty('--bg', 'none'); // Désactive le fond uni
-      document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient); // Active le dégradé
-      document.documentElement.classList.add('use-gradient'); // Ajoute une classe pour les dégradés
+      document.documentElement.style.setProperty('--bg', 'none');
+      document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient);
+      document.documentElement.classList.add('use-gradient');
     } else {
-      document.documentElement.style.setProperty('--bg', themeDef.bg); // Fond uni
-      document.documentElement.style.setProperty('--bg-gradient', 'none'); // Désactive le dégradé
-      document.documentElement.classList.remove('use-gradient'); // Retire la classe
+      document.documentElement.style.setProperty('--bg', themeDef.bg);
+      document.documentElement.style.setProperty('--bg-gradient', 'none');
+      document.documentElement.classList.remove('use-gradient');
     }
   
     // 2) Animation du fond si le thème a l'animation activée
@@ -841,6 +841,26 @@ const labelByMidi = useMemo(() => {
 
   return(<>
  <style>{`
+
+
+ @keyframes bgAnimation {
+   0% {
+     background-position: 0% 50%;
+   }
+   50% {
+     background-position: 100% 50%;
+   }
+   100% {
+     background-position: 0% 50%;
+   }
+ }
+ 
+ /* Appliquer l'animation quand un thème a l'option animée */
+ body.animated-bg {
+   animation: bgAnimation 10s ease infinite;
+   background-size: 200% 200%; /* Ce contrôle donne l'effet de mouvement du dégradé */
+ }
+
 
 
   :root {
