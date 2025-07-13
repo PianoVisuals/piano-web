@@ -980,7 +980,56 @@ const labelByMidi = useMemo(() => {
   }
 
 
+
+  .top {
+    display: flex;
+    align-items: center;        /* tous les items centrés verticalement */
+    padding: 0.5rem 1rem;
+    background: #1a1a1a;
+    gap: 1rem;                   /* espacement uniforme */
+    position: fixed;
+    top: 0; width: 100%; z-index: 10;
+  }
   
+  .toolbar-item {
+    display: flex;
+    align-items: center;        /* icône et label alignés */
+    gap: 0.5rem;
+    height: 2.5rem;              /* même hauteur pour tous */
+  }
+  
+  .toolbar-item label,
+  .toolbar-item select,
+  .toolbar-item input[type="checkbox"] {
+    vertical-align: middle;
+  }
+  
+  .toolbar-item select,
+  .toolbar-item input[type="range"] {
+    height: 1.5rem;              /* rend la track du slider plus grande */
+  }
+  
+  .toolbar-item img {
+    display: block;              /* retire le petit décalage baseline */
+    height: 1.5rem;
+    width: auto;
+  }
+  
+  /* Styles de bouton */
+  .top button {
+    height: 2.5rem;
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 0 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .top button:hover {
+    background: #444;
+  }
+  
+    
 
 `}</style>
   {showLibrary && (
