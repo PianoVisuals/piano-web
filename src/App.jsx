@@ -263,7 +263,7 @@ export default function App(){
 
 
 
-  const canvasRef = useRef(null);
+
   const [recorder, setRecorder] = useState(null);
 
   const startRecording = () => {
