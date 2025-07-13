@@ -810,7 +810,14 @@ const labelByMidi = useMemo(() => {
 
 
 
-
+  :root {
+    /* transition sur les variables de couleur de barres et d'activation */
+    transition:
+      --bar-w 0.5s ease,
+      --bar-b 0.5s ease,
+      --act-w 0.5s ease,
+      --act-b 0.5s ease;
+  }
 
 
   
