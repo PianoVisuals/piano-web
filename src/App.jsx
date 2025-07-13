@@ -37,55 +37,141 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 
 // ===== Thèmes ===========================================================
 const THEMES = {
-  "Classic": {
-    bg: "#111",
-    barW: "rgba(0,150,255,0.6)",
-    barB: "rgba(0,200,150,0.6)",
-    actW: "#3faff9",
+  "Classic":      { 
+    bg: "#111", 
+    barW: "rgba(0,150,255,0.6)", 
+    barB: "rgba(0,200,150,0.6)", 
+    actW: "#3faff9", 
     actB: "#3b89bc",
-    bgGradient: "linear-gradient(45deg, #6a1b9a, #ab47bc)", // Dégradé visible et animé
+    bgGradient: "linear-gradient(45deg, #111, #222)", // Dégradé subtil, doux
     animated: true
   },
-  "Night": {
-    bg: "#000",
-    barW: "rgba(120,120,255,0.7)",
-    barB: "rgba(180,0,255,0.7)",
-    actW: "#b799f9",
+  "Night":        { 
+    bg: "#000", 
+    barW: "rgba(120,120,255,0.7)", 
+    barB: "rgba(180,0,255,0.7)", 
+    actW: "#b799f9", 
     actB: "#ca84e0",
-    bgGradient: "linear-gradient(45deg, #004d40, #00796b)", // Un autre dégradé visible
+    bgGradient: "linear-gradient(45deg, #000, #333)", // Dégradé sobre et profond
     animated: true
   },
-  "Neon": {
-    bg: "#050912",
-    barW: "rgba(57,255,20,0.8)",
-    barB: "rgba(0,255,255,0.8)",
-    actW: "#39ff14",
+  "Candy":        { 
+    bg: "#222", 
+    barW: "rgba(255,105,180,0.7)", 
+    barB: "rgba(255,182,193,0.7)", 
+    actW: "#f9acf5", 
+    actB: "#f988e6",
+    bgGradient: "linear-gradient(45deg, #ff87f6, #ff55aa)", // Dégradé doux et sucré
+    animated: true
+  },
+  "Retro":        { 
+    bg: "#282828", 
+    barW: "rgba(255,165,0,0.7)", 
+    barB: "rgba(0,255,170,0.7)", 
+    actW: "#ffd166", 
+    actB: "#06d6a0",
+    bgGradient: "linear-gradient(45deg, #ff7b00, #6c6eff)", // Rétro lumineux
+    animated: true
+  },
+  "Neon":         { 
+    bg: "#050912", 
+    barW: "rgba(57,255,20,0.8)", 
+    barB: "rgba(0,255,255,0.8)", 
+    actW: "#39ff14", 
     actB: "#00e5ff",
-    bgGradient: "linear-gradient(45deg, #ff5e4d, #ffd166)", // Dégradé avec des couleurs vives
+    bgGradient: "linear-gradient(45deg, #39ff14, #00e5ff)", // Dégradé neon vibrant
     animated: true
   },
-  "Ocean": {
-    bg: "#002b36",
-    barW: "rgba(38,139,210,0.7)",
-    barB: "rgba(7,54,66,0.7)",
-    actW: "#268bd2",
+  "Hell":         { 
+    bg: "#4d2525", 
+    barW: "rgba(40,15,15,0.8)", 
+    barB: "rgba(0,0,0,0.8)", 
+    actW: "#871414", 
+    actB: "#5e1d1d",
+    bgGradient: "linear-gradient(45deg, #5e1d1d, #7a1f1f)", // Effet sombre et chaud
+    animated: true
+  },
+  "Heaven":       { 
+    bg: "#aba693", 
+    barW: "rgba(214,191,96,0.8)", 
+    barB: "rgba(133,120,68,0.8)", 
+    actW: "#b89918", 
+    actB: "#87731f",
+    bgGradient: "linear-gradient(45deg, #b89918, #8c7345)", // Ton doré chaud
+    animated: true
+  },
+  "Ocean":        { 
+    bg: "#002b36", 
+    barW: "rgba(38,139,210,0.7)", 
+    barB: "rgba(7,54,66,0.7)", 
+    actW: "#268bd2", 
     actB: "#073642",
-    bgGradient: "linear-gradient(45deg, #00aaff, #0044cc)", // Un fond bleu marin dynamique
+    bgGradient: "linear-gradient(45deg, #00aaff, #0044cc)", // Bleu océan
     animated: true
   },
-  "Hell":         { bg: "#4d2525",  barW: "rgba(40,15,15,0.8)",    barB: "rgba(0,0,0,0.8)",       actW: "#871414", actB: "#5e1d1d" },
-  "Heaven":       { bg: "#aba693",  barW: "rgba(214,191,96,0.8)",  barB: "rgba(133,120,68,0.8)",  actW: "#b89918", actB: "#87731f" },
-
-  "Ocean":        { bg: "#002b36",  barW: "rgba(38,139,210,0.7)",  barB: "rgba(7,54,66,0.7)",     actW: "#268bd2", actB: "#073642" },
-  "Forest":       { bg: "#1b2f24",  barW: "rgba(133,193,85,0.7)",  barB: "rgba(42,92,47,0.7)",    actW: "#85c155", actB: "#2a5c2f" },
-  "Sunset":       { bg: "#3e1f47",  barW: "rgba(255,94,77,0.7)",   barB: "rgba(255,188,117,0.7)", actW: "#ff5e4d", actB: "#ffbc75" },
-  "PastelDream":  { bg: "#f2e9e4",  barW: "rgba(255,179,186,0.6)", barB: "rgba(255,223,186,0.6)", actW: "#ffb3ba", actB: "#ffdfba" },
-  "Monochrome":   { bg: "#1c1c1c",  barW: "rgba(200,200,200,0.6)", barB: "rgba(100,100,100,0.6)", actW: "#c8c8c8", actB: "#646464" },
-  "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
-  "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
-  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
-
-
+  "Forest":       { 
+    bg: "#1b2f24", 
+    barW: "rgba(133,193,85,0.7)", 
+    barB: "rgba(42,92,47,0.7)", 
+    actW: "#85c155", 
+    actB: "#2a5c2f",
+    bgGradient: "linear-gradient(45deg, #558d40, #3a6f31)", // Nature et forêt
+    animated: true
+  },
+  "Sunset":       { 
+    bg: "#3e1f47", 
+    barW: "rgba(255,94,77,0.7)", 
+    barB: "rgba(255,188,117,0.7)", 
+    actW: "#ff5e4d", 
+    actB: "#ffbc75",
+    bgGradient: "linear-gradient(45deg, #ff5e4d, #ffbc75)", // Dégradé inspiré par le coucher de soleil
+    animated: true
+  },
+  "PastelDream":  { 
+    bg: "#f2e9e4", 
+    barW: "rgba(255,179,186,0.6)", 
+    barB: "rgba(255,223,186,0.6)", 
+    actW: "#ffb3ba", 
+    actB: "#ffdfba",
+    bgGradient: "linear-gradient(45deg, #f2e9e4, #ffb3ba)", // Douceur pastel
+    animated: true
+  },
+  "Monochrome":   { 
+    bg: "#1c1c1c", 
+    barW: "rgba(200,200,200,0.6)", 
+    barB: "rgba(100,100,100,0.6)", 
+    actW: "#c8c8c8", 
+    actB: "#646464",
+    bgGradient: "linear-gradient(45deg, #1c1c1c, #303030)", // Monochrome discret
+    animated: false
+  },
+  "Desert":       { 
+    bg: "#3f2b1f", 
+    barW: "rgba(232,170,95,0.7)", 
+    barB: "rgba(194,123,40,0.7)", 
+    actW: "#e8aa5f", 
+    actB: "#c27b28",
+    bgGradient: "linear-gradient(45deg, #e8aa5f, #c27b28)", // Dégradé désert
+    animated: true
+  },
+  "Cyberpunk":    { 
+    bg: "#0f0f1a", 
+    barW: "rgba(255,0,220,0.8)", 
+    barB: "rgba(0,255,240,0.8)", 
+    actW: "#ff00dc", 
+    actB: "#00fff0",
+    bgGradient: "linear-gradient(45deg, #ff00dc, #00fff0)", // Cyberpunk néon
+    animated: true
+  },
+  "Aurora":       { 
+    bg: "#08133b", 
+    barW: "rgba(106,255,237,0.7)", 
+    barB: "rgba(68,130,255,0.7)", 
+    actW: "#6affed", 
+    actB: "#4482ff",
+    bgGradient: "linear-gradient(45deg, #6affed, #4482ff)", // Auroras polaires
+    animated: true
+  }
 };
 
 // ===== Constantes clavier ================================================= =================================================
@@ -485,24 +571,32 @@ export default function App(){
   useEffect(() => {
     const themeDef = THEMES[theme];
   
-    // 1) Si le thème a un dégradé animé, appliquer ce fond et activer l'animation
+    // 1) Si le thème a un dégradé animé, on applique le dégradé et on active l'animation
     if (themeDef.bgGradient) {
-      document.documentElement.style.setProperty('--bg', 'none'); // Enlever fond uni
+      document.documentElement.style.setProperty('--bg', 'none'); // Enlever fond simple
       document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient);
-      document.documentElement.classList.add('use-gradient'); // Ajouter l'animation du gradient
+      document.documentElement.classList.add('use-gradient'); // Ajoute la classe pour l'animation
     } else {
       document.documentElement.style.setProperty('--bg', themeDef.bg);
       document.documentElement.style.setProperty('--bg-gradient', 'none');
       document.documentElement.classList.remove('use-gradient'); // Retirer l'animation
     }
   
-    // 2) Mise à jour des couleurs des barres et de l'activation du thème
+    // 2) Animation du fond si le thème a l'animation activée
+    if (themeDef.animated) {
+      document.body.classList.add('animated-bg'); // Ajoute l'animation si activée
+    } else {
+      document.body.classList.remove('animated-bg'); // Retire l'animation si non activée
+    }
+  
+    // 3) Mise à jour des couleurs des barres et de l'activation
     document.documentElement.style.setProperty('--bar-w', themeDef.barW);
     document.documentElement.style.setProperty('--bar-b', themeDef.barB);
     document.documentElement.style.setProperty('--act-w', themeDef.actW);
     document.documentElement.style.setProperty('--act-b', themeDef.actB);
   }, [theme]); // Réagit aux changements de thème
-  
+    
+
 
 
 
@@ -843,18 +937,18 @@ const labelByMidi = useMemo(() => {
 
   
   body {
-    background: var(--bg, #111); /* Fond par défaut */
-    transition: background 1s ease-in-out; /* Transition douce */
+    background: var(--bg, #111); /* Fond de base */
+    transition: background 1s ease-in-out; /* Transition fluide */
   }
-  
-  /* Appliquer un dégradé avec animation lorsque le thème est activé */
+
+  /* Appliquer le fond animé quand le thème est activé */
   .use-gradient {
-    background: var(--bg-gradient); /* Le gradient dynamique visible */
-    background-size: 400% 400%; /* Largeur et hauteur du gradient */
-    animation: gradientAnimation 10s ease infinite; /* Animation lente */
+    background: var(--bg-gradient); /* Dégradé dynamique */
+    background-size: 400% 400%; /* Étend le gradient */
+    animation: gradientAnimation 20s ease infinite; /* Animation lente */
   }
   
-  /* Animation du dégradé pour un changement de couleur fluide */
+  /* Animation du fond dégradé pour un effet fluide */
   @keyframes gradientAnimation {
     0% {
       background-position: 0% 50%;
@@ -867,10 +961,11 @@ const labelByMidi = useMemo(() => {
     }
   }
   
-  /* Si le thème n'a pas de gradient, appliquer une couleur simple */
-    body:not(.use-gradient) {
+  /* Dans le cas où le thème n'a pas de gradient, on applique un fond uni */
+  body:not(.use-gradient) {
     background: var(--bg);
   }
+
 
 
 
