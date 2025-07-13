@@ -272,50 +272,54 @@ export default function App(){
   const [pendingBlobUrl, setBlobUrl]  = useState(null);
 
   const startRecording = async () => {
-    // 1) Taille de la fenêtre
     const width  = window.innerWidth;
     const height = window.innerHeight;
   
-    // 2) Prépare l'offscreenCanvas
+    // on prépare l'offscreen
     const offscreen = document.createElement("canvas");
     offscreen.width  = width;
     offscreen.height = height;
     const offCtx = offscreen.getContext("2d");
   
-    // 3) Boucle de rendu
     let animId;
     const drawLoop = async () => {
-      // a) Snapshot de tout le body (inclut fixed, absolu, etc.)
+      // 1) snapshot de tout le body
       const snap = await html2canvas(document.body, {
         backgroundColor: null,
-        allowTaint:    true,
-        useCORS:       true,
-        width,
-        height,
-        x: 0,
-        y: 0,
-        windowWidth:  width,
+        allowTaint: true,
+        useCORS:    true,
+        width, height,
+        x:0, y:0,
+        windowWidth: width,
         windowHeight: height
       });
-  
-      // b) Recopie dans l'offscreen
       offCtx.clearRect(0, 0, width, height);
       offCtx.drawImage(snap, 0, 0, width, height);
   
-      // c) Superpose le <canvas> animé (barres)
+      // 2) superposer le canvas des barres
       const realCanvas = canvasRef.current;
       if (realCanvas) {
         offCtx.drawImage(realCanvas, 0, 0, width, height);
       }
   
+      // 3) dessiner les touches DOM actives
+      document.querySelectorAll(".piano .active").forEach(el => {
+        const r = el.getBoundingClientRect();
+        // relative à (0,0) de la page
+        offCtx.fillStyle = window.getComputedStyle(el).backgroundColor || "rgba(255,255,0,0.3)";
+        offCtx.globalAlpha = 0.6;
+        offCtx.fillRect(r.left, r.top, r.width, r.height);
+        offCtx.globalAlpha = 1;
+      });
+  
       animId = requestAnimationFrame(drawLoop);
     };
     drawLoop();
   
-    // 4) Audio / MediaRecorder comme avant
+    // audio + MediaRecorder comme avant
     const audioDest = Tone.context.createMediaStreamDestination();
     synthRef.current.connect(audioDest);
-  
+
     const videoStream = offscreen.captureStream(30);
     const mixed = new MediaStream([
       ...videoStream.getVideoTracks(),
@@ -335,7 +339,6 @@ export default function App(){
     rec.start();
     setRecorder(rec);
   };
-  
   
 
 
