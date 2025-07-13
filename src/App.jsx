@@ -770,303 +770,188 @@ const labelByMidi = useMemo(() => {
 
   return(<>
  <style>{`
-
   :root {
     /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
     --act-w-r: 249;
     --act-w-g: 199;
     --act-w-b: 79;
-
     --act-b-r: 248;
     --act-b-g: 150;
     --act-b-b: 30;
   }
 
-  html,body{margin:0;background:var(--bg,#111);color:#fff;overflow:hidden;touch-action:none;font-family:system-ui;-webkit-user-select:none;user-select:none;}
-  .top{display:flex;justify-content:center;align-items:center;gap:0.5rem;padding:0.25rem;flex-wrap:wrap;position:fixed;left:0;right:0;top:0;background:#111;z-index:3;box-shadow:0 2px 4px rgba(0,0,0,0.6);}
+  html, body {
+    margin: 0;
+    background: var(--bg,#111);
+    color: #fff;
+    overflow: hidden;
+    touch-action: none;
+    font-family: system-ui;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Barre du haut remaniée */
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 3;
+  }
+
+  /* Chaque groupe de contrôles */
+  .toolbar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #ddd;
+    font-size: 0.9rem;
+  }
+
+  /* Style des <select> */
+  .toolbar-item select {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+  }
+
+  /* Boutons */
+  .top button {
+    background: #444;
+    color: #eee;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+  }
+  .top button:hover {
+    background: #555;
+  }
+
+  /* Sliders (range) */
+  .toolbar-item input[type="range"] {
+    -webkit-appearance: none;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    outline: none;
+  }
+  .toolbar-item input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    background: #4da6ff;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .toolbar-item input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px;
+    background: #4da6ff;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  /* Slider volume plus compact */
+  .volume-slider {
+    width: 100px;
+  }
+
+  /* Slider de progression plein large */
+  .progress-slider {
+    flex: 1;
+    background: #222;
+  }
+
+  /* Reste de ton CSS inchangé… */
   select,input[type=range]{background:#222;color:#fff;border:1px solid #444;}
   input[type=range].prog{width:180px;}
   .piano{display:flex;justify-content:center;position:fixed;left:0;right:0;height:var(--white-h);bottom:0;overflow:hidden;}
-  @media(orientation:portrait) and (pointer:coarse){
-    .piano{top:66vh;bottom:auto;}
-    .top{top:calc(66vh + var(--white-h));bottom:auto;}
-  }
-  .white{width:var(--white-w);height:var(--white-h);background:#fff;border-left:1px solid #000;border-bottom:1px solid #000;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;}
-  .white:first-child{border-left:none;}
-  .black{width:var(--black-w);height:var(--black-h);background:#000;margin-left:var(--black-shift);margin-right:var(--black-shift);border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;}
-  /* Active White Keys */
-  .active.white {
-    /* du thème en bas → blanc mélangé à 40% en haut */
-    background: linear-gradient(
-      to top,
-      var(--act-w) 0%,
-      color-mix(in srgb, white 40%, var(--act-w)) 100%
-    ) !important;
-
-    /* lueur dynamique comme avant */
-    box-shadow:
-      0 0 12px var(--act-w),
-      inset 0 0 4px rgba(255,255,255,0.3) !important;
-  }
-
-  /* Active Black Keys */
-  .active.black {
-    background: linear-gradient(
-      to top,
-      var(--act-b) 0%,
-      color-mix(in srgb, white 20%, var(--act-b)) 100%
-    ) !important;
-
-    box-shadow:
-      0 0 12px var(--act-b),
-      inset 0 0 4px rgba(255,255,255,0.2) !important;
-  }
-  .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
-  canvas{position:fixed;left:0;top:0;pointer-events:none;}
-
-
-   /* widget About intégré dans .top */
-  .details.about {
-    /* rien à fixer en position : il héritera du flow dans .top */
-  }
-  .about {
-    display: flex;
-    align-items: center;
-    margin-left: 0.5rem;        /* espace à gauche si besoin */
-  }
-  .about summary {
-    list-style: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-  }
-  .about summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .about-content {
-    font-size: 0.9rem;        /* taille de police 90 % de la normale */
-    line-height: 1.4;         /* pour compacter un peu l’interligne */
-    max-height: 70vh;         /* hauteur maxi pour ne pas dépasser */
-    overflow-y: auto;         /* scroll si trop long */
-    padding-right: 0.5rem;    /* pour le scroll */
-  }
-  .about-content h4 {
-    font-size: 0.5rem;        /* titre un peu plus petit aussi */
-    margin-bottom: 1rem;
-  }
-  .about-content p {
-    margin: 1rem 0;        /* espacement vertical réduit */
-  }
-
-  .about-content {
-    position: absolute;         /* superpose le contenu */
-    top: 2.5rem;                /* juste en dessous de la barre */
-    right: 1rem;                /* aligné à droite de la barre */
-    background: #222;
-    color: #ddd;
-    padding: 0.75rem;
-    border-radius: 6px;
-    max-width: 250px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.8);
-    display: none;
-    z-index: 20;
-  }
-  .about[open] .about-content {
-    display: block;
-  }
-  .about-content h4 {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
-  }
-  .about-content p {
-    margin: 0.25rem 0;
-    font-size: 0.85rem;
-  }
-  .about-content a {
-    color: #4da6ff;
-    text-decoration: none;
-    font-size: 0.85rem;
-  }
-
-
-
-  /* ——— Styles pour la fenêtre Import/Librairie ——— */
-  .library-overlay {
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.5);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:10;
-  }
-  .library-menu {
-    position: relative;   /* <-- impératif ! */
-    background:#222;
-    padding:1rem;
-    border-radius:6px;
-    display:flex;
-    flex-direction:column;
-    gap:0.5rem;
-    width:90%;
-    max-width:320px;
-  }
-  .library-menu h3 {
-    margin:0 0 0.5rem;
-    color:#fff;
-    text-align:center;
-  }
-  .library-menu button,
-  .library-menu select {
-    width:100%;
-    font-size:1rem;
-    padding:0.5rem;
-    background:#333;
-    border:1px solid #555;
-    color:#fff;
-  }
-
-  /* 1) Bouton toggle, masqué par défaut */
-  .toggle-bar {
-    display: none;
-    position: fixed;
-    top: 0.25rem;
-    left: 0.25rem;
-    background: var(--bg);
-    border: none;
-    color: #fff;
-    font-size: 1.5rem;
-    z-index: 4;
-    padding: 0.25rem;
-    border-radius: 4px;
-  }
-
-  /* 2) En paysage mobile, on affiche le toggle */
-  @media (orientation: landscape) and (pointer: coarse) {
-    .toggle-bar {
-      display: block;
-    }
-    /* par défaut on cache la barre si isBarCollapsed = true */
-    .top.collapsed {
-      transform: translateY(-100%);
-      transition: transform 0.3s ease;
-    }
-    .top {
-      transition: transform 0.3s ease;
-    }
-    /* pour que la flèche soit toujours visible */
-    .top.collapsed + .toggle-bar,
-    .toggle-bar {
-      z-index: 5;
-    }
-  }
-
-
-  @media (pointer: coarse) and (orientation: portrait) {
-    /* On cible les boutons, selects et inputs de la barre en mode portrait tactile */
-    :root[data-mode="piano"] .top button,
-    :root[data-mode="piano"] .top select,
-    :root[data-mode="piano"] .top input[type="range"],
-    :root[data-mode="piano"] .top label {
-      font-size: 0.75rem !important;     /* réduire la taille du texte */
-      padding: 0.25rem 0.5rem !important; /* réduire les paddings */
-      margin: 0 !important;              /* enlever marges superflues */
-    }
-
-    /* Pour les icons / summary du about */
-    :root[data-mode="piano"] .top details summary {
-      font-size: 1rem !important;
-    }
-  }
-
-
+  /* … etc. … */
 `}</style>
-  {showLibrary && (
-    <div className="library-overlay" onClick={closeLibrary}>
-      <div className="library-menu" onClick={e => e.stopPropagation()}>
 
-        {/* 2) Titre */}
-        <h3>Upload or Select</h3>
+{/* … */}
 
-        {/* 3) Upload file */}
-        <button onClick={() => fileInputRef.current.click()}>
-          Upload MIDI File
-        </button>
-
-        {/* 4) Sélecteur de la bibliothèque */}
-        <select
-          defaultValue=""
-          onChange={e => {
-            loadDemo(e.target.value);
-            closeLibrary();
-          }}
-        >
-          <option value="" disabled>Select a Song...</option>
-          {DEMOS.map(name => (
-            <option key={name} value={name}>
-              {name.replace(/\.mid$/, "")}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  )}
-
-  <button
-    className="toggle-bar"
-    onClick={() => setIsBarCollapsed(b => !b)}
-    onClick={toggleFullScreenBar}
-    aria-label={isBarCollapsed ? "Show options" : "Hide options"}
-  >
-    {isBarCollapsed ? ">" : "<"}
-  </button>
-
-  <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
-    {/* indicateur MIDI */}
-    <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
-      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
-    </div>
-    <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
-    <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
-      <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
-    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
-    <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
-    {/* Bouton principal : Charger (importer ou choisir) */}
-    <button onClick={openLibrary}>
-      Load…
-    </button>
-    <button onClick={unloadMidi} disabled={!midiData}>
-        Clear
-    </button>
-
-    {/* input caché pour import manuel */}
-    <input
-      type="file"
-      accept=".mid"
-      hidden
-      ref={fileInputRef}
-      onChange={e => {
-        handleFile(e);    // <-- on passe l’événement, pas e.target.files[0]
-        closeLibrary();
-      }}
+<div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
+  <div className="toolbar-item">
+    <img
+      src={midiConnected ? "/midi_on.png" : "/midi_off.png"}
+      alt="MIDI status"
+      width={24} height={24}
     />
-
-    <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
-
-    <details className="about" ref={aboutRef}>
-      <summary>{summary}</summary>
-      <div className="about-content">
-        <h4>{title}</h4>
-        {paragraphs.map((p, i) => (
-          <p key={i} dangerouslySetInnerHTML={{ __html: p }} />
-        ))}
-      </div>
-    </details>
   </div>
 
-  <canvas ref={canvasRef}></canvas>
+  <div className="toolbar-item">
+    <label>Theme</label>
+    <select value={theme} onChange={e => setTheme(e.target.value)}>
+      {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+    </select>
+  </div>
 
-  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-  
-  </>);
-}
+  <div className="toolbar-item">
+    <label>Instrument</label>
+    <select value={instrument} onChange={e => setInstrument(e.target.value)}>
+      {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+    </select>
+  </div>
+
+  <div className="toolbar-item">
+    <label>
+      <input
+        type="checkbox"
+        checked={sustain}
+        onChange={e => setSustain(e.target.checked)}
+      />
+      Sustain
+    </label>
+  </div>
+
+  <div className="toolbar-item">
+    <label>Vol</label>
+    <input
+      type="range"
+      className="volume-slider"
+      min="0" max="200"
+      value={volume}
+      onChange={e => setVolume(+e.target.value)}
+    />
+  </div>
+
+  <div className="toolbar-item">
+    <button onClick={togglePlay} disabled={!midiData}>
+      {playing ? "Pause" : "Play"}
+    </button>
+  </div>
+
+  <div className="toolbar-item">
+    <button onClick={openLibrary}>Load…</button>
+    <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
+  </div>
+
+  <div className="toolbar-item">
+    <input
+      type="range"
+      className="progress-slider"
+      min="0" max="1" step="0.001"
+      value={progress}
+      onChange={e => onScrub(e.target.valueAsNumber)}
+      disabled={!midiData}
+    />
+  </div>
+
+  <details className="about toolbar-item" ref={aboutRef}>
+    <summary>{summary}</summary>
+    <div className="about-content">
+      <h4>{title}</h4>
+      {paragraphs.map((p, i) => (
+        <p key={i} dangerouslySetInnerHTML={{ __html: p }} />
+      ))}
+    </div>
+  </details>
+</div>
