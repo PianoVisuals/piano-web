@@ -6,12 +6,12 @@
   <title>PianoVisual – Online MIDI Piano with Live Visualization</title>
   <link rel="icon" type="image/png" href="/logo32.png" />
   <link rel="apple-touch-icon" href="/logo180.png" />
+  <link rel="icon" href="/favicon.ico" />
 
   <meta
     name="description"
     content="PianoVisual lets you play and visualize your MIDI files in the browser. Choose themes, instruments, and watch notes light up in real time."
   />
-
   <meta property="og:site_name" content="PianoVisual" />
   <link rel="canonical" href="https://pianovisual.com/" />
 
@@ -22,6 +22,7 @@
   <script async
           src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
 
+  <!-- Organization JSON-LD -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -32,7 +33,6 @@
   }
   </script>
 
-
   <style>
     /* Styles globaux */
     body {
@@ -42,120 +42,111 @@
       color: #fff;
       text-align: center;
     }
-    #root {
-      padding-top: 2rem;
-    }
+    #root { padding-top: 2rem; }
 
-    /* Overlay modal affiché par défaut */
+    /* Modal */
     #modal {
       display: flex;
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(0,0,0,0.8);
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-      z-index: 999;
+      justify-content: center; align-items: center;
+      padding: 1rem; z-index: 999;
     }
-
-    /* Contenu modal */
     .modal-content {
       position: relative;
       background: #222;
       padding: 2rem;
       border-radius: 8px;
-      max-width: 700px;
-      width: 100%;
-      max-height: 80vh;
-      overflow-y: auto;
+      max-width: 700px; width: 100%;
+      max-height: 80vh; overflow-y: auto;
       text-align: left;
     }
     .modal-content h1 {
-      margin-top: 0;
-      font-size: 2rem;
-      color: #fff;
+      margin-top: 0; font-size: 2rem; color: #fff;
     }
     .modal-content p {
-      margin: 1rem 0;
-      line-height: 1.5;
-      color: #ddd;
+      margin: 1rem 0; line-height: 1.5; color: #ddd;
     }
-
-    /* Bouton fermer */
     .close-btn {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 1.5rem;
-      cursor: pointer;
+      position: absolute; top: 1rem; right: 1rem;
+      background: transparent; border: none;
+      color: #fff; font-size: 1.5rem; cursor: pointer;
     }
+    .privacy-link {
+      display: block; margin-top: 1.5rem;
+      text-align: center; font-size: 0.9rem;
+      color: #4da6ff; text-decoration: none;
+    }
+    .privacy-link:hover { text-decoration: underline; }
   </style>
 </head>
 
 <body>
-  <!-- Fenêtre modale affichée au démarrage -->
+  <!-- Modal affiché au chargement -->
   <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
       <button class="close-btn" aria-label="Close">×</button>
       <h1 id="modal-title"></h1>
-      <div id="modal-body">
-        <!-- Les paragraphes seront injectés ici -->
-      </div>
+      <div id="modal-body"></div>
+      <a id="privacy-link" class="privacy-link" href="#">Privacy Policy</a>
     </div>
   </div>
 
-  <!-- L’application React montera ici -->
+  <!-- React monte ici -->
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 
   <script>
-    // Contenus en anglais et en français
+    // Contenu EN / FR
     const content = {
       en: {
         title: "About PianoVisual",
         paragraphs: [
-          "PianoVisual delivers a stunning virtual piano right in your browser. Powered by React and Tone.js, it seamlessly supports touch gestures, computer-keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.",
-          "Import your own MIDI files or choose from our ever-expanding music library, and watch as each note you play instantly lights up its corresponding key. This responsive glow makes both practice and performance feel immersive and visually engaging.",
-          "Designed for every device from desktop to tablet to smartphone, the interface adapts fluidly in both landscape and portrait modes. Control volume and sustain with intuitive sliders, and explore dozens of instrument voices (acoustic grand piano, harpsichord, banjo, violin, and more) alongside customizable color themes.",
-          "We continuously update with fresh demo tracks, optimized soundfonts, and performance enhancements. Whether you’re learning to read sheet music, rehearsing for an upcoming recital, or simply jamming for fun, PianoVisual makes practice engaging, accessible, and visually captivating.",
-          "Ready to start? Click “Load…” to import a MIDI file or choose a demo, and let the magic of falling note bars transform your musical experience."
-        ]
+          "PianoVisual delivers a stunning virtual piano right in your browser. Powered by React and Tone.js, it seamlessly supports touch gestures, keyboard shortcuts, and USB-MIDI controllers to recreate the feel of a real piano.",
+          "Import your own .mid files or choose from our built-in demos. When a file is loaded, drag the progress bar to scrub through the song and watch each note light up its key in sync with animated falling bars.",
+          "Designed for desktop, tablet, and smartphone, the interface adapts in both landscape and portrait. Control volume and sustain with sliders, and explore over 50 instrument voices and customizable themes.",
+          "Regular updates bring fresh demo tracks, optimized soundfonts, and performance improvements. Whether you’re learning sheet music or jamming for fun, PianoVisual makes play and practice engaging.",
+          "Ready to start? Click \"Load…\" to import a MIDI file or pick a demo, and let PianoVisual turn your music into a visual show."
+        ],
+        privacyText: "Privacy Policy",
+        privacyHref: "/privacy.html"
       },
       fr: {
         title: "À propos de PianoVisual",
         paragraphs: [
-          "PianoVisual vous offre un piano virtuel époustouflant directement dans votre navigateur. Propulsé par React et Tone.js, il prend en charge les gestes tactiles, les raccourcis clavier et les contrôleurs MIDI USB pour reproduire la sensation d’un vrai piano.",
-          "Importez vos propres fichiers MIDI ou choisissez parmi notre bibliothèque musicale en constante expansion, et regardez chaque note que vous jouez illuminer instantanément la touche correspondante. Cette lueur réactive rend la pratique et la performance immersives et visuellement captivantes.",
-          "Conçu pour tous les appareils, du bureau à la tablette en passant par le smartphone, l’interface s’adapte avec fluidité en modes paysage et portrait. Contrôlez le volume et le sustain à l’aide de curseurs intuitifs, et explorez des dizaines de voix d’instruments (piano à queue acoustique, clavecin, banjo, violon, etc.) ainsi que des thèmes de couleurs personnalisables.",
-          "Nous mettons régulièrement à jour avec de nouveaux morceaux démo, des soundfonts optimisés et des améliorations de performance. Que vous appreniez à lire une partition, répétiez pour un prochain récital ou que vous jouiez simplement pour le plaisir, PianoVisual rend la pratique engageante, accessible et visuellement époustouflante.",
-          "Prêt à commencer ? Cliquez sur “Load…” pour importer un fichier MIDI ou choisir une démo, et laissez la magie des barres de notes tomber transformer votre expérience musicale."
-        ]
+          "PianoVisual vous offre un piano virtuel époustouflant dans votre navigateur. Propulsé par React et Tone.js, il prend en charge les gestes tactiles, les raccourcis clavier et les contrôleurs USB-MIDI pour reproduire la sensation d’un vrai piano.",
+          "Importez vos fichiers .mid ou choisissez un démonstration intégrée. Une fois chargé, glissez la barre de progression pour parcourir le morceau et regardez chaque note illuminer sa touche en synchronisation avec des barres animées.",
+          "Optimisé pour bureau, tablette et smartphone, l’interface s’adapte en modes paysage et portrait. Contrôlez volume et sustain avec des curseurs, et explorez plus de 50 voix d’instruments et thèmes personnalisables.",
+          "Des mises à jour régulières apportent de nouveaux morceaux démo, des soundfonts optimisés et des améliorations de performances. Que vous appreniez une partition ou que vous jouiez pour le plaisir, PianoVisual rend l’expérience captivante.",
+          "Prêt à jouer ? Cliquez sur \"Load…\" pour importer un fichier MIDI ou choisir une démo, et laissez PianoVisual transformer votre musique en spectacle visuel."
+        ],
+        privacyText: "Politique de confidentialité",
+        privacyHref: "/privacy-fr.html"
       }
     };
 
-    // Détermination de la langue
-    const userLang = navigator.language.startsWith("fr") ? "fr" : "en";
-    document.documentElement.lang = userLang;
+    // Choix de la langue
+    const lang = navigator.language.startsWith("fr") ? "fr" : "en";
+    document.documentElement.lang = lang;
 
-    // Injection du contenu dans la modal
-    const { title, paragraphs } = content[userLang];
+    // Injecter titre & paragraphes
+    const { title, paragraphs, privacyText, privacyHref } = content[lang];
     document.getElementById("modal-title").textContent = title;
     const body = document.getElementById("modal-body");
-    paragraphs.forEach(text => {
+    paragraphs.forEach(txt => {
       const p = document.createElement("p");
-      p.textContent = text;
+      p.textContent = txt;
       body.appendChild(p);
     });
 
-    // Fonctionnement du bouton fermer (une seule fois)
-    const modal   = document.getElementById('modal');
-    const closeBtn = modal.querySelector('.close-btn');
-    closeBtn.addEventListener('click', () => {
-      modal.remove();
-    });
+    // Configurer le lien politique
+    const link = document.getElementById("privacy-link");
+    link.textContent = privacyText;
+    link.href = privacyHref;
+
+    // Bouton de fermeture
+    document.querySelector(".close-btn")
+      .addEventListener("click", () => document.getElementById("modal").remove());
   </script>
 </body>
 </html>
