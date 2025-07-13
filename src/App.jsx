@@ -261,8 +261,8 @@ export default function App(){
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
-
-
+  const [playbackRate, setPlaybackRate] = useState(1);
+  
 
   useEffect(() => {
     Tone.Transport.bpm.value = 120 * playbackRate; 
