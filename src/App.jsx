@@ -1260,7 +1260,7 @@ const labelByMidi = useMemo(() => {
 
   <div ref={containerRef} style={{ position: "relative", height: "100vh" }}>
     {showLibrary && (
-      <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
+      
       <div className="library-overlay" onClick={closeLibrary}>
         <div className="library-menu" onClick={e => e.stopPropagation()}>
   
@@ -1396,7 +1396,5 @@ const labelByMidi = useMemo(() => {
     )}
   </div>
 
-  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
-  
-  </>);
+    </>);
 }
