@@ -1165,7 +1165,29 @@ const labelByMidi = useMemo(() => {
   }
 
 
-
+  .record-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;  /* centre horizontalement */
+    align-items: center;      /* centre verticalement */
+    z-index: 1000;
+  }
+  
+  .record-modal-content {
+    background: #222;
+    color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    /* on supprime tout positionnement absolu ou transform ici */
+  }
 
 
 `}</style>
