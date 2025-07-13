@@ -1141,7 +1141,13 @@ const labelByMidi = useMemo(() => {
           accept=".mid"
           hidden
           ref={fileInputRef}
-          onChange={handleFile}
+          onChange={e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            console.log("Fichier sélectionné :", file.name);
+            handleFile(file);
+            closeLibrary();
+          }}
         />
 
         {/* 4) Sélecteur de la bibliothèque */}
