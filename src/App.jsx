@@ -263,26 +263,50 @@ export default function App(){
 
 
 
-  const stream = canvasRef.current.captureStream(60); // 60fps
-  const audioDest = Tone.context.createMediaStreamDestination();
-  synthRef.current.connect(audioDest);
-  const combined = new MediaStream([...stream.getVideoTracks(), ...audioDest.stream.getAudioTracks()]);
-  const recorder = new MediaRecorder(combined);
-  const chunks = [];
-  recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = () => {
-    const blob = new Blob(chunks, { type: 'video/mp4' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'session.mp4'; a.click();
+  const canvasRef = useRef(null);
+  const [recorder, setRecorder] = useState(null);
+
+  const startRecording = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      console.error("Le canvas n'est pas encore monté");
+      return;
+    }
+
+    // 1) Récupère le flux vidéo du canvas
+    const videoStream = canvas.captureStream(60); 
+    // 2) Récupère le flux audio du synth
+    const audioDest = Tone.context.createMediaStreamDestination();
+    synthRef.current.connect(audioDest);
+
+    // 3) Fusionne les deux
+    const mixedStream = new MediaStream([
+      ...videoStream.getVideoTracks(),
+      ...audioDest.stream.getAudioTracks()
+    ]);
+
+    // 4) Initialise le MediaRecorder
+    const rec = new MediaRecorder(mixedStream);
+    const chunks = [];
+    rec.ondataavailable = e => chunks.push(e.data);
+    rec.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/mp4' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'recording.mp4';
+      a.click();
+    };
+    rec.start();
+    setRecorder(rec);
   };
-  recorder.start();
 
-  const blob = new Blob([midiData.toArray()], { type: 'audio/midi' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'track.mid'; a.click();
-
+  const stopRecording = () => {
+    if (recorder) {
+      recorder.stop();
+      setRecorder(null);
+    }
+  };
 
   const isFr = navigator.language.startsWith("fr");
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
