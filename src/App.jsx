@@ -37,13 +37,24 @@ const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si diff
 
 // ===== Thèmes ===========================================================
 const THEMES = {
-  "Classic":   {bg:"#111", barW:"rgba(0,150,255,0.6)", barB:"rgba(0,200,150,0.6)", actW:"#3faff9", actB:"#3b89bc"},
-  "Night":     {bg:"#000", barW:"rgba(120,120,255,0.7)", barB:"rgba(180,0,255,0.7)", actW:"#b799f9", actB:"#ca84e0"},
-  "Candy":     {bg:"#222", barW:"rgba(255,105,180,0.7)", barB:"rgba(255,182,193,0.7)", actW:"#f9acf5", actB:"#f988e6"},
-  "Retro":     {bg:"#282828", barW:"rgba(255,165,0,0.7)", barB:"rgba(0,255,170,0.7)", actW:"#ffd166", actB:"#06d6a0"},
-  "Neon":      {bg:"#050912", barW:"rgba(57,255,20,0.8)", barB:"rgba(0,255,255,0.8)", actW:"#39ff14", actB:"#00e5ff"},
-  "Hell":      {bg:"#4d2525", barW:"rgba(40, 15, 15,0.8)", barB:"rgba(0, 0, 0,0.8)", actW:"#871414", actB:"#5e1d1d"},
-  "Heaven":      {bg:"#aba693", barW:"rgba(214, 191, 96,0.8)", barB:"rgba(133, 120, 68,0.8)", actW:"#b89918", actB:"#87731f"},
+  "Classic":    { bg: "#111", barW: "rgba(0,150,255,0.6)",  barB: "rgba(0,200,150,0.6)",  actW: "#3faff9", actB: "#3b89bc" },
+  "Night":      { bg: "#000", barW: "rgba(120,120,255,0.7)", barB: "rgba(180,0,255,0.7)",  actW: "#b799f9", actB: "#ca84e0" },
+  "Candy":      { bg: "#222", barW: "rgba(255,105,180,0.7)", barB: "rgba(255,182,193,0.7)", actW: "#f9acf5", actB: "#f988e6" },
+  "Retro":      { bg: "#282828", barW: "rgba(255,165,0,0.7)",  barB: "rgba(0,255,170,0.7)",  actW: "#ffd166", actB: "#06d6a0" },
+  "Neon":       { bg: "#050912", barW: "rgba(57,255,20,0.8)",  barB: "rgba(0,255,255,0.8)",  actW: "#39ff14", actB: "#00e5ff" },
+  "Hell":       { bg: "#4d2525", barW: "rgba(40,15,15,0.8)",   barB: "rgba(0,0,0,0.8)",       actW: "#871414", actB: "#5e1d1d" },
+  "Heaven":     { bg: "#aba693", barW: "rgba(214,191,96,0.8)", barB: "rgba(133,120,68,0.8)",  actW: "#b89918", actB: "#87731f" },
+
+  "Sunset":     { bg: "#2b021c", barW: "rgba(255,94,77,0.7)",   barB: "rgba(255,195,113,0.7)", actW: "#ff5e4d",  actB: "#ffc371" },
+  "Forest":     { bg: "#0b2d0b", barW: "rgba(85,168,104,0.7)",  barB: "rgba(48,98,48,0.7)",     actW: "#55a868",  actB: "#306230" },
+  "Ocean":      { bg: "#001f3f", barW: "rgba(64,156,255,0.7)",  barB: "rgba(0,87,155,0.7)",     actW: "#409cff",  actB: "#00579b" },
+  "Lavender":   { bg: "#2e003e", barW: "rgba(201,128,255,0.7)", barB: "rgba(141,71,255,0.7)",  actW: "#c980ff",  actB: "#8d47ff" },
+  "Sunrise":    { bg: "#331900", barW: "rgba(255,189,105,0.7)", barB: "rgba(255,134,41,0.7)",  actW: "#ffbd69",  actB: "#ff8629" },
+  "Monochrome": { bg: "#121212", barW: "rgba(200,200,200,0.7)", barB: "rgba(100,100,100,0.7)", actW: "#c8c8c8", actB: "#646464" },
+  "CottonCandy":{ bg: "#2b001f", barW: "rgba(255,182,193,0.7)", barB: "rgba(255,105,180,0.7)", actW: "#ffb6c1", actB: "#ff69b4" },
+  "Mint":       { bg: "#002b26", barW: "rgba(152,251,152,0.7)", barB: "rgba(102,204,153,0.7)", actW: "#98fb98", actB: "#66cc99" },
+  "Fire":       { bg: "#3a0f0f", barW: "rgba(255,99,71,0.7)",   barB: "rgba(255,140,0,0.7)",    actW: "#ff6347",  actB: "#ff8c00" },
+  "Galaxy":     { bg: "#0d0015", barW: "rgba(111,0,255,0.7)",   barB: "rgba(0,255,200,0.7)",    actW: "#6f00ff",  actB: "#00ffc8" }
 };
 
 // ===== Constantes clavier ================================================= =================================================
