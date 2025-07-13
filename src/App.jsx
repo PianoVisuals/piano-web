@@ -1371,7 +1371,7 @@ const labelByMidi = useMemo(() => {
         </div>
       </details>
     </div>
-    
+    <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
     <canvas ref={canvasRef}></canvas>
     {showModal && (
       <div className="record-modal">
