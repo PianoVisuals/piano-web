@@ -980,11 +980,63 @@ const labelByMidi = useMemo(() => {
   }
 
 
+  .slider {
+    -webkit-appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
 
 
-
-
-
+  /* ========== Volume Slider ========== */
+  .volume-slider {
+    width: 100px;
+    height: 8px;
+    background: #444;
+    border-radius: 4px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #4da6ff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    margin-top: -4px; /* centrer le thumb */
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #4da6ff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+  }
+  
+  /* ========== Progress Slider ========== */
+  .progress-slider {
+    flex: 1;
+    height: 4px;
+    background: #222;
+    border-radius: 2px;
+  }
+  
+  .progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 8px;
+    height: 8px;
+    background: #ddd;
+    border-radius: 50%;
+    margin-top: -2px; /* centrer le thumb */
+  }
+  
+  .progress-slider::-moz-range-thumb {
+    width: 8px;
+    height: 8px;
+    background: #ddd;
+    border-radius: 50%;
+  }
+  
 
 `}</style>
   {showLibrary && (
@@ -1027,49 +1079,71 @@ const labelByMidi = useMemo(() => {
     {isBarCollapsed ? ">" : "<"}
   </button>
 
-  <div className={top${isBarCollapsed ? " collapsed" : ""}}>
-    {/* indicateur MIDI */}
-    <div className="midi-status" title={midiConnected ? "MIDI piano connected" : "No MIDI piano detected (not supported in Firefox)"}>
-      <img src={midiConnected?"/midi_on.png":"/midi_off.png"} alt="MIDI status" draggable="false" width={24} height={24}/>
+  <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
+    <div className="toolbar-item">
+      <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
     </div>
-    <label>Theme <select value={theme} onChange={e=>setTheme(e.target.value)}>{Object.keys(THEMES).map(t=><option key={t}>{t}</option>)}</select></label>
-    <label>Instrument <select value={instrument} onChange={e=>setInstrument(e.target.value)}>{Object.keys(INSTR).map(i=><option key={i}>{i}</option>)}</select></label>
-      <label style={{display:'flex',alignItems:'center',gap:'4px'}}><input type="checkbox" checked={sustain} onChange={e=>setSustain(e.target.checked)} />Sustain</label>
-    <label>Vol <input type="range" min="0" max="200" value={volume} onChange={e=>setVolume(+e.target.value)} /></label>
-    <button onClick={togglePlay} disabled={!midiData}>{playing?"Pause":"Play"}</button>
-    {/* Bouton principal : Charger (importer ou choisir) */}
-    <button onClick={openLibrary}>
-      Load…
-    </button>
-    <button onClick={unloadMidi} disabled={!midiData}>
-        Clear
-    </button>
 
-    {/* input caché pour import manuel */}
+    <div className="toolbar-item">
+      <label>Theme</label>
+      <select value={theme} onChange={e => setTheme(e.target.value)}>
+        {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+      </select>
+    </div>
+  
+    <div className="toolbar-item">
+      <label>Instrument</label>
+      <select value={instrument} onChange={e => setInstrument(e.target.value)}>
+        {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+      </select>
+    </div>
+  
+    <div className="toolbar-item">
+      <label>
+        <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
+        Sustain
+      </label>
+    </div>
+  
+    <div className="toolbar-item">
+      <label>Vol</label>
+      <input
+        type="range"
+        min="0"
+        max="400"
+        value={volume}
+        onChange={e => setVolume(+e.target.value)}
+        className="slider volume-slider"
+      />
+    </div>
+  
+    <button onClick={togglePlay} disabled={!midiData}>
+      {playing ? "Pause" : "Play"}
+    </button>
+  
+    <button onClick={openLibrary}>Load…</button>
+    <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
+  
     <input
-      type="file"
-      accept=".mid"
-      hidden
-      ref={fileInputRef}
-      onChange={e => {
-        handleFile(e);    // <-- on passe l’événement, pas e.target.files[0]
-        closeLibrary();
-      }}
+      type="range"
+      min="0"
+      max="1"
+      step="0.001"
+      value={progress}
+      onChange={e => onScrub(e.target.valueAsNumber)}
+      disabled={!midiData}
+      className="slider progress-slider"
     />
-
-    <input className="prog" type="range" min="0" max="1" step="0.001" value={progress} onChange={e=>onScrub(e.target.valueAsNumber)} disabled={!midiData} />
-
+  
     <details className="about" ref={aboutRef}>
       <summary>{summary}</summary>
       <div className="about-content">
         <h4>{title}</h4>
-        {paragraphs.map((p, i) => (
-          <p key={i} dangerouslySetInnerHTML={{ __html: p }} />
-        ))}
+        {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
       </div>
     </details>
   </div>
-
+  
   <canvas ref={canvasRef}></canvas>
 
   <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
