@@ -1129,6 +1129,13 @@ const labelByMidi = useMemo(() => {
         <button onClick={() => fileInputRef.current.click()}>
           Upload MIDI File
         </button>
+        <input
+          type="file"
+          accept=".mid"
+          hidden
+          ref={fileInputRef}
+          onChange={handleFile}
+        />
 
         {/* 4) Sélecteur de la bibliothèque */}
         <select
