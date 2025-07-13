@@ -191,7 +191,7 @@ const INSTR = {
 };
 
 const URLS = { C3: "C3.mp3", G3: "G3.mp3", C4: "C4.mp3", G4: "G4.mp3", C5: "C5.mp3", G5: "G5.mp3" };
-const LONG_REL = 30; // sustain release seconds
+const LONG_REL = 50; // sustain release seconds
 const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
 
 
