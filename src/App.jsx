@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import html2canvas from "html2canvas";
