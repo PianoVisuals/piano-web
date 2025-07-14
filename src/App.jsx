@@ -1222,8 +1222,18 @@ const labelByMidi = useMemo(() => {
   }
   
   
+  @media (orientation: portrait) and (max-width: 768px) {
+    .kofi-link {
+      display: none;
+    }
+  }
 
 
+  @media (orientation: landscape) and (max-width: 768px) {
+    .kofi-link {
+      display: none;
+    }
+  }
 
 
 
