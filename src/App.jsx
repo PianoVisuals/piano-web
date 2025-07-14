@@ -1241,13 +1241,6 @@ const labelByMidi = useMemo(() => {
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
 
-    <a
-      href="https://ko-fi.com/pianovisual"
-      target="_blank"
-      rel="noopener"
-      className="kofi-link"
-      title="Support me on Ko-fi"
-    >
       <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
     </a>
 
@@ -1313,6 +1306,16 @@ const labelByMidi = useMemo(() => {
         {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
       </div>
     </details>
+
+    <a
+      href="https://ko-fi.com/pianovisual"
+      target="_blank"
+      rel="noopener"
+      className="kofi-link"
+      title="Support me on Ko-fi"
+    >
+
+
   </div>
   
   <canvas ref={canvasRef}></canvas>
