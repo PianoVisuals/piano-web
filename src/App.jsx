@@ -270,7 +270,8 @@ async function loadDemo(name) {
 }
 
 
-
+const FADE_DURATION = 1;
+const fadeMap = useRef(new Map());
 
 export default function App(){
   // refs & state ----------------------------------------------------
@@ -290,8 +291,7 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
-  const FADE_DURATION = 1;
-  const fadeMap = useRef(new Map());
+
 
 
 
