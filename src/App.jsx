@@ -1241,8 +1241,7 @@ const labelByMidi = useMemo(() => {
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
 
-      <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
-    </a>
+
 
     <div className="toolbar-item">
       <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
@@ -1314,6 +1313,8 @@ const labelByMidi = useMemo(() => {
       className="kofi-link"
       title="Support me on Ko-fi"
     >
+      <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
+    </a>
 
 
   </div>
