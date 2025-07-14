@@ -264,16 +264,6 @@ async function loadDemo(name) {
 }
 
 
-// Au lieu de `.toDestination()`, on crée une chaîne Sampler → Compressor → Destination
-const compressor = new Tone.Compressor({
-  threshold: -30,  // au-dessous de -30 dB on compresse
-  ratio: 3,        // atténuation 3:1
-  attack: 0.01,
-  release: 0.3
-}).toDestination();
-
-synthRef.current = makeSampler(instrument)
-  .chain(compressor);
 
 
 
@@ -297,7 +287,17 @@ export default function App(){
 
 
 
-
+  // Au lieu de `.toDestination()`, on crée une chaîne Sampler → Compressor → Destination
+  const compressor = new Tone.Compressor({
+    threshold: -30,  // au-dessous de -30 dB on compresse
+    ratio: 3,        // atténuation 3:1
+    attack: 0.01,
+    release: 0.3
+  }).toDestination();
+  
+  synthRef.current = makeSampler(instrument)
+    .chain(compressor);
+  
 
 
 
