@@ -270,7 +270,7 @@ async function loadDemo(name) {
 }
 
 
-
+const FADE_DURATION = 1; 
 
 
 export default function App(){
@@ -291,9 +291,7 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
-
-
-
+  const fadeMap = useRef(new Map());
 
 
 
@@ -592,55 +590,62 @@ export default function App(){
     ctx.clip();
 
     // ─── GESTION DES BARRES MONTANTES ───
-    // on récupère toutes les notes enfoncées (clavier + tactile)
+
+    const now = Tone.Transport.seconds;
+
+    // 1) Notes encore enfoncées
     const pressedMidis = [
       ...kbdSet.current,
       ...Array.from(pointerMap.current.values())
     ];
-
-    // si aucune musique n'est chargée ET qu'on a des touches pressées
-    if (!midiData && pressedMidis.length > 0) {
-      pressedMidis.forEach(midi => {
+    
+    // 2) Notes relâchées récemment (fade)
+    const fadingMidis = [];
+    fadeMap.current.forEach((releaseTime, midi) => {
+      const dt = now - releaseTime;
+      if (dt >= 0 && dt <= FADE_DURATION) {
+        fadingMidis.push({ midi, alpha: 1 - dt / FADE_DURATION });
+      } else if (dt > FADE_DURATION) {
+        fadeMap.current.delete(midi);
+      }
+    });
+    
+    const allMidis = [
+      ...pressedMidis.map(m => ({ midi: m, alpha: 1 })),
+      ...fadingMidis
+    ];
+    
+    if (!midiData && allMidis.length > 0) {
+      allMidis.forEach(({ midi, alpha }) => {
         const keyEl = document.querySelector(`[data-midi="${midi}"]`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
-
-        // ajustements de largeur et position X
         const barWidth = rect.width * 0.9;
         const x = rect.left + (rect.width - barWidth) / 2;
-
-        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
         const yBottom = rect.top;
-        const barHeight = yBottom;
         const yTop = 0;
-
-        // couleur selon note blanche ou noire
         const baseColor = WHITE.includes(midi % 12)
           ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
           : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-
-        // dégradé opaque
         const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
         grad.addColorStop(0, baseColor);
         grad.addColorStop(1, "rgba(255,255,255,0)");
-
-        // ombre portée
+    
         ctx.shadowColor = baseColor;
         ctx.shadowBlur  = 8;
-        ctx.globalAlpha = 0.8;
-
-        // dessin
+        ctx.globalAlpha = 0.8 * alpha; // on applique l'alpha
+    
         ctx.fillStyle = grad;
-        ctx.fillRect(x, yTop, barWidth, barHeight);
-
-        // reset
+        ctx.fillRect(x, yTop, barWidth, yBottom);
+    
         ctx.shadowBlur  = 0;
         ctx.globalAlpha = 1;
       });
-
+    
       ctx.restore();
-      return;  // on sort avant de dessiner les barres MIDI
+      return;
     }
+
 
     // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
     if (midiData) {
@@ -727,7 +732,9 @@ export default function App(){
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
+      const now = Tone.Transport.seconds;
       kbdSet.current.delete(midi);
+      fadeMap.current.set(midi, now);
       synthRef.current.triggerRelease(note);
       highlight(midi, false);
     };
@@ -762,7 +769,9 @@ export default function App(){
             highlight(note, false);
   
             // **Suppression** du set
-            kbdSet.current.delete(note);
+            const now = Tone.Transport.seconds;
+            kbdSet.current.delete(midi);
+            fadeMap.current.set(midi, now);
           }
         };
       });
