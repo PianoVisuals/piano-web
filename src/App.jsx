@@ -809,14 +809,13 @@ const labelByMidi = useMemo(() => {
 
 
 
-  canvas {
-    transition: opacity 0.4s ease;
-    opacity: 1;
+  :root {
+    transition:
+      --bar-w 0.5s ease,
+      --bar-b 0.5s ease,
+      --act-w 0.5s ease,
+      --act-b 0.5s ease;
   }
-  .canvas-fade-out {
-    opacity: 0;
-  }
-
 
   
   body {
