@@ -1158,6 +1158,34 @@ const labelByMidi = useMemo(() => {
   }
 
 
+
+
+  .top {
+    position: relative; /* pour que l’icône puisse se positionner */
+  }
+  
+  .kofi-link {
+    position: absolute;
+    top: 50%;
+    right: 1rem;           /* ajuster la marge à droite */
+    transform: translateY(-50%);
+    display: inline-block;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  
+  .kofi-link img {
+    height: 24px;
+    width: auto;
+  }
+
+  .kofi-link:hover {
+    opacity: 1;
+  }
+
+
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -1213,6 +1241,17 @@ const labelByMidi = useMemo(() => {
   </button>
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
+
+    <a
+      href="https://ko-fi.com/pianovisual"
+      target="_blank"
+      rel="noopener"
+      className="kofi-link"
+      title="Support me on Ko-fi"
+    >
+      <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
+    </a>
+
     <div className="toolbar-item">
       <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
     </div>
