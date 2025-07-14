@@ -6,16 +6,23 @@ import { Midi } from "@tonejs/midi";
 
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
+  "Fur Elise - Beethoven.mid",
+  "Nocturne op.9 No.2 - Chopin.mid",
   "Winter - Vivaldi.mid",
   "Lacrimosa - Mozart.mid",
   "Clair de Lune - Debussy.mid",
+  "Arabesque - Debussy.mid",
   "Moonlight Sonata - Beethoven.mid",
   "Serenade - Schubert.mid",
+  "Canon in D - Pachelbel.mid",
   "Gravity Falls Opening Theme Song.mid",
+  "Guren no Yumiya - Attack on Titan.mid",
   "Vogel im Käfig - Attack on Titan.mid",
+  "Interstellar Main Theme - Hans Zimmer.mid",
   "Bad Apple!!.mid",
   "Rush E.mid",
   "Lilium - Elfen Lied.mid",
+  "Megalovania - Undertale.mid",
   "Alone - SOMA.mid",
   "Harmonious - Ender Lilies.mid",
   "Secunda - The Elder Scrolls V.mid",
