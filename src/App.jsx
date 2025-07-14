@@ -32,8 +32,7 @@ const DEMOS = [
   "Fairy Fountain - Zelda.mid",
   "Alone - SOMA.mid",
   "Harmonious - Ender Lilies.mid",
-  "Secunda - The Elder Scrolls V.mid",
-  "Lumière - Clair Obscur Expedition 33.mid"
+  "Secunda - The Elder Scrolls V.mid"
 
 ];
 
