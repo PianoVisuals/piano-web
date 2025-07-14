@@ -1163,7 +1163,7 @@ const labelByMidi = useMemo(() => {
   .kofi-link {
     position: absolute;
     top: 50%;
-    right: 10rem;           /* ajuster la marge à droite */
+    right: 4rem;           /* ajuster la marge à droite */
     transform: translateY(-50%);
     display: inline-block;
     opacity: 0.7;
@@ -1171,7 +1171,7 @@ const labelByMidi = useMemo(() => {
   }
   
   .kofi-link img {
-    height: 24px;
+    height: 15px;
     width: auto;
   }
 
