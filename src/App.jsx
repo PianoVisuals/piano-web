@@ -1135,7 +1135,14 @@ const labelByMidi = useMemo(() => {
   }
 
 
+  body {
+    transition: background 0.5s ease, color 0.5s ease;
+  }
 
+  /* Appliquer une transition sur les barres et les éléments actifs */
+  .bar, .active-note, .top {
+    transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+  }
 
 
 `}</style>
