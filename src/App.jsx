@@ -452,42 +452,31 @@ export default function App(){
 
   // appliquer thème -------------------------------------------------
   useEffect(() => {
-    const themeDef = THEMES[theme];
-
-    Object.entries({
-      bg: c.bg,
-      "bar-w": c.barW,
-      "bar-b": c.barB,
-      "act-w": c.actW,
-      "act-b": c.actB
-    }).forEach(([k, v]) =>
-      document.documentElement.style.setProperty(`--${k}`, v)
-    );
+    const canvas = canvasRef.current;
+    if (!canvas) return;
   
-    // 1) Si le thème a un dégradé, on applique le dégradé et retire le fond uni
-    if (themeDef.bgGradient) {
-      document.documentElement.style.setProperty('--bg', 'none');
-      document.documentElement.style.setProperty('--bg-gradient', themeDef.bgGradient);
-      document.documentElement.classList.add('use-gradient');
-    } else {
+    // 1) On déclenche le fade-out
+    canvas.classList.add('canvas-fade-out');
+  
+    // 2) Au bout de la durée de la transition (400 ms), on change les vars et on refait un fade-in
+    const timeout = setTimeout(() => {
+      const themeDef = THEMES[theme];
+  
+      // Applique ton thème (fond, vars, etc.)
       document.documentElement.style.setProperty('--bg', themeDef.bg);
-      document.documentElement.style.setProperty('--bg-gradient', 'none');
-      document.documentElement.classList.remove('use-gradient');
-    }
-
-    // 2) Animation du fond si le thème a l'animation activée
-    if (themeDef.animated) {
-      document.body.classList.add('animated-bg'); // Ajoute l'animation
-    } else {
-      document.body.classList.remove('animated-bg'); // Retire l'animation
-    }
+      document.documentElement.style.setProperty('--bar-w', themeDef.barW);
+      document.documentElement.style.setProperty('--bar-b', themeDef.barB);
+      document.documentElement.style.setProperty('--act-w', themeDef.actW);
+      document.documentElement.style.setProperty('--act-b', themeDef.actB);
   
-    // 3) Mise à jour des couleurs des barres et de l'activation
-    document.documentElement.style.setProperty('--bar-w', themeDef.barW);
-    document.documentElement.style.setProperty('--bar-b', themeDef.barB);
-    document.documentElement.style.setProperty('--act-w', themeDef.actW);
-    document.documentElement.style.setProperty('--act-b', themeDef.actB);
-  }, [theme]); // Réagit aux changements de thème
+      // On remet l’opacité à 1 pour le fade-in
+      canvas.classList.remove('canvas-fade-out');
+    }, 400);
+  
+    // Cleanup si le thème change trop vite
+    return () => clearTimeout(timeout);
+  }, [theme]);
+  
     
   // inject AdSense auto‑ads once -----------------------------------
   useEffect(()=>{
@@ -820,13 +809,12 @@ const labelByMidi = useMemo(() => {
 
 
 
-  :root {
-    /* transition sur les variables de couleur de barres et d'activation */
-    transition:
-      --bar-w 0.5s ease,
-      --bar-b 0.5s ease,
-      --act-w 0.5s ease,
-      --act-b 0.5s ease;
+  canvas {
+    transition: opacity 0.4s ease;
+    opacity: 1;
+  }
+  .canvas-fade-out {
+    opacity: 0;
   }
 
 
