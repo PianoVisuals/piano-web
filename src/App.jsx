@@ -55,8 +55,11 @@ const THEMES = {
   "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
 
 
-};
 
+
+
+
+};
 // ===== Constantes clavier ================================================= =================================================
 const NOTE_MIN = 21;
 const NOTE_MAX = 108;
@@ -451,33 +454,11 @@ export default function App(){
 
 
   // appliquer thème -------------------------------------------------
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-  
-    // 1) On déclenche le fade-out
-    canvas.classList.add('canvas-fade-out');
-  
-    // 2) Au bout de la durée de la transition (400 ms), on change les vars et on refait un fade-in
-    const timeout = setTimeout(() => {
-      const themeDef = THEMES[theme];
-  
-      // Applique ton thème (fond, vars, etc.)
-      document.documentElement.style.setProperty('--bg', themeDef.bg);
-      document.documentElement.style.setProperty('--bar-w', themeDef.barW);
-      document.documentElement.style.setProperty('--bar-b', themeDef.barB);
-      document.documentElement.style.setProperty('--act-w', themeDef.actW);
-      document.documentElement.style.setProperty('--act-b', themeDef.actB);
-  
-      // On remet l’opacité à 1 pour le fade-in
-      canvas.classList.remove('canvas-fade-out');
-    }, 400);
-  
-    // Cleanup si le thème change trop vite
-    return () => clearTimeout(timeout);
-  }, [theme]);
-  
-    
+  useEffect(()=>{
+    const c = THEMES[theme];
+    Object.entries({bg:c.bg,"bar-w":c.barW,"bar-b":c.barB,"act-w":c.actW,"act-b":c.actB}).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
+  },[theme]);
+
   // inject AdSense auto‑ads once -----------------------------------
   useEffect(()=>{
     if(!window.adsbygoogle && !document.querySelector(`script[data-ad-client='${ADSENSE_ID}']`)){
@@ -806,50 +787,6 @@ const labelByMidi = useMemo(() => {
 
   return(<>
  <style>{`
-
-
-
-  :root {
-    transition:
-      --bar-w 0.5s ease,
-      --bar-b 0.5s ease,
-      --act-w 0.5s ease,
-      --act-b 0.5s ease;
-  }
-
-  
-  body {
-    background: var(--bg, #111); /* Fond de base */
-    transition: background 1s ease-in-out; /* Transition fluide */
-  }
-
-  /* Appliquer le fond animé quand le thème est activé */
-  .use-gradient {
-    background: var(--bg-gradient); /* Dégradé dynamique */
-    background-size: 400% 400%; /* Étend le gradient */
-    animation: gradientAnimation 20s ease infinite; /* Animation lente */
-  }
-  
-  /* Animation du fond dégradé pour un effet fluide */
-  @keyframes gradientAnimation {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-  
-  /* Dans le cas où le thème n'a pas de gradient, on applique un fond uni */
-  body:not(.use-gradient) {
-    background: var(--bg);
-  }
-
-
-
 
   :root {
     /* décompose --act-w et --act-b en canaux R, G, B pour le rgba() */
