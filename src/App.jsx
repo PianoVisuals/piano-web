@@ -270,8 +270,8 @@ async function loadDemo(name) {
 }
 
 
-const FADE_DURATION = 1;
-const fadeMap = useRef(new Map());
+
+
 
 export default function App(){
   // refs & state ----------------------------------------------------
@@ -590,55 +590,55 @@ export default function App(){
     ctx.clip();
 
     // ─── GESTION DES BARRES MONTANTES ───
-
-    const now = Tone.Transport.seconds;
-    const pressedMidis = [...kbdSet.current, ...pointerMap.current.values()];
-
-    const fadingMidis = [];
-    fadeMap.current.forEach((releaseTime, midi) => {
-      const dt = now - releaseTime;
-      if (dt >= 0 && dt <= FADE_DURATION) {
-        fadingMidis.push({ midi, alpha: 1 - dt/FADE_DURATION });
-      } else if (dt > FADE_DURATION) {
-        fadeMap.current.delete(midi);
-      }
-    });
-
-    const allMidis = [
-      ...pressedMidis.map(m => ({ midi: m, alpha: 1 })),
-      ...fadingMidis
+    // on récupère toutes les notes enfoncées (clavier + tactile)
+    const pressedMidis = [
+      ...kbdSet.current,
+      ...Array.from(pointerMap.current.values())
     ];
 
-    if (!midiData && allMidis.length) {
-      allMidis.forEach(({ midi, alpha }) => {
-        const keyEl = document.querySelector(`[data-midi='${midi}']`);
+    // si aucune musique n'est chargée ET qu'on a des touches pressées
+    if (!midiData && pressedMidis.length > 0) {
+      pressedMidis.forEach(midi => {
+        const keyEl = document.querySelector(`[data-midi="${midi}"]`);
         if (!keyEl) return;
         const rect = keyEl.getBoundingClientRect();
-        const barWidth = rect.width*0.9;
-        const x = rect.left+(rect.width-barWidth)/2;
+
+        // ajustements de largeur et position X
+        const barWidth = rect.width * 0.9;
+        const x = rect.left + (rect.width - barWidth) / 2;
+
+        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
         const yBottom = rect.top;
+        const barHeight = yBottom;
         const yTop = 0;
-        const baseColor = WHITE.includes(midi%12)
+
+        // couleur selon note blanche ou noire
+        const baseColor = WHITE.includes(midi % 12)
           ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
-              : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-        const grad = ctx.createLinearGradient(0,yTop,0,yBottom);
+          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
+
+        // dégradé opaque
+        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
         grad.addColorStop(0, baseColor);
         grad.addColorStop(1, "rgba(255,255,255,0)");
-    
+
+        // ombre portée
         ctx.shadowColor = baseColor;
         ctx.shadowBlur  = 8;
-        ctx.globalAlpha = 0.8 * alpha;
-    
+        ctx.globalAlpha = 0.8;
+
+        // dessin
         ctx.fillStyle = grad;
-        ctx.fillRect(x,yTop,barWidth,yBottom);
-    
+        ctx.fillRect(x, yTop, barWidth, barHeight);
+
+        // reset
         ctx.shadowBlur  = 0;
         ctx.globalAlpha = 1;
       });
-      ctx.restore();
-      return;
-    }
 
+      ctx.restore();
+      return;  // on sort avant de dessiner les barres MIDI
+    }
 
     // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
     if (midiData) {
@@ -725,15 +725,7 @@ export default function App(){
       const note = PC_MAP[e.code];
       if (!note) return;
       const midi = n2m(note);
-    
-      // on supprime du set normal
       kbdSet.current.delete(midi);
-    
-      // on ajoute au fadeMap
-      const now = Tone.Transport.seconds;
-      fadeMap.current.set(midi, now);
-    
-      // release sonore et visuel
       synthRef.current.triggerRelease(note);
       highlight(midi, false);
     };
@@ -768,9 +760,7 @@ export default function App(){
             highlight(note, false);
   
             // **Suppression** du set
-            const now = Tone.Transport.seconds;
-            kbdSet.current.delete(midi);
-            fadeMap.current.set(midi, now);
+            kbdSet.current.delete(note);
           }
         };
       });
@@ -778,61 +768,11 @@ export default function App(){
   },[]);
 
   // pointer events (unchanged) ------------------------------------
-  const midiAt = (x, y) => {
-    const a = document.elementFromPoint(x, y)?.getAttribute("data-midi");
-    return a ? +a : null;
-  };
-
-  const highlight = (m, on) =>
-    document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active", on);
-
-  // pointer down (press) — inchangé
-  const pDown = e => {
-    const m = midiAt(e.clientX, e.clientY);
-    if (m == null) return;
-    pointerMap.current.set(e.pointerId, m);
-    synthRef.current.triggerAttack(m2n(m));
-    highlight(m, true);
-    pianoRef.current.setPointerCapture(e.pointerId);
-  };
-  
-  // pointer move (drag) — on relâche l’ancienne note et on attaque la nouvelle
-  const pMove = e => {
-    if (!pointerMap.current.has(e.pointerId)) return;
-    const cur = pointerMap.current.get(e.pointerId);
-    const n = midiAt(e.clientX, e.clientY);
-    if (n === cur) return;
-  
-    // release de l’ancienne note avec fade
-    pointerMap.current.delete(e.pointerId);
-    const now = Tone.Transport.seconds;
-    fadeMap.current.set(cur, now);
-    synthRef.current.triggerRelease(m2n(cur));
-    highlight(cur, false);
-  
-    // attack de la nouvelle
-    if (n != null) {
-      pointerMap.current.set(e.pointerId, n);
-      synthRef.current.triggerAttack(m2n(n));
-      highlight(n, true);
-    }
-  };
-  
-  // pointer up (release) — on trigger le fade-out
-  const pUp = e => {
-    const m = pointerMap.current.get(e.pointerId);
-    pointerMap.current.delete(e.pointerId);
-    if (m != null) {
-      // release sonore
-      synthRef.current.triggerRelease(m2n(m));
-      // visuel : toujours laisser la classe active, le fade la gère
-      highlight(m, false);
-  
-      // enregistrement pour fade-out
-      const now = Tone.Transport.seconds;
-      fadeMap.current.set(m, now);
-    }
-  };
+  const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
+  const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
+  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);synthRef.current.triggerAttack(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
+  const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
+  const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
 
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
