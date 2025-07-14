@@ -1159,10 +1159,6 @@ const labelByMidi = useMemo(() => {
 
 
 
-
-  .top {
-    position: relative; /* pour que l’icône puisse se positionner */
-  }
   
   .kofi-link {
     margin-left: auto;       /* pousse l’icône à l’extrémité droite */
