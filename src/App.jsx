@@ -778,11 +778,61 @@ export default function App(){
   },[]);
 
   // pointer events (unchanged) ------------------------------------
-  const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
-  const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
-  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);synthRef.current.triggerAttack(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
-  const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
-  const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
+  const midiAt = (x, y) => {
+    const a = document.elementFromPoint(x, y)?.getAttribute("data-midi");
+    return a ? +a : null;
+  };
+
+  const highlight = (m, on) =>
+    document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active", on);
+
+  // pointer down (press) — inchangé
+  const pDown = e => {
+    const m = midiAt(e.clientX, e.clientY);
+    if (m == null) return;
+    pointerMap.current.set(e.pointerId, m);
+    synthRef.current.triggerAttack(m2n(m));
+    highlight(m, true);
+    pianoRef.current.setPointerCapture(e.pointerId);
+  };
+  
+  // pointer move (drag) — on relâche l’ancienne note et on attaque la nouvelle
+  const pMove = e => {
+    if (!pointerMap.current.has(e.pointerId)) return;
+    const cur = pointerMap.current.get(e.pointerId);
+    const n = midiAt(e.clientX, e.clientY);
+    if (n === cur) return;
+  
+    // release de l’ancienne note avec fade
+    pointerMap.current.delete(e.pointerId);
+    const now = Tone.Transport.seconds;
+    fadeMap.current.set(cur, now);
+    synthRef.current.triggerRelease(m2n(cur));
+    highlight(cur, false);
+  
+    // attack de la nouvelle
+    if (n != null) {
+      pointerMap.current.set(e.pointerId, n);
+      synthRef.current.triggerAttack(m2n(n));
+      highlight(n, true);
+    }
+  };
+  
+  // pointer up (release) — on trigger le fade-out
+  const pUp = e => {
+    const m = pointerMap.current.get(e.pointerId);
+    pointerMap.current.delete(e.pointerId);
+    if (m != null) {
+      // release sonore
+      synthRef.current.triggerRelease(m2n(m));
+      // visuel : toujours laisser la classe active, le fade la gère
+      highlight(m, false);
+  
+      // enregistrement pour fade-out
+      const now = Tone.Transport.seconds;
+      fadeMap.current.set(m, now);
+    }
+  };
 
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
