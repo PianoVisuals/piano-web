@@ -1182,6 +1182,54 @@ const labelByMidi = useMemo(() => {
 
 
 
+  .kofi-mobile-button {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+    background: url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') 
+                center center / contain no-repeat;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    z-index: 1000;
+  }
+
+  /* Hover un peu plus visible */
+  .kofi-mobile-button:hover {
+    opacity: 1;
+  }
+  
+  /* Par défaut on cache en paysage */
+  @media (orientation: landscape) {
+    .kofi-mobile-button {
+      display: none;
+    }
+  }
+  
+  /* On n’affiche que sur petits écrans en portrait */
+  @media (orientation: portrait) and (max-width: 768px) {
+    .kofi-mobile-button {
+      display: block;
+    }
+  }
+  
+  /* Optionnel : masquer sur desktop */
+  @media (min-width: 769px) {
+    .kofi-mobile-button {
+      display: none;
+    }
+  }
+  
+  
+
+
+
+
+
+
+
+
 `}</style>
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -1312,6 +1360,14 @@ const labelByMidi = useMemo(() => {
     >
       <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
     </a>
+
+    <a
+      href="https://ko-fi.com/pianovisual"
+      target="_blank"
+      rel="noopener"
+      className="kofi-mobile-button"
+      title="Support me on Ko-fi"
+    />
 
 
   </div>
