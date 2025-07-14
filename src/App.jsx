@@ -453,6 +453,16 @@ export default function App(){
   // appliquer thème -------------------------------------------------
   useEffect(() => {
     const themeDef = THEMES[theme];
+
+    Object.entries({
+      bg: c.bg,
+      "bar-w": c.barW,
+      "bar-b": c.barB,
+      "act-w": c.actW,
+      "act-b": c.actB
+    }).forEach(([k, v]) =>
+      document.documentElement.style.setProperty(`--${k}`, v)
+    );
   
     // 1) Si le thème a un dégradé, on applique le dégradé et retire le fond uni
     if (themeDef.bgGradient) {
