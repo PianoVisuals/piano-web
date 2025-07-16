@@ -86,7 +86,9 @@ export default function PianoMemory(){
   const durRef   = useRef(0);
   const seqTimeouts = useRef([]);                      // timeouts de playNext
 
-  const { lanes, demoDelay, hasTimer, inputFactor=2 } = PRESETS[diff];
+  let { lanes, demoDelay, hasTimer, inputFactor=2 } = PRESETS[diff];
+  // Mobile‑specific expansion: Insane gets 56 pads on phone
+  if(isPhone && diff==="Insane") lanes = 56;
 
   /* --- Utilitaires --- */
   const clearAll = ()=>{
@@ -278,7 +280,7 @@ export default function PianoMemory(){
   const TimerBar = ()=>{
     if(!hasTimer || phase!=="input") return null;
     return (
-      <div style={{ position:"fixed", top:isPhone?"9vh":"3.5vh", left:"50%", transform:"translateX(-50%)", width:"88vw", maxWidth:580, height:10, borderRadius:5,
+      <div style={{ position:"fixed", top:isPhone?"12vh":"3.5vh", left:"50%", transform:"translateX(-50%)", width:"88vw", maxWidth:580, height:10, borderRadius:5,
                     overflow:"hidden", background:"rgba(255,255,255,0.08)", boxShadow:"0 0 10px rgba(255,255,255,0.25)", pointerEvents:"none" }}>
         <div style={{ width:"100%", height:"100%", background:"#fff", transformOrigin:"center", transform:`scaleX(${tProg})`, transition:"transform .11s linear",
                       boxShadow:"0 0 8px 2px rgba(255,255,255,0.9)", pointerEvents:"none" }} />
@@ -289,11 +291,12 @@ export default function PianoMemory(){
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
     if(isPhone){
-      const phoneLanes = diff==="Insane" ? 56 : lanes; // add 6 dummy pads for Insane to complete grid lines
-      const minSize = phoneLanes>20 ? 40 : 60; // smaller pads for many squares
+      const minSize = lanes>20 ? 40 : 60;
       return (
         <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
-          {[...Array(phoneLanes)].map((_,i)=><Pad key={i} i={i%lanes}/>)}
+          {[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}
+        </div>
+      );.map((_,i)=><Pad key={i} i={i%lanes}/>)}
         </div>
       );
     }
