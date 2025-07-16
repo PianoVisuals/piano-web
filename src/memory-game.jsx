@@ -299,7 +299,7 @@ export default function PianoMemory(){
       <button onClick={()=>window.location.href='https://pianovisual.com'}
         style={{ position:"fixed", top:"2vh", left:"2vw", zIndex:3, padding:"0.4rem 0.8rem", fontSize:"1rem", borderRadius:8,
           background:"#fff", color:"#111", border:"none", cursor:"pointer", boxShadow:"0 2px 4px rgba(0,0,0,0.45)", transition:"transform .18s" }}>
-        ↩ Back to PianoVisual
+        ↩ PianoVisual
       </button>
 
       <h2 style={{animation:"fadeIn .6s", fontSize:"4rem", marginTop:"-20vh"}}>Piano Memory</h2>
