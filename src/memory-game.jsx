@@ -12,7 +12,7 @@ import * as Tone from "tone";
 if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
   const kofiStyle = document.createElement('style');
   kofiStyle.id = 'kofi-style';
-  kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;}.kofi-mobile-button:hover{opacity:1;}@media (orientation: landscape){body{display:none;}}`;
+  kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
   document.head.appendChild(kofiStyle);
 }
 
@@ -56,8 +56,16 @@ const successFx = new Tone.Synth({ oscillator:{type:"triangle"}, envelope:{attac
 const failFx    = new Tone.MembraneSynth({ volume:0 }).toDestination();
 
 export default function PianoMemory(){
-  const isPhone = typeof window !== 'undefined' && window.innerWidth <= 600; // ≤600px = mobile view
+  const isPhone = typeof window !== 'undefined' && window.innerWidth <= 600;
+  const isLandscape = isPhone && typeof window !== 'undefined' && window.innerWidth > window.innerHeight; // ≤600px = mobile view
   const isMobile = false; // mobile restriction removed
+  if(isLandscape){
+    return (
+      <div style={{position:'fixed',inset:0,background:'#111',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',padding:'2rem',zIndex:2000}}>
+        <p>Please rotate your device to portrait mode.</p>
+      </div>
+    );
+  }
   const lang = typeof navigator !== 'undefined' ? (navigator.language || navigator.userLanguage) : 'en';
   if(isMobile){
     const msg = lang && lang.startsWith('fr')
@@ -288,17 +296,18 @@ export default function PianoMemory(){
 
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
-    const extraInsane = isPhone && diff==="Insane" ? 6 : 0;
-    const totalPads = lanes + extraInsane;
-
     if(isPhone){
-      const minSize = lanes>20 ? 40 : 60; // smaller pads for Insane
-      return <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>{[...Array(totalPads)].map((_,i)=><Pad key={i} i={i}/> )}</div>;
+      const padCount = diff==="Insane" ? lanes+6 : lanes;
+      const minSize = diff==="Insane" ? 40 : (lanes>20?40:60);
+      return <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
+        {Array.from({length:padCount}).map((_,i)=> i<lanes ? <Pad key={i} i={i}/> : <div key={'d'+i} style={{width:"100%",aspectRatio:"1",margin:"0.5vw",borderRadius:12,background:"#222"}} />)}
+      </div>;
     }
-    if(lanes<=8) return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    if(lanes<=8){
+      return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    }
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
-    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: lanes===20 ? 12 : 20, width: lanes===20 ? "min(85vw,540px)" : "90vw", margin:"0 auto", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
-  }; <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/> )}</div>;
+    return <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/> )}</div>;
     }
     if(lanes<=8) return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
