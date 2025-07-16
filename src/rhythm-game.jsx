@@ -95,6 +95,36 @@ export default function RhythmGame() {
     setTimeout(() => setFlashRed(false), 200);
   };
 
+  const downloadScore = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, 600, 600);
+
+    ctx.fillStyle = '#55efc4';
+    ctx.font = 'bold 60px sans-serif';
+    ctx.fillText('Piano Tiles Rhythm', 300, 160);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '32px monospace';
+    ctx.fillText('Score: ' + score, 300, 260);
+    ctx.fillText('Max combo: ' + maxCombo, 300, 320);
+    ctx.fillText('Difficulty: ' + diff, 300, 380);
+
+    ctx.fillStyle = '#ffeaa7';
+    ctx.font = '22px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('pianovisual.com', 580, 580);
+
+    const link = document.createElement('a');
+    link.download = 'piano_score.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
   const onHit = (note, e) => {
     e.stopPropagation();
     const NOTE_KEYS = Object.keys(NOTE_SOUNDS);
@@ -138,7 +168,7 @@ export default function RhythmGame() {
   if (phase === "menu") {
     return (
       <Screen>
-        <h2>Piano Tiles Rhythm</h2>
+        <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh' }}>Piano Tiles Rhythm</h2>
         <label>Difficulty:
           <select value={diff} onChange={e => setDiff(e.target.value)}>
             {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
@@ -159,6 +189,7 @@ export default function RhythmGame() {
         <h2>Game Over</h2>
         <p>Your score: {score}</p>
         <p>Max combo: {maxCombo}</p>
+        <button style={btn} onClick={downloadScore}>Download Score</button>
         <button style={btn} onClick={() => setPhase("menu")}>Menu</button>
       </Screen>
     );
