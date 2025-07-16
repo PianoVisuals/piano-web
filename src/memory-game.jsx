@@ -274,7 +274,7 @@ export default function PianoMemory(){
     return (
       <div style={{position:"relative", width:"100%", aspectRatio:"1", margin:isPhone?"0.5vw":(lanes>10?4:lanes>8?8:20)}}>
         {/* Glow layer behind all */}
-        <div style={{position:"absolute", inset:0, borderRadius:12, boxShadow:glow, zIndex:0, pointerEvents:"none"}} />
+        <div style={{position:"absolute", inset:0, borderRadius:12, boxShadow:glow, zIndex:2, pointerEvents:"none"}} />
 
         {/* Interactive square */}
         <div onPointerDown={()=>onPadTap(i)}
