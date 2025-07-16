@@ -56,6 +56,7 @@ const successFx = new Tone.Synth({ oscillator:{type:"triangle"}, envelope:{attac
 const failFx    = new Tone.MembraneSynth({ volume:0 }).toDestination();
 
 export default function PianoMemory(){
+  const isPhone = typeof window !== 'undefined' && window.innerWidth <= 600; // ≤600px = mobile view
   const isMobile = false; // mobile restriction removed
   const lang = typeof navigator !== 'undefined' ? (navigator.language || navigator.userLanguage) : 'en';
   if(isMobile){
@@ -268,7 +269,7 @@ export default function PianoMemory(){
         (active ? (lanes>8?`0 0 12px 4px ${glowColor}`:`0 0 34px 14px ${glowColor}`) : "none");
     return (
       <div onPointerDown={()=>onPadTap(i)}
-        style={{ width:"100%", aspectRatio:"1", margin: lanes>10 ? 4 : lanes>8 ? 8 : 20, borderRadius:12, cursor:phase==="input"?"pointer":"default", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", outline:"none", 
+        style={{ width:"100%", aspectRatio:"1", margin: isPhone ? (lanes>10?"1.5vw":"3vw") : (lanes>10?4:lanes>8?8:20), borderRadius:12, cursor:phase==="input"?"pointer":"default", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", outline:"none", 
           background:bg, transition:"background .22s, transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s",
           transform:active?"scale(1.06)":"scale(1)", boxShadow: box }} />
     );
@@ -287,9 +288,9 @@ export default function PianoMemory(){
 
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
-    if(lanes<=8) return <div style={{display:"flex",width:"95vw",maxWidth:560}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    if(lanes<=8) return <div style={{display:"flex",width:isPhone?"90vw":"95vw",maxWidth:isPhone?"90vw":560}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
-    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: lanes===20 ? 12 : 20, width: lanes===20 ? "min(85vw,540px)" : "90vw", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: isPhone ? 8 : (lanes===20 ? 12 : 20), width: isPhone?"95vw": (lanes===20 ? "min(85vw,540px)" : "90vw"), maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
   };
 
   /* --- Screens / UI --- */
@@ -302,7 +303,7 @@ export default function PianoMemory(){
         ↩ Back to PianoVisual
       </button>
 
-      <h2 style={{animation:"fadeIn .6s", fontSize:"4rem", marginTop:"-20vh"}}>Piano Memory</h2>
+      <h2 style={{animation:"fadeIn .6s", fontSize:isPhone?"2.6rem":"4rem", marginTop:isPhone?"-10vh":"-20vh"}}>Piano Memory</h2>
       <label style={{margin:"1rem 0"}}>Difficulty&nbsp;
         <select value={diff} onChange={e=>setDiff(e.target.value)}>{Object.keys(PRESETS).map(d=><option key={d}>{d}</option>)}</select>
       </label>
