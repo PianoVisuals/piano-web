@@ -100,31 +100,51 @@ export default function RhythmGame() {
     canvas.width = 600;
     canvas.height = 600;
     const ctx = canvas.getContext('2d');
-
+    // Fond
     ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, 600, 600);
-
+  
+    // Trois notes tombantes (rectangles colorés et glow)
+    const noteWidth = 80;
+    const noteHeight = 20;
+    const lanes = settings.lanes;  // nombre de colonnes selon la difficulté
+    for (let i = 0; i < 3; i++) {
+      const lane = i * Math.floor(lanes / 3);
+      const x = 50 + (lane / lanes) * 500;  // marge de 50px à gauche et à droite
+      const y = 150 + i * 120;              // espacement vertical
+      ctx.fillStyle = colorAt(lane);
+      ctx.shadowColor = colorAt(lane);
+      ctx.shadowBlur = 10;
+      ctx.fillRect(x, y, noteWidth, noteHeight);
+      ctx.shadowBlur = 0;
+    }
+  
+    // Titre
     ctx.fillStyle = '#55efc4';
-    ctx.font = 'bold 60px sans-serif';
-    ctx.fillText('Piano Tiles Rhythm', 300, 160);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '32px monospace';
-    ctx.fillText('Score: ' + score, 300, 260);
-    ctx.fillText('Max combo: ' + maxCombo, 300, 320);
-    ctx.fillText('Difficulty: ' + diff, 300, 380);
-
+    ctx.font = 'bold 70px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Piano Rhythm', 300, 80);
+  
+    // Données du score
+    ctx.fillStyle = '#fff';
+    ctx.font = '36px monospace';
+    ctx.fillText('Score: ' + score, 300, 320);
+    ctx.fillText('Max combo: ' + maxCombo, 300, 380);
+    ctx.fillText('Difficulty: ' + diff, 300, 440);
+  
+    // Footer / promotion
     ctx.fillStyle = '#ffeaa7';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('pianovisual.com', 580, 580);
+    ctx.fillText('pianovisual.com  |  Piano Rhythm', 580, 580);
 
+    // Export de l'image
     const link = document.createElement('a');
-    link.download = 'piano_score.png';
+    link.download = 'piano_rhythm_score.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
-
+  
   const onHit = (note, e) => {
     e.stopPropagation();
     const NOTE_KEYS = Object.keys(NOTE_SOUNDS);
