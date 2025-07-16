@@ -1,5 +1,5 @@
 // RhythmGame.jsx — Piano Tiles Style Rhythm Game
-// --------------------------------------------------
+// Updated: fluid animations, louder sound, full-column tap, adjusted Back button
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -26,7 +26,7 @@ const colorAt = i => BASE_COL[i % BASE_COL.length];
 export default function RhythmGame() {
   const [phase, setPhase] = useState("menu"); // menu | play | over
   const [score, setScore] = useState(0);
-  const [notes, setNotes] = useState([]); // {id, lane, timestamp}
+  const [notes, setNotes] = useState([]); // {id, lane, t0}
   const nextId = useRef(0);
   const spawnTimer = useRef(null);
   const audioSampler = useRef(null);
@@ -38,7 +38,7 @@ export default function RhythmGame() {
       urls: NOTE_SOUNDS,
       baseUrl: SOUNDFONT + "acoustic_grand_piano-mp3/",
       release: 1,
-      volume: -10
+      volume: 0  // volume loud (0dB)
     }).toDestination();
   }, []);
 
@@ -50,7 +50,7 @@ export default function RhythmGame() {
     setPhase("play");
     spawnTimer.current = setInterval(() => {
       const lane = Math.floor(Math.random() * LANES);
-      setNotes(n => [...n, { id: nextId.current++, lane, t0: Date.now() }]);
+      setNotes(n => [...n, { id: nextId.current++, lane }]);
     }, SPAWN_INTERVAL);
   };
 
@@ -60,11 +60,11 @@ export default function RhythmGame() {
     setPhase("over");
   };
 
-  // Gestion du clic / tap sur colonne
+  // Gestion du tap sur colonne
   const onTap = (lane) => {
-    // Vérifie note tombante proche du hit zone
     const now = Date.now();
-    const hit = notes.find(n => n.lane === lane && Math.abs((n.t0 + FALL_DURATION) - now) < 300);
+    // cherche note proche du bas
+    const hit = notes.find(n => n.lane === lane && now - n.t0 >= (FALL_DURATION - 300) && now - n.t0 <= FALL_DURATION + 300);
     if (hit) {
       audioSampler.current.triggerAttackRelease("C4", "8n");
       setScore(s => s + 1);
@@ -83,7 +83,9 @@ export default function RhythmGame() {
       <Screen>
         <h2>Piano Tiles Rhythm</h2>
         <button style={btn} onClick={startGame}>START</button>
-        <button style={btn} onClick={() => window.location.href='https://pianovisual.com'}>↩ Back to PianoVisual</button>
+        <button style={backBtn} onClick={() => setPhase("menu")}>
+          ↩ Back to PianoVisual
+        </button>
         <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button" title="Support me on Ko‑fi"></a>
       </Screen>
     );
@@ -106,34 +108,40 @@ export default function RhythmGame() {
       <button onClick={() => setPhase("menu")} style={menuBtn}>↩ Menu</button>
       <div style={laneContainer}>
         {Array.from({ length: LANES }).map((_, i) => (
-          <div key={i} style={laneStyle(i)} onMouseDown={() => onTap(i)} />
+          <div
+            key={i}
+            style={laneStyle(i)}
+            onMouseDown={() => onTap(i)}
+          />
         ))}
-        {notes.map(n => {
-          const progress = (Date.now() - n.t0) / FALL_DURATION;
-          if (progress >= 1) {
-            // note passée -> game over
-            stopGame();
-            return null;
-          }
-          return (
-            <div
-              key={n.id}
-              style={{
-                position: 'absolute',
-                top: `${progress * 100}%`,
-                left: `${(n.lane / LANES) * 100}%`,
-                width: `${100 / LANES}%`,
-                height: '10%',
-                background: colorAt(n.lane),
-                borderRadius: 4,
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none'
-              }}
-            />
-          );
-        })}
+        {notes.map(n => (
+          <div
+            key={n.id}
+            onMouseDown={() => onTap(n.lane)}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: `${(n.lane / LANES) * 100}%`,
+              width: `${100 / LANES}%`,
+              height: '10%',
+              background: colorAt(n.lane),
+              borderRadius: 4,
+              pointerEvents: 'auto',
+              animation: `fall ${FALL_DURATION}ms linear forwards`
+            }}
+            onAnimationEnd={() => stopGame()}
+          />
+        ))}
       </div>
       <div style={hud}>Score: {score}</div>
+
+      {/* Animation CSS */}
+      <style>{`
+        @keyframes fall {
+          from { transform: translateY(-100%); }
+          to   { transform: translateY(100vh); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -145,6 +153,8 @@ const Screen = ({ children }) => (
   </div>
 );
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
+// Nouveau style pour bouton Back en haut à gauche
+const backBtn = { position: 'fixed', top: '1rem', left: '1rem', padding: '0.6rem 1rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
 const laneContainer = { position: 'relative', height: '100%', display: 'flex' };
 const laneStyle = i => ({ flex: 1, border: '1px solid #222', background: '#1c1c1c', cursor: 'pointer' });
