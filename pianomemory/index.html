@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G‑Y19Z9KM7EN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config','G‑Y19Z9KM7EN');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- désactive tout comportement “web‑app” -->
+  <meta name="mobile-web-app-capable"  content="no">
+  <meta name="apple-mobile-web-app-capable" content="no">
+
+  <title>Piano Memory – PianoVisual</title>
+  <meta name="description"
+        content="Piano Memory is a simple and challenging pattern game: watch the glowing squares, replay the sequence and test your memory. No installation needed." />
+
+  <!-- Favicon identique au site principal -->
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml"      href="/favicon.svg">
+  <link rel="shortcut icon"                  href="/favicon.ico">
+
+  <!-- Canonical & Open Graph -->
+  <link rel="canonical" href="https://pianovisual.com/memorygame.html">
+  <meta property="og:site_name"  content="PianoVisual">
+  <meta property="og:title"      content="Piano Memory – Pattern Game">
+  <meta property="og:description"
+        content="Repeat the piano pattern, build combos and test your musical memory.">
+  <meta property="og:type"       content="website">
+  <meta property="og:url"        content="https://pianovisual.com/memorygame.html">
+  <meta property="og:image"      content="https://pianovisual.com/og‑memory.jpg">
+
+  <!-- AdSense -->
+  <script async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443"
+          crossorigin="anonymous"></script>
+  <script async
+          src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
+
+  <!-- Organisation Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"PianoVisual",
+    "url":"https://pianovisual.com",
+    "logo":"https://pianovisual.com/logo32.png"
+  }
+  </script>
+
+  <style>
+    html,body{margin:0;height:100%;background:#111;color:#fff;
+              font-family:system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+    #root{flex:1;display:flex;align-items:center;justify-content:center}
+    .link-row{padding:0.75rem;text-align:center;font-size:.85rem}
+    .link-row a{margin:0 1rem;color:#aaa;text-decoration:none}
+    .link-row a:hover{text-decoration:underline}
+  </style>
+</head>
+
+<body>
+  <div id="root">loading…</div>
+
+  <div class="link-row">
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="mailto:pianovisualmidi@gmail.com">Contact</a>
+  </div>
+
+  <!-- point d’entrée Vite / React du mini‑jeu -->
+  <script type="module" src="/src/main-game.jsx"></script>
+</body>
+</html>
