@@ -269,7 +269,7 @@ export default function PianoMemory(){
         (active ? (lanes>8?`0 0 12px 4px ${glowColor}`:`0 0 34px 14px ${glowColor}`) : "none");
     return (
       <div onPointerDown={()=>onPadTap(i)}
-        style={{ width:"100%", aspectRatio:"1", margin: isPhone ? (lanes>10?"1vw":"2vw") : (lanes>10?4:lanes>8?8:20), borderRadius:12, cursor:phase==="input"?"pointer":"default", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", outline:"none", 
+        style={{ width:"100%", aspectRatio:"1", margin: isPhone ? (lanes>10?"1.5vw":"3vw") : (lanes>10?4:lanes>8?8:20), borderRadius:12, cursor:phase==="input"?"pointer":"default", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", outline:"none", 
           background:bg, transition:"background .22s, transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s",
           transform:active?"scale(1.06)":"scale(1)", boxShadow: box }} />
     );
@@ -288,9 +288,9 @@ export default function PianoMemory(){
 
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
-    if(lanes<=8) return <div style={{display:"flex",width:isPhone?"90vw":"95vw",maxWidth:isPhone?"90vw":560}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    if(lanes<=8) return <div style={{display:"flex",width:isPhone?"90vw":"95vw",maxWidth:isPhone?"90vw":560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
-    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: isPhone ? "2vw" : (lanes===20 ? 12 : 20), width: isPhone ? (lanes>8 ? "min(90vw,480px)" : "90vw") : (lanes===20 ? "min(85vw,540px)" : "90vw"), margin:"0 auto" }>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: isPhone ? 6 : (lanes===20 ? 12 : 20), width: isPhone?"90vw": (lanes===20 ? "min(85vw,540px)" : "90vw"), margin:"0 auto", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
   };
 
   /* --- Screens / UI --- */
