@@ -299,7 +299,9 @@ export default function App(){
 
 
 
+  const [navOpen, setNavOpen] = useState(false);
 
+  const toggleNav = () => setNavOpen(o => !o);
 
 
   const isFr = navigator.language.startsWith("fr");
@@ -1246,8 +1248,64 @@ const labelByMidi = useMemo(() => {
 
 
 
-
+  /* ────── TOGGLE ────── */
+  .nav-toggle{
+    position:fixed; top:50%; left:0;
+    transform:translateY(-50%) rotate(180deg);
+    background:#333; color:#fff; border:none;
+    padding:0.45rem 0.6rem; border-radius:0 4px 4px 0;
+    font-size:1.2rem; cursor:pointer; z-index:30;
+    transition:transform .25s;
+  }
+  .nav-toggle.open{ transform:translateY(-50%) rotate(0deg); }
+  
+  /* ────── BARRE LATERALE ────── */
+  .side-nav{
+    position:fixed; top:0; left:0; height:100vh;
+    width:220px; max-width:70vw;
+    background:#1a1a1a; color:#fff; z-index:25;
+    transform:translateX(-100%); transition:transform .25s ease;
+    box-shadow:2px 0 6px rgba(0,0,0,.6);
+    display:flex; flex-direction:column; padding:1rem 1.2rem;
+  }
+  .side-nav.show{ transform:translateX(0); }
+    
+  .side-nav h3{ margin:0 0 1rem; font-size:1.1rem; }
+  .side-nav ul{ list-style:none; padding:0; margin:0; }
+  .side-nav li{ margin:.8rem 0; }
+  
+  .side-nav a{
+    color:#ddd; text-decoration:none; font-size:.95rem;
+  }
+  .side-nav a:hover{ color:#fff; text-decoration:underline; }
+  
+  .soon{ color:#777; font-size:.9rem; }
+  
+  
+  
+  
 `}</style>
+
+<>
+    {/* ───────── BOUTON FLÈCHE ───────── */}
+    <button
+      className={`nav-toggle ${navOpen ? "open" : ""}`}
+      onClick={toggleNav}
+      aria-label="Menu"
+    >
+      ►
+    </button>
+
+    {/* ───────── BARRE LATÉRALE ───────── */}
+    <nav className={`side-nav ${navOpen ? "show" : ""}`}>
+      <h3>Mini‑games</h3>
+      <ul>
+        <li><a href="/memorygame.html">🎹 Piano Memory</a></li>
+        <li><span className="soon">Coming Soon…</span></li>
+      </ul>
+    </nav>
+
+
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
@@ -1302,6 +1360,9 @@ const labelByMidi = useMemo(() => {
   </button>
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
+
+
+
 
 
 
