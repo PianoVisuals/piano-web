@@ -1286,24 +1286,24 @@ const labelByMidi = useMemo(() => {
   
 `}</style>
 
-<>
-    {/* ───────── BOUTON FLÈCHE ───────── */}
-    <button
-      className={`nav-toggle ${navOpen ? "open" : ""}`}
-      onClick={toggleNav}
-      aria-label="Menu"
-    >
-      ►
-    </button>
 
-    {/* ───────── BARRE LATÉRALE ───────── */}
-    <nav className={`side-nav ${navOpen ? "show" : ""}`}>
-      <h3>Mini‑games</h3>
-      <ul>
-        <li><a href="/memorygame.html">🎹 Piano Memory</a></li>
-        <li><span className="soon">Coming Soon…</span></li>
-      </ul>
-    </nav>
+  {/* ───────── BOUTON FLÈCHE ───────── */}
+  <button
+    className={`nav-toggle ${navOpen ? "open" : ""}`}
+    onClick={toggleNav}
+    aria-label="Menu"
+  >
+    ►
+  </button>
+
+  {/* ───────── BARRE LATÉRALE ───────── */}
+  <nav className={`side-nav ${navOpen ? "show" : ""}`}>
+    <h3>Mini‑games</h3>
+    <ul>
+      <li><a href="/memorygame.html">🎹 Piano Memory</a></li>
+      <li><span className="soon">Coming Soon…</span></li>
+    </ul>
+  </nav>
 
 
   {showLibrary && (
