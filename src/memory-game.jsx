@@ -288,9 +288,9 @@ export default function PianoMemory(){
 
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
-    if(lanes<=8) return <div style={{display:"flex",width:isPhone?"90vw":"95vw",maxWidth:isPhone?"90vw":560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    if(lanes<=8) return <div style={{display:"flex",width:isPhone?(lanes>8?"80vw":"88vw"):"95vw",maxWidth:isPhone?"90vw":560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
-    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: isPhone ? 6 : (lanes===20 ? 12 : 20), width: isPhone?"90vw": (lanes===20 ? "min(85vw,540px)" : "90vw"), margin:"0 auto", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: isPhone ? 6 : (lanes===20 ? 12 : 20), width: isPhone?(lanes>8?"80vw":"88vw"):(lanes===20?"min(85vw,540px)":"90vw"), margin:"0 auto", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
   };
 
   /* --- Screens / UI --- */
@@ -346,7 +346,7 @@ const btn = { padding:"0.9rem 2.1rem", fontSize:"1.25rem", border:"none", border
               transition:"transform .18s cubic-bezier(.22,1,.36,1)", boxShadow:"0 2px 6px rgba(0,0,0,0.45)", outline:"none" };
 
 const wrapper = { position:"fixed", inset:0, background:"#111", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" };
-const hud = { color:"#fff", marginTop:24, textAlign:"center", minHeight:74 };
+const hud = { color:"#fff", marginTop:isPhone?"8vh":24, textAlign:"center", minHeight:74 };
 
 /* --- Keyframes --- */
 const style = document.create
