@@ -1252,7 +1252,7 @@ const labelByMidi = useMemo(() => {
   .nav-toggle{
     position:fixed; top:50%; left:0;
     transform:translateY(-50%) rotate(180deg);   /* pointe vers la droite → */
-    width:28px; height:28px;                    /* ▸ plus petit */
+    width:15px; height:25px;                    /* ▸ plus petit */
     display:flex; align-items:center; justify-content:center;  /* centre le “>” */
     background:#333; color:#fff; border:none;
     font-size:1.15rem; line-height:1;           /* pas de débord */
