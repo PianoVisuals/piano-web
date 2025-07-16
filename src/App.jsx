@@ -1303,7 +1303,7 @@ const labelByMidi = useMemo(() => {
 
   <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
 
-    <a href="/memorygame.html" className="toolbar-item">Piano Memory</a>
+    <a href="/memorygame" className="toolbar-item">Piano Memory</a>
 
     <div className="toolbar-item">
       <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
