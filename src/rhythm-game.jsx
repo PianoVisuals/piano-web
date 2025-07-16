@@ -10,6 +10,14 @@ if (typeof document !== 'undefined' && !document.querySelector('meta[name=viewpo
   document.head.appendChild(meta);
 }
 
+// Ko-fi button style (menu only)
+if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
+  const kofiStyle = document.createElement('style');
+  kofiStyle.id = 'kofi-style';
+  kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
+  document.head.appendChild(kofiStyle);
+}
+
 /* ===== CONFIG ===== */
 const SOUNDFONT = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
 const NOTE_SOUNDS = { C4: "C4.mp3", D4: "D4.mp3", E4: "E4.mp3", F4: "F4.mp3" };
@@ -140,6 +148,7 @@ export default function RhythmGame() {
         <button onClick={() => window.location.href='https://pianovisual.com'} style={backBtn}>
           ↩ PianoVisual
         </button>
+        <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" title="Support me on Ko‑fi" className="kofi-mobile-button"></a>
       </Screen>
     );
   }
