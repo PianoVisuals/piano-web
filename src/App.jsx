@@ -1248,18 +1248,6 @@ const labelByMidi = useMemo(() => {
 
 
 
-  /* ──────  Bouton flèche compact  ────── */
-  .nav-toggle{
-    position:fixed; top:50%; left:0;
-    transform:translateY(-50%) rotate(180deg);   /* pointe vers la droite → */
-    width:10px; height:10px;                    /* ▸ plus petit */
-    display:flex; align-items:center; justify-content:center;  /* centre le “>” */
-    background:#333; color:#fff; border:none;
-    font-size:1.15rem; line-height:1;           /* pas de débord */
-    border-radius:0 4px 4px 0;
-    cursor:pointer; z-index:30;
-    transition:transform .25s;
-  }
   .nav-toggle.open{
     transform:translateY(-50%) rotate(0deg);    /* pointe vers la gauche quand ouvert */
   }
