@@ -1,5 +1,5 @@
-// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar
-// Updated: white HP bar shrinking from edges, glow effect, reduced heal per hit
+// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar and Click Damage
+// Updated: clicking outside notes deals HP damage
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -21,8 +21,8 @@ const SPAWN_INTERVAL = 800;
 const FALL_DURATION = 3000;
 const BASE_COL = ["#ff7675","#ffeaa7","#55efc4","#74b9ff"];
 const MAX_HP = 100;
-const DAMAGE = 20;      // lose HP on miss
-const HEAL_PER_HIT = 2; // reduced HP on successful hit
+const DAMAGE = 20;      // lose HP on miss or wrong click
+const HEAL_PER_HIT = 2;  // reduced HP on successful hit
 const colorAt = i => BASE_COL[i % BASE_COL.length];
 
 export default function RhythmGame() {
@@ -34,6 +34,7 @@ export default function RhythmGame() {
   const spawnTimer = useRef(null);
   const audioSampler = useRef(null);
 
+  // Audio setup
   useEffect(() => {
     Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
     audioSampler.current = new Tone.Sampler({
@@ -44,6 +45,7 @@ export default function RhythmGame() {
     }).toDestination();
   }, []);
 
+  // Start game
   const startGame = async () => {
     await Tone.start();
     setScore(0);
@@ -57,12 +59,15 @@ export default function RhythmGame() {
     }, SPAWN_INTERVAL);
   };
 
+  // End game
   const stopGame = () => {
     clearInterval(spawnTimer.current);
     setPhase("over");
   };
 
-  const onHit = (note) => {
+  // Handle successful hit
+  const onHit = (note, e) => {
+    e.stopPropagation(); // prevent click damage
     const key = NOTE_KEYS[note.lane];
     audioSampler.current.triggerAttackRelease(key, "8n");
     setScore(s => s + 1);
@@ -70,7 +75,8 @@ export default function RhythmGame() {
     setNotes(n => n.filter(x => x.id !== note.id));
   };
 
-  const onMiss = (note) => {
+  // Handle missed note (animation end)
+  const onMissNote = (note) => {
     setNotes(n => n.filter(x => x.id !== note.id));
     setHp(h => {
       const nh = h - DAMAGE;
@@ -79,10 +85,21 @@ export default function RhythmGame() {
     });
   };
 
+  // Handle wrong click
+  const onWrongClick = () => {
+    setHp(h => {
+      const nh = h - DAMAGE;
+      if (nh <= 0) stopGame();
+      return nh;
+    });
+  };
+
+  // Cleanup on phase change
   useEffect(() => {
     if (phase !== "play") clearInterval(spawnTimer.current);
   }, [phase]);
 
+  // Menu screen
   if (phase === "menu") {
     return (
       <Screen>
@@ -95,6 +112,7 @@ export default function RhythmGame() {
     );
   }
 
+  // Game over screen
   if (phase === "over") {
     return (
       <Screen>
@@ -105,26 +123,17 @@ export default function RhythmGame() {
     );
   }
 
+  // Gameplay
   return (
     <div style={gameWrapper}>
       <CentralHPBar hp={hp} maxHp={MAX_HP} />
-      <div style={laneContainer}>
+      <div style={laneContainer} onMouseDown={onWrongClick}>
         {notes.map(note => (
           <div
             key={note.id}
-            onMouseDown={() => onHit(note)}
-            onAnimationEnd={() => onMiss(note)}
-            style={{
-              position: 'absolute',
-              left: `${(note.lane / LANES) * 100}%`,
-              width: `${100 / LANES}%`,
-              height: '10%',
-              background: colorAt(note.lane),
-              borderRadius: 4,
-              boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`,
-              pointerEvents: 'auto',
-              animation: `fall ${FALL_DURATION}ms linear forwards`
-            }}
+            onMouseDown={(e) => onHit(note, e)}
+            onAnimationEnd={() => onMissNote(note)}
+            style={noteStyle(note)}
           />
         ))}
       </div>
@@ -138,11 +147,9 @@ export default function RhythmGame() {
 
 function CentralHPBar({ hp, maxHp }) {
   const pct = Math.max(0, hp / maxHp);
-  const half = pct / 2;
   return (
     <div style={centralHpContainer}>
-      <div style={{ ...centralHpBar, left: `50%`, transform: `translateX(-50%) scaleX(${pct})` }} />
-      {/* Mask halves effect */}
+      <div style={{ ...centralHpBar, transform: `scaleX(${pct})` }} />
     </div>
   );
 }
@@ -158,12 +165,16 @@ const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
 const laneContainer = { position: 'relative', height: '100%', width: '100%', display: 'block' };
 const hud = { position: 'fixed', top: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
-// Central HP Bar styles: white bar that shrinks from edges
-const centralHpContainer = {
-  position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12,
-  background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden'
-};
-const centralHpBar = {
-  position: 'absolute', top: 0, height: '100%', width: '100%', background: '#fff',
-  transformOrigin: 'center', boxShadow: '0 0 12px 4px rgba(255,255,255,0.8)', transition: 'transform 0.3s ease'
-};
+const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
+const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', background: '#fff', transformOrigin: 'center', boxShadow: '0 0 12px 4px rgba(255,255,255,0.8)', transition: 'transform 0.3s ease' };
+const noteStyle = (note) => ({
+  position: 'absolute',
+  left: `${(note.lane / LANES) * 100}%`,
+  width: `${100 / LANES}%`,
+  height: '10%',
+  background: colorAt(note.lane),
+  borderRadius: 4,
+  boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`,
+  pointerEvents: 'auto',
+  animation: `fall ${FALL_DURATION}ms linear forwards`
+});
