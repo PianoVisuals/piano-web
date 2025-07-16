@@ -87,6 +87,8 @@ export default function PianoMemory(){
   const seqTimeouts = useRef([]);                      // timeouts de playNext
 
   const { lanes, demoDelay, hasTimer, inputFactor=2 } = PRESETS[diff];
+  // total lanes considering mobile extra squares for Insane
+  const totalLanes = isPhone && diff==="Insane" ? 56 : lanes;
 
   /* --- Utilitaires --- */
   const clearAll = ()=>{
@@ -96,7 +98,7 @@ export default function PianoMemory(){
   };
   const highlight = (lane,dur=550)=>{ setLit(lane); setTimeout(()=>setLit(null),dur); };
   const resetGame = ()=>{ clearAll(); setSeq([]); setLives(3); setScore(0); setFlash(null); };
-  const addNote   = ()=> setSeq(s=>[...s, rand(lanes)]);
+  const addNote   = ()=> setSeq(s=>[...s, rand(totalLanes)]);
   const noteMap   = ["C4","E4","G4","C5"];
 
   /* --- Sélection instrument & lancement --- */
@@ -278,7 +280,7 @@ export default function PianoMemory(){
   const TimerBar = ()=>{
     if(!hasTimer || phase!=="input") return null;
     return (
-      <div style={{ position:"fixed", top:isPhone?"9vh":"3.5vh", left:"50%", transform:"translateX(-50%)", width:"88vw", maxWidth:580, height:10, borderRadius:5,
+      <div style={{ position:"fixed", top:isPhone?"10vh":"3.5vh", left:"50%", transform:"translateX(-50%)", width:"88vw", maxWidth:580, height:10, borderRadius:5,
                     overflow:"hidden", background:"rgba(255,255,255,0.08)", boxShadow:"0 0 10px rgba(255,255,255,0.25)", pointerEvents:"none" }}>
         <div style={{ width:"100%", height:"100%", background:"#fff", transformOrigin:"center", transform:`scaleX(${tProg})`, transition:"transform .11s linear",
                       boxShadow:"0 0 8px 2px rgba(255,255,255,0.9)", pointerEvents:"none" }} />
@@ -289,7 +291,14 @@ export default function PianoMemory(){
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
     if(isPhone){
-      const phoneLanes = totalLanes; // add 6 dummy pads for Insane to complete grid lines
+      const phoneLanes = diff==="Insane" ? 56 : lanes; // true lanes on phone for Insane
+      const minSize = phoneLanes>20 ? 40 : 60; // smaller pads for many squares
+      return (
+        <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
+          {[...Array(phoneLanes)].map((_,i)=><Pad key={i} i={i}/>)}
+        </div>
+      );
+    } // add 6 dummy pads for Insane to complete grid lines
       const minSize = phoneLanes>20 ? 40 : 60; // smaller pads for many squares
       return (
         <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
