@@ -1,5 +1,5 @@
-// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar & Red Flash on HP Loss
-// Updated: HP bar flashes red glow when losing HP
+// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar & Red Flash on HP Loss + Damage SFX
+// Updated: lighter red flash, added HP loss sound effect
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -23,6 +23,7 @@ const BASE_COL = ["#ff7675","#ffeaa7","#55efc4","#74b9ff"];
 const MAX_HP = 100;
 const DAMAGE = 20;      // lose HP on miss or wrong click
 const HEAL_PER_HIT = 2;  // reduced HP on successful hit
+const FLASH_ALPHA = 0.6; // lighter red flash opacity
 const colorAt = i => BASE_COL[i % BASE_COL.length];
 
 export default function RhythmGame() {
@@ -34,6 +35,7 @@ export default function RhythmGame() {
   const nextId = useRef(0);
   const spawnTimer = useRef(null);
   const audioSampler = useRef(null);
+  const damageFx = useRef(null);
 
   // Audio setup
   useEffect(() => {
@@ -44,6 +46,8 @@ export default function RhythmGame() {
       release: 1,
       volume: 0
     }).toDestination();
+    // Damage sound effect
+    damageFx.current = new Tone.MembraneSynth({ volume: -6 }).toDestination();
   }, []);
 
   // Start game
@@ -67,9 +71,10 @@ export default function RhythmGame() {
     setPhase("over");
   };
 
-  // Trigger red flash on HP loss
+  // Trigger red flash & SFX on HP loss
   const flashDamage = () => {
     setFlashRed(true);
+    damageFx.current.triggerAttackRelease("C2", "8n");
     setTimeout(() => setFlashRed(false), 200);
   };
 
@@ -163,9 +168,9 @@ function CentralHPBar({ hp, maxHp, flash }) {
         style={{
           ...centralHpBar,
           transform: `scaleX(${pct})`,
-          background: flash ? 'rgba(255,0,0,0.9)' : '#fff',
+          background: flash ? `rgba(255,0,0,${FLASH_ALPHA})` : '#fff',
           boxShadow: flash
-            ? '0 0 12px 4px rgba(255,0,0,0.9)'
+            ? `0 0 12px 4px rgba(255,0,0,${FLASH_ALPHA})`
             : '0 0 12px 4px rgba(255,255,255,0.8)'
         }}
       />
