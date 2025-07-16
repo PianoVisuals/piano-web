@@ -1,144 +1,168 @@
-// RhythmBeat.jsx — prototype d’un jeu de rythme (style Piano Memory)
-// ---------------------------------------------------------------
-// Principe : des notes (cercles) descendent depuis le haut ;
-// le joueur appuie sur les 4 touches (DFJK ou tap) quand elles atteignent la zone‑hit.
-// Menu / HUD / style cohérent avec Piano Memory.
+// RhythmTap.jsx — Nouveau jeu de rythme (menu visuel Piano Memory)
+// -------------------------------------------------------------
+// Menu : même style, titre, bouton retour PianoVisual, Ko‑fi, fond animé.
+// Gameplay : des cercles colorés descendent en colonne, tap sur cadence (D, F, J, K).
 
-import React, { useEffect, useRef, useState } from "react";
-import * as Tone from "tone";
+import React, { useState, useEffect, useRef } from 'react';
+import * as Tone from 'tone';
 
-// ===== Pré‑sets de niveau =====
-const LEVELS = {
-  Beginner: { bpm: 90, density: 0.7 },   // notes par seconde
-  Medium:   { bpm: 110, density: 1.1 },
-  Expert:   { bpm: 140, density: 1.6 }
+// Background animated grid settings
+const BG_COLS = 12, BG_ROWS = 8;
+const BASE_COL = ['#ff7675','#ffeaa7','#55efc4','#74b9ff'];
+const colorAt = i => BASE_COL[i % BASE_COL.length];
+const rand = max => Math.floor(Math.random()*max);
+
+// Levels
+const SETTINGS = {
+  Easy:   { bpm: 80, lanes:4 },
+  Medium: { bpm: 100, lanes:4 },
+  Hard:   { bpm: 120, lanes:4 }
 };
 
-const LANES = 4;                // D, F, J, K
-const LANE_COLORS = ["#ff7675", "#ffeaa7", "#55efc4", "#74b9ff"];
-const noteColor = idx => LANE_COLORS[idx % LANE_COLORS.length];
+// Hit zone Y
+const HIT_Y = 500;
+// Sound
+const synth = new Tone.MembraneSynth().toDestination();
 
-// ===== Audio (kit de percu court) =====
-const kit = new Tone.MembraneSynth({ volume:-2 }).toDestination();
-
-export default function RhythmBeat(){
-  // phase : menu | play | end
-  const [phase, setPhase] = useState("menu");
-  const [level, setLevel] = useState("Beginner");
+export default function RhythmTap(){
+  const isPhone = typeof window!=='undefined' && window.innerWidth<=600;
+  const [phase, setPhase] = useState('menu');
+  const [level, setLevel] = useState('Easy');
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
 
-  // notes générées ; chaque note : { lane, time }
+  // menu background anim
+  const totalBG = BG_COLS*BG_ROWS;
+  const [bgActive, setBgActive] = useState(-1);
+  const [bgColor, setBgColor] = useState('#fff');
+  useEffect(()=>{
+    if(phase!=='menu') return;
+    let tid;
+    const cycle=()=>{
+      const idx = rand(totalBG);
+      setBgActive(idx);
+      setBgColor(colorAt(rand(BASE_COL.length)));
+      setTimeout(()=>setBgActive(-1),800);
+      tid = setTimeout(cycle,600+Math.random()*1100);
+    };
+    cycle();
+    return ()=>clearTimeout(tid);
+  },[phase]);
+
+  // Game state
   const notesRef = useRef([]);
-  const hitY = 480;           // position Y de la ligne de frappe
-  const canvasRef = useRef(null);
-  const raf = useRef(null);
   const startTime = useRef(0);
+  const raf = useRef(null);
+  const canvasRef = useRef(null);
 
-  // ============ Générateur de partition ============
-  const generateNotes = (durationSec)=>{
-    const { bpm, density } = LEVELS[level];
-    const beatDur = 60/bpm;
-    const notes = [];
-    let t = 1; // commence après 1s
-    while(t < durationSec){
-      if(Math.random() < density*beatDur){
-        notes.push({ lane: Math.floor(Math.random()*LANES), time: t });
-      }
-      t += beatDur/2; // grille double‑croche
+  // Generate falling notes
+  const genNotes = ()=>{
+    const { bpm, lanes } = SETTINGS[level];
+    const interval = 60/bpm; // sec
+    const duration = 30; // total seconds
+    const arr = [];
+    for(let t=1; t<duration; t+=interval){
+      arr.push({
+        lane: rand(lanes),
+        time: t,
+        hit: false
+      });
     }
-    return notes;
+    return arr;
   };
 
-  // ============ Contrôles ============
-  const handleKey = (code)=>{
-    const map = { KeyD:0, KeyF:1, KeyJ:2, KeyK:3 };
-    if(!(code in map)) return;
-    hit(map[code]);
-  };
-  const hit = (lane)=>{
-    // trouver note la plus proche dans la fenêtre (±0.15s)
-    const t = Tone.now() - startTime.current;
-    const idx = notesRef.current.findIndex(n=> !n.hit && Math.abs(n.time - t) < 0.15 && n.lane===lane);
-    if(idx !== -1){
-      notesRef.current[idx].hit = true;
-      setScore(s=>s+100+combo*10);
-      setCombo(c=>c+1);
-      kit.triggerAttackRelease("C2","8n");
-    }else{
-      setCombo(0);
-    }
-  };
-
-  // ============ Boucle de rendu ============
-  const render = ()=>{
-    const ctx = canvasRef.current.getContext("2d");
+  // Draw loop
+  const draw = ()=>{
+    const ctx = canvasRef.current.getContext('2d');
     const w = canvasRef.current.width;
     const h = canvasRef.current.height;
     ctx.clearRect(0,0,w,h);
-
-    // dessin pistes
-    const laneW = w/LANES;
-    for(let i=0;i<LANES;i++){
-      ctx.fillStyle = "#222";
+    // lanes background
+    const { lanes } = SETTINGS[level];
+    const laneW = w/lanes;
+    for(let i=0;i<lanes;i++){
+      ctx.fillStyle = '#222';
       ctx.fillRect(i*laneW,0,laneW,h);
-      ctx.fillStyle = LANE_COLORS[i]+"22";
-      ctx.fillRect(i*laneW,h-100,laneW,100);
     }
-
-    const t = Tone.now() - startTime.current;
-    const speed = 200; // px par sec
-
-    notesRef.current.forEach(n=>{
-      if(n.hit || n.time < t-1) return; // skip
-      const y = (n.time - t)*speed + hitY;
-      ctx.fillStyle = noteColor(n.lane);
-      ctx.beginPath();
-      ctx.arc((n.lane+0.5)*laneW, y, 18, 0, Math.PI*2);
-      ctx.fill();
-    });
-
-    raf.current = requestAnimationFrame(render);
+    // draw notes
+    const now = Tone.now() - startTime.current;
+    arrLoop: for(const n of notesRef.current){
+      if(n.hit) continue;
+      const y = (n.time-now)*200 + HIT_Y;
+      if(y< -20 || y>h+20) continue;
+      ctx.fillStyle = colorAt(n.lane);
+      ctx.beginPath(); ctx.arc((n.lane+0.5)*laneW, y, 16,0,2*Math.PI); ctx.fill();
+    }
+    raf.current = requestAnimationFrame(draw);
   };
 
-  // ============ Start game ============
-  const startGame = async()=>{
+  // Start game
+  const startGame = async ()=>{
     await Tone.start();
     setScore(0); setCombo(0);
-    notesRef.current = generateNotes(35); // 35s de piste
+    notesRef.current = genNotes();
     startTime.current = Tone.now();
-    setPhase("play");
-    raf.current = requestAnimationFrame(render);
+    setPhase('play');
+    raf.current = requestAnimationFrame(draw);
   };
-
-  // Clean raf
   useEffect(()=>()=>cancelAnimationFrame(raf.current),[]);
+
+  // handle input
+  const handleHit = lane=>{
+    const now = Tone.now() - startTime.current;
+    for(const n of notesRef.current){
+      if(n.hit) continue;
+      if(n.lane===lane && Math.abs(n.time-now)<0.2){
+        n.hit = true; setScore(s=>s+100+combo*10); setCombo(c=>c+1);
+        synth.triggerAttackRelease('C2','8n');
+        return;
+      }
+    }
+    setCombo(0);
+  };
   useEffect(()=>{
-    const keyDown=(e)=>handleKey(e.code);
-    window.addEventListener("keydown",keyDown);
-    return ()=>window.removeEventListener("keydown",keyDown);
+    const down = e=>{
+      const map={KeyD:0,KeyF:1,KeyJ:2,KeyK:3};
+      if(map[e.code]!=null) handleHit(map[e.code]);
+    };
+    window.addEventListener('keydown',down);
+    return ()=>window.removeEventListener('keydown',down);
   });
 
-  // ============ UI ============
-  if(phase==="menu") return (
-    <div style={{position:"fixed",inset:0,background:"#111",color:"#fff",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-      <h1 style={{fontSize:"3rem",marginBottom:"1rem"}}>Rhythm Beat</h1>
-      <label>Level&nbsp;
-        <select value={level} onChange={e=>setLevel(e.target.value)}>
-          {Object.keys(LEVELS).map(l=><option key={l}>{l}</option>)}
-        </select>
-      </label>
-      <button style={{marginTop:"1rem",padding:"0.6rem 1.5rem",fontSize:"1.2rem"}} onClick={startGame}>PLAY</button>
-    </div>
+  // UI
+  if(phase==='menu') return (
+    <Screen>
+      {/* background grid */}
+      <div style={{position:'fixed',inset:0,display:'grid',gridTemplateColumns:`repeat(${BG_COLS},1fr)`,gridTemplateRows:`repeat(${BG_ROWS},1fr)`,gap:'0.5vw',padding:'2vw',pointerEvents:'none',zIndex:-1}}>
+        {[...Array(totalBG)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:'transparent',boxShadow:bgActive===i?`0 0 12px 6px ${bgColor}`:'none',borderRadius:8}} />)}
+      </div>
+      {/* navigation */}
+      <button onClick={()=>window.location.href='https://pianovisual.com'} style={navBtn}>↩ Back to PianoVisual</button>
+      <h2 style={titleStyle}>Rhythm Tap</h2>
+      <label style={labelStyle}>Level <select value={level} onChange={e=>setLevel(e.target.value)}>{Object.keys(SETTINGS).map(l=><option key={l}>{l}</option>)}</select></label>
+      <button style={btn} onClick={startGame}>PLAY</button>
+      <a href='https://ko-fi.com/pianovisual' target='_blank' rel='noopener' className='kofi-mobile-button'></a>
+    </Screen>
   );
 
-  if(phase==="play") return (
-    <div style={{position:"fixed",inset:0,background:"#111"}}>
+  if(phase==='play') return (
+    <div style={wrapper}>
       <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} />
-      <div style={{position:"fixed",top:10,left:10,color:"#fff"}}>Score: {score}  Combo: {combo}</div>
-      <button onClick={()=>{cancelAnimationFrame(raf.current);setPhase("menu");}} style={{position:"fixed",top:10,right:10}}>Menu</button>
+      <div style={hudStyle}>Score: {score}  Combo: {combo}</div>
+      <button onClick={()=>{cancelAnimationFrame(raf.current); setPhase('menu');}} style={navBtn}>↩ Menu</button>
     </div>
   );
 
   return null;
 }
+
+// --- Styles ---
+const Screen = ({children})=> (
+  <div style={{position:'fixed',inset:0,background:'#111',color:'#fff',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center'}}>{children}</div>
+);
+const navBtn = {position:'fixed',top:20,left:20,padding:'0.4rem .8rem',background:'#fff',color:'#111',border:'none',borderRadius:6,cursor:'pointer',zIndex:3};
+const titleStyle = {animation:'fadeIn .6s',fontSize:'3.5rem',margin:'-10vh 0 1rem'};
+const labelStyle = {margin:'1rem',color:'#fff'};
+const btn = {padding:'0.8rem 1.8rem',fontSize:'1.2rem',background:'#55efc4',color:'#111',border:'none',borderRadius:8,cursor:'pointer'};
+const wrapper = {position:'fixed',inset:0,background:'#111'};
+const hudStyle = {position:'fixed',top:10,left:10,color:'#fff',fontSize:'1rem'};
