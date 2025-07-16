@@ -1,5 +1,5 @@
-// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar and Click Damage
-// Updated: clicking outside notes deals HP damage
+// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar, Click Damage & Red Glow on HP Loss
+// Updated: red glow effect when losing HP
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -30,6 +30,7 @@ export default function RhythmGame() {
   const [score, setScore] = useState(0);
   const [notes, setNotes] = useState([]); // {id, lane, t0}
   const [hp, setHp] = useState(MAX_HP);
+  const [flashRed, setFlashRed] = useState(false);
   const nextId = useRef(0);
   const spawnTimer = useRef(null);
   const audioSampler = useRef(null);
@@ -65,6 +66,12 @@ export default function RhythmGame() {
     setPhase("over");
   };
 
+  // Trigger red flash on HP loss
+  const flashDamage = () => {
+    setFlashRed(true);
+    setTimeout(() => setFlashRed(false), 200);
+  };
+
   // Handle successful hit
   const onHit = (note, e) => {
     e.stopPropagation(); // prevent click damage
@@ -78,6 +85,7 @@ export default function RhythmGame() {
   // Handle missed note (animation end)
   const onMissNote = (note) => {
     setNotes(n => n.filter(x => x.id !== note.id));
+    flashDamage();
     setHp(h => {
       const nh = h - DAMAGE;
       if (nh <= 0) stopGame();
@@ -87,6 +95,7 @@ export default function RhythmGame() {
 
   // Handle wrong click
   const onWrongClick = () => {
+    flashDamage();
     setHp(h => {
       const nh = h - DAMAGE;
       if (nh <= 0) stopGame();
@@ -98,6 +107,11 @@ export default function RhythmGame() {
   useEffect(() => {
     if (phase !== "play") clearInterval(spawnTimer.current);
   }, [phase]);
+
+  // Determine wrapper style with red glow
+  const wrapperStyle = flashRed
+    ? { ...gameWrapper, boxShadow: '0 0 20px 10px rgba(255,0,0,0.8)' }
+    : gameWrapper;
 
   // Menu screen
   if (phase === "menu") {
@@ -125,7 +139,7 @@ export default function RhythmGame() {
 
   // Gameplay
   return (
-    <div style={gameWrapper}>
+    <div style={wrapperStyle}>
       <CentralHPBar hp={hp} maxHp={MAX_HP} />
       <div style={laneContainer} onMouseDown={onWrongClick}>
         {notes.map(note => (
