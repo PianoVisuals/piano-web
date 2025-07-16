@@ -1,5 +1,5 @@
 // RhythmGame.jsx — Piano Tiles Style Rhythm Game
-// Updated: fix tap, include timing, exact back button code
+// Updated: tap anywhere, per-lane sounds, glow effect, disable mobile zoom
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -12,10 +12,19 @@ if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
   document.head.appendChild(kofiStyle);
 }
 
+// Disable mobile double-tap zoom
+if (typeof document !== 'undefined' && !document.querySelector('meta[name=viewport]')) {
+  const meta = document.createElement('meta');
+  meta.name = 'viewport';
+  meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
+  document.head.appendChild(meta);
+}
+
 /* ===== CONSTANTES ===== */
 const SOUNDFONT = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
-const NOTE_SOUNDS = { C4: "C4.mp3", D4: "D4.mp3", E4: "E4.mp3", F4: "F4.mp3", G4: "G4.mp3" };
-const LANES = 4;
+const NOTE_KEYS = ["C4", "D4", "E4", "F4"]; // one per lane
+const NOTE_SOUNDS = { C4: "C4.mp3", D4: "D4.mp3", E4: "E4.mp3", F4: "F4.mp3" };
+const LANES = NOTE_KEYS.length;
 const SPAWN_INTERVAL = 800;
 const FALL_DURATION = 3000;
 const BASE_COL = ["#ff7675","#ffeaa7","#55efc4","#74b9ff"];
@@ -29,6 +38,7 @@ export default function RhythmGame() {
   const spawnTimer = useRef(null);
   const audioSampler = useRef(null);
 
+  // Initialisation audio
   useEffect(() => {
     Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
     audioSampler.current = new Tone.Sampler({
@@ -39,6 +49,7 @@ export default function RhythmGame() {
     }).toDestination();
   }, []);
 
+  // Démarre le jeu
   const startGame = async () => {
     await Tone.start();
     setScore(0);
@@ -51,33 +62,38 @@ export default function RhythmGame() {
     }, SPAWN_INTERVAL);
   };
 
+  // Arrêt du jeu
   const stopGame = () => {
     clearInterval(spawnTimer.current);
     setPhase("over");
   };
 
+  // Gère le tap sur note, n'importe où
   const onTap = (lane) => {
-    const now = Date.now();
-    const hit = notes.find(n => n.lane === lane && Math.abs((n.t0 + FALL_DURATION) - now) <= 300);
+    // prend la première note tombante de la colonne
+    const hit = notes.find(n => n.lane === lane);
     if (hit) {
-      audioSampler.current.triggerAttackRelease("C4", "8n");
+      // jouer note correspondant à la colonne
+      const key = NOTE_KEYS[lane % NOTE_KEYS.length];
+      audioSampler.current.triggerAttackRelease(key, "8n");
       setScore(s => s + 1);
       setNotes(n => n.filter(x => x.id !== hit.id));
     }
   };
 
+  // Nettoyage
   useEffect(() => {
     if (phase !== "play") clearInterval(spawnTimer.current);
   }, [phase]);
 
+  // Menu
   if (phase === "menu") {
     return (
       <Screen>
         <h2>Piano Tiles Rhythm</h2>
         <button style={btn} onClick={startGame}>START</button>
         <button onClick={()=>window.location.href='https://pianovisual.com'}
-          style={{ position:"fixed", top:"2vh", left:"2vw", zIndex:3, padding:"0.4rem 0.8rem", fontSize:"1rem", borderRadius:8,
-            background:"#fff", color:"#111", border:"none", cursor:"pointer", boxShadow:"0 2px 4px rgba(0,0,0,0.45)", transition:"transform .18s" }}>
+          style={backBtn}>
           ↩ PianoVisual
         </button>
         <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button" title="Support me on Ko‑fi"></a>
@@ -85,6 +101,7 @@ export default function RhythmGame() {
     );
   }
 
+  // Game Over
   if (phase === "over") {
     return (
       <Screen>
@@ -95,6 +112,7 @@ export default function RhythmGame() {
     );
   }
 
+  // Partie en cours
   return (
     <div style={gameWrapper}>
       <div style={laneContainer}>
@@ -105,27 +123,28 @@ export default function RhythmGame() {
           <div key={n.id}
             onMouseDown={() => onTap(n.lane)}
             style={noteStyle(n)}
-            onAnimationEnd={() => stopGame()}
           />
         ))}
       </div>
       <div style={hud}>Score: {score}</div>
       <style>{`
-        @keyframes fall {from{transform:translateY(-100%);}to{transform:translateY(100vh);}}
+        @keyframes fall { from{transform:translateY(-100%);} to{transform:translateY(100vh);} }
       `}</style>
     </div>
   );
 }
 
+/* --- Styles --- */
 const Screen = ({ children }) => (
   <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
     {children}
   </div>
 );
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
+const backBtn = { position:"fixed", top:"2vh", left:"2vw", zIndex:3, padding:"0.4rem 0.8rem", fontSize:"1rem", borderRadius:8, background:"#fff", color:"#111", border:"none", cursor:"pointer", boxShadow:"0 2px 4px rgba(0,0,0,0.45)", transition:"transform .18s" };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
 const laneContainer = { position: 'relative', height: '100%', display: 'flex' };
-const columnStyle = i => ({ flex: 1, border: '1px solid #222', background: '#1c1c1c', cursor: 'pointer' });
+const columnStyle = i => ({ flex: 1, border: '1px solid #222', background: '#1c1c1c', cursor: 'pointer', overflow: 'hidden' });
 const noteStyle = (n) => ({
   position: 'absolute',
   left: `${(n.lane / LANES) * 100}%`,
@@ -133,6 +152,7 @@ const noteStyle = (n) => ({
   height: '10%',
   background: colorAt(n.lane),
   borderRadius: 4,
+  boxShadow: `0 0 12px 4px ${colorAt(n.lane)}`,
   pointerEvents: 'auto',
   animation: `fall ${FALL_DURATION}ms linear forwards`
 });
