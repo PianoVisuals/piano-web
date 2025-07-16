@@ -1,167 +1,152 @@
-// RhythmGame.jsx — Jeu de rythme PianoTiles style
+// RhythmGame.jsx — Piano Tiles Style Rhythm Game
+// --------------------------------------------------
+
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
 
-// Global styles Ko-fi button
+// Inject Ko‑fi button style globally once
 if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
-  const s = document.createElement('style');
-  s.id = 'kofi-style';
-  s.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
-  document.head.appendChild(s);
+  const kofiStyle = document.createElement('style');
+  kofiStyle.id = 'kofi-style';
+  kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
+  document.head.appendChild(kofiStyle);
 }
 
-// Constantes de jeu
+/* ===== CONSTANTES ===== */
 const SOUNDFONT = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
-const INSTRS = ["acoustic_grand_piano", "electric_piano_1", "vibraphone", "celesta"];
-const PRESETS = {
-  Easy:   { lanes:3, speed: 1.2, spawnInterval: 1200 },
-  Normal: { lanes:4, speed: 1.0, spawnInterval: 1000 },
-  Hard:   { lanes:5, speed: 0.8, spawnInterval: 800 }
-};
+const NOTE_SOUNDS = { C4: "C4.mp3", D4: "D4.mp3", E4: "E4.mp3", F4: "F4.mp3", G4: "G4.mp3" };
+const LANES = 4; // Nombre de colonnes
+const SPAWN_INTERVAL = 800; // ms entre notes
+const FALL_DURATION = 3000; // ms pour descendre
+
+// Couleurs des colonnes
+const BASE_COL = ["#ff7675","#ffeaa7","#55efc4","#74b9ff"];
+const colorAt = i => BASE_COL[i % BASE_COL.length];
 
 export default function RhythmGame() {
-  const [phase, setPhase] = useState('menu'); // menu | play | over
-  const [diff, setDiff] = useState('Normal');
-  const [lanes, setLanes] = useState(PRESETS['Normal'].lanes);
-  const [blocks, setBlocks] = useState([]); // {id, lane, y}
+  const [phase, setPhase] = useState("menu"); // menu | play | over
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const blockId = useRef(0);
-  const animRef = useRef(null);
-  const toneSampler = useRef(null);
+  const [notes, setNotes] = useState([]); // {id, lane, timestamp}
+  const nextId = useRef(0);
+  const spawnTimer = useRef(null);
+  const audioSampler = useRef(null);
 
-  // Charger sampler
+  // Initialisation audio
   useEffect(() => {
-    Tone.start();
-    const instr = INSTRS[Math.floor(Math.random() * INSTRS.length)];
-    toneSampler.current = new Tone.Sampler({ urls: { C4: "C4.mp3" }, baseUrl: `${SOUNDFONT}${instr}-mp3/` }).toDestination();
+    Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
+    audioSampler.current = new Tone.Sampler({
+      urls: NOTE_SOUNDS,
+      baseUrl: SOUNDFONT + "acoustic_grand_piano-mp3/",
+      release: 1,
+      volume: -10
+    }).toDestination();
   }, []);
 
-  // Ajuste lanes selon difficulté
-  useEffect(() => {
-    setLanes(PRESETS[diff].lanes);
-  }, [diff]);
-
-  // Spawn des blocs
-  useEffect(() => {
-    if (phase !== 'play') return;
-    const { spawnInterval } = PRESETS[diff];
-    const spawn = () => {
-      const id = blockId.current++;
-      const lane = Math.floor(Math.random() * lanes);
-      setBlocks(b => [...b, { id, lane, y: 0 }]);
-    };
-    const interval = setInterval(spawn, spawnInterval);
-    return () => clearInterval(interval);
-  }, [phase, diff, lanes]);
-
-  // Animation descente
-  useEffect(() => {
-    if (phase !== 'play') return;
-    const speed = PRESETS[diff].speed;
-    const update = () => {
-      setBlocks(b => b.map(block => ({ ...block, y: block.y + speed })))
-                 .filter(block => {
-                   if (block.y < 100) return true;
-                   // si bloc dépassé sans appui
-                   setLives(l => l - 1);
-                   return false;
-                 });
-      animRef.current = requestAnimationFrame(update);
-    };
-    animRef.current = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(animRef.current);
-  }, [phase, diff]);
-
-  // Gestion input clavier
-  useEffect(() => {
-    if (phase !== 'play') return;
-    const onKey = e => {
-      const key = e.key;
-      const idx = '12345'.indexOf(key);
-      if (idx >= 0 && idx < lanes) {
-        toneSampler.current.triggerAttackRelease('C4', '8n');
-        // check bloc proche de la zone d'impact (y > 80)
-        setBlocks(b => {
-          let hit = false;
-          const rest = b.filter(block => {
-            if (!hit && block.lane === idx && block.y > 80 && block.y < 95) {
-              hit = true;
-              setScore(s => s + 10);
-              return false;
-            }
-            return true;
-          });
-          if (!hit) setLives(l => l - 1);
-          return rest;
-        });
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [phase, lanes, diff]);
-
-  // Vérifie fin de partie
-  useEffect(() => {
-    if (lives <= 0) setPhase('over');
-  }, [lives]);
-
-  const startGame = () => {
-    setScore(0); setLives(3); setBlocks([]);
-    setPhase('play');
+  // Démarre le jeu
+  const startGame = async () => {
+    await Tone.start();
+    setScore(0);
+    setNotes([]);
+    setPhase("play");
+    spawnTimer.current = setInterval(() => {
+      const lane = Math.floor(Math.random() * LANES);
+      setNotes(n => [...n, { id: nextId.current++, lane, t0: Date.now() }]);
+    }, SPAWN_INTERVAL);
   };
 
-  const quitToMenu = () => {
-    setPhase('menu'); setBlocks([]);
+  // Arrêt du jeu
+  const stopGame = () => {
+    clearInterval(spawnTimer.current);
+    setPhase("over");
   };
 
-  // Composants UI
-  const Screen = ({ children }) => (
-    <div style={{ position:'fixed', inset:0, background:'#111', color:'#fff', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center' }}>
-      {children}
-    </div>
-  );
-  const btn = { padding:'0.9rem 2.1rem', fontSize:'1.25rem', border:'none', borderRadius:10, background:'#55efc4', color:'#111', cursor:'pointer', margin:8 };
+  // Gestion du clic / tap sur colonne
+  const onTap = (lane) => {
+    // Vérifie note tombante proche du hit zone
+    const now = Date.now();
+    const hit = notes.find(n => n.lane === lane && Math.abs((n.t0 + FALL_DURATION) - now) < 300);
+    if (hit) {
+      audioSampler.current.triggerAttackRelease("C4", "8n");
+      setScore(s => s + 1);
+      setNotes(n => n.filter(x => x.id !== hit.id));
+    }
+  };
 
-  if (phase === 'menu') return (
-    <Screen>
-      <button onClick={() => window.location.href='https://pianovisual.com'} style={btn}>↩ Back to PianoVisual</button>
-      <h2 style={{ fontSize:'4rem' }}>Rhythm Tiles</h2>
-      <label style={{ margin:'1rem' }}>
-        Difficulty&nbsp;
-        <select value={diff} onChange={e => setDiff(e.target.value)}>{Object.keys(PRESETS).map(d => <option key={d}>{d}</option>)}</select>
-      </label>
-      <button style={btn} onClick={startGame}>START</button>
-      <a href="https://ko-fi.com/pianovisual" className="kofi-mobile-button" />
-    </Screen>
-  );
+  // Nettoyage au changement de phase
+  useEffect(() => {
+    if (phase !== "play") clearInterval(spawnTimer.current);
+  }, [phase]);
 
-  if (phase === 'over') return (
-    <Screen>
-      <h2>Game Over</h2>
-      <p>Score: {score}</p>
-      <button style={btn} onClick={startGame}>Retry</button>
-      <button style={btn} onClick={quitToMenu}>Menu</button>
-    </Screen>
-  );
+  // Rendu menu
+  if (phase === "menu") {
+    return (
+      <Screen>
+        <h2>Piano Tiles Rhythm</h2>
+        <button style={btn} onClick={startGame}>START</button>
+        <button style={btn} onClick={() => window.location.href='https://pianovisual.com'}>↩ Back to PianoVisual</button>
+        <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button" title="Support me on Ko‑fi"></a>
+      </Screen>
+    );
+  }
 
-  // Zone de jeu
+  // Rendu game over
+  if (phase === "over") {
+    return (
+      <Screen>
+        <h2>Game Over</h2>
+        <p>Your score: {score}</p>
+        <button style={btn} onClick={() => setPhase("menu")}>Menu</button>
+      </Screen>
+    );
+  }
+
+  // Rendu gameplay
   return (
-    <div style={{ position:'fixed', inset:0, background:'#111' }}>
-      <button onClick={quitToMenu} style={{ ...btn, position:'fixed', top:16, left:16 }}>↩ Menu</button>
-      <div style={{ position:'relative', width:'80vw', height:'100vh', margin:'0 auto', overflow:'hidden', display:'flex' }}>
-        {[...Array(lanes)].map((_, i) => (
-          <div key={i} style={{ flex:1, borderLeft: i>0?'1px solid #333':0, position:'relative' }}>
-            {blocks.filter(b => b.lane===i).map(b => (
-              <div key={b.id} style={{ position:'absolute', top: `${b.y}%`, left:0, right:0, height: '5%', background: '#55efc4', borderRadius:4, margin:'0 4px' }} />
-            ))}
-          </div>
+    <div style={gameWrapper}>
+      <button onClick={() => setPhase("menu")} style={menuBtn}>↩ Menu</button>
+      <div style={laneContainer}>
+        {Array.from({ length: LANES }).map((_, i) => (
+          <div key={i} style={laneStyle(i)} onMouseDown={() => onTap(i)} />
         ))}
+        {notes.map(n => {
+          const progress = (Date.now() - n.t0) / FALL_DURATION;
+          if (progress >= 1) {
+            // note passée -> game over
+            stopGame();
+            return null;
+          }
+          return (
+            <div
+              key={n.id}
+              style={{
+                position: 'absolute',
+                top: `${progress * 100}%`,
+                left: `${(n.lane / LANES) * 100}%`,
+                width: `${100 / LANES}%`,
+                height: '10%',
+                background: colorAt(n.lane),
+                borderRadius: 4,
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none'
+              }}
+            />
+          );
+        })}
       </div>
-      <div style={{ position:'fixed', bottom:16, left:'50%', transform:'translateX(-50%)', color:'#fff' }}>
-        <span style={{ margin:'0 1rem' }}>Lives: {'♥︎'.repeat(lives)}</span>
-        <span style={{ margin:'0 1rem' }}>Score: {score}</span>
-      </div>
+      <div style={hud}>Score: {score}</div>
     </div>
   );
 }
+
+/* --- Styles --- */
+const Screen = ({ children }) => (
+  <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+    {children}
+  </div>
+);
+const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
+const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
+const laneContainer = { position: 'relative', height: '100%', display: 'flex' };
+const laneStyle = i => ({ flex: 1, border: '1px solid #222', background: '#1c1c1c', cursor: 'pointer' });
+const menuBtn = { position: 'fixed', top: '1rem', left: '1rem', padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer' };
+const hud = { position: 'fixed', top: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
