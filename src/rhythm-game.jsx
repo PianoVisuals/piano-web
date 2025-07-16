@@ -107,12 +107,12 @@ export default function RhythmGame() {
     ctx.fillRect(0, 0, w, h);
   
     // Trois notes tombantes compactes (32×80 px) en haut à gauche
-    const noteWidth = 32;
-    const noteHeight = 80;
+    const noteWidth = 16;
+    const noteHeight = 40;
     const notePos = [
-      { x: 60,  y: 160, lane: 0 },   // note centrale verticalement
-      { x: 120, y: 120, lane: 1 },   // note à droite un peu plus haute
-      { x: 180, y: 200, lane: 2 }    // note à droite plus basse
+      { x: 30,  y: 80, lane: 0 },   // note centrale verticalement
+      { x: 60, y: 60, lane: 1 },   // note à droite un peu plus haute
+      { x: 90, y: 100, lane: 2 }    // note à droite plus basse
     ];
     notePos.forEach(({ x, y, lane }) => {
       ctx.fillStyle = colorAt(lane);
