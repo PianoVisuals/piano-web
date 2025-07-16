@@ -1,188 +1,167 @@
-// RhythmTap.jsx — Jeu de rythme « Piano Memory » V2
-// -------------------------------------------------------
-// Menu stylé PianoMemory + fond animé de notes tombantes
-// Gameplay : barres verticales descendant, appui QSDF/toucher,
-// zone de hit mise en valeur, éclair + son, barre de PV.
+// RhythmGame.jsx — Jeu de rythme PianoTiles style
+import React, { useState, useEffect, useRef } from "react";
+import * as Tone from "tone";
 
-import React, { useState, useEffect, useRef } from 'react';
-import * as Tone from 'tone';
+// Global styles Ko-fi button
+if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
+  const s = document.createElement('style');
+  s.id = 'kofi-style';
+  s.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
+  document.head.appendChild(s);
+}
 
-// Constantes visuelles
-const BG_COLS = 12, BG_ROWS = 8;
-const BASE_COL = ['#ff7675','#ffeaa7','#55efc4','#74b9ff'];
-const colorAt = i => BASE_COL[i % BASE_COL.length];
-const rand = max => Math.floor(Math.random()*max);
-
-// Niveaux de difficulté
-const SETTINGS = {
-  Easy:   { bpm: 80, lanes: 4 },
-  Medium: { bpm:100, lanes: 4 },
-  Hard:   { bpm:120, lanes: 4 }
+// Constantes de jeu
+const SOUNDFONT = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
+const INSTRS = ["acoustic_grand_piano", "electric_piano_1", "vibraphone", "celesta"];
+const PRESETS = {
+  Easy:   { lanes:3, speed: 1.2, spawnInterval: 1200 },
+  Normal: { lanes:4, speed: 1.0, spawnInterval: 1000 },
+  Hard:   { lanes:5, speed: 0.8, spawnInterval: 800 }
 };
-// Position de la zone de hit
-const HIT_Y = 500;
 
-// Styles UI
-const navBtn = { position:'fixed', top:20, left:20, padding:'0.4rem 0.8rem', background:'#fff', color:'#111', border:'none', borderRadius:6, cursor:'pointer', zIndex:3 };
-const titleStyle = isPhone => ({ animation:'fadeIn .6s', fontSize:isPhone?'2.6rem':'4rem', margin:isPhone?'-10vh':'-20vh', zIndex:2 });
-const labelStyle = { margin:'1rem', color:'#fff', zIndex:2 };
-const btnStyle = { padding:'0.8rem 1.8rem', fontSize:'1.2rem', background:'#55efc4', color:'#111', border:'none', borderRadius:8, cursor:'pointer', zIndex:2 };
-const wrapper = { position:'fixed', inset:0, background:'#111' };
-const hudStyle = { position:'fixed', right:20, top:100, color:'#fff', fontSize:'1rem', zIndex:3 };
+export default function RhythmGame() {
+  const [phase, setPhase] = useState('menu'); // menu | play | over
+  const [diff, setDiff] = useState('Normal');
+  const [lanes, setLanes] = useState(PRESETS['Normal'].lanes);
+  const [blocks, setBlocks] = useState([]); // {id, lane, y}
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const blockId = useRef(0);
+  const animRef = useRef(null);
+  const toneSampler = useRef(null);
 
-export default function RhythmTap(){
-  const isPhone = window.innerWidth<=600;
-  const [phase,setPhase] = useState('menu');
-  const [level,setLevel] = useState('Easy');
-  const [score,setScore] = useState(0);
-  const [combo,setCombo] = useState(0);
-  const [hp,setHp] = useState(1);
+  // Charger sampler
+  useEffect(() => {
+    Tone.start();
+    const instr = INSTRS[Math.floor(Math.random() * INSTRS.length)];
+    toneSampler.current = new Tone.Sampler({ urls: { C4: "C4.mp3" }, baseUrl: `${SOUNDFONT}${instr}-mp3/` }).toDestination();
+  }, []);
 
-  // ------------ Fond animé (menu) ------------
-  const canvasBG = useRef(null);
-  useEffect(()=>{
-    if(phase!=='menu') return;
-    const ctx = canvasBG.current.getContext('2d');
-    const w = window.innerWidth, h = window.innerHeight;
-    canvasBG.current.width = w; canvasBG.current.height = h;
-    // Génération initiale
-    const bg = Array.from({length:BG_COLS*BG_ROWS}, ()=>({ x:rand(BG_COLS), y:rand(h), speed:2+Math.random()*3 }));
-    let tid;
-    const loop = ()=>{
-      ctx.clearRect(0,0,w,h);
-      const lw = w/BG_COLS;
-      // dessiner barres
-      bg.forEach(b=>{
-        ctx.shadowColor = colorAt(b.x);
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = colorAt(b.x);
-        ctx.fillRect(b.x*lw + lw*0.25, b.y, lw*0.5, 40);
-        ctx.shadowBlur = 0;
-        b.y += b.speed;
-        if(b.y > h) b.y = -40;
-      });
-      tid = requestAnimationFrame(loop);
+  // Ajuste lanes selon difficulté
+  useEffect(() => {
+    setLanes(PRESETS[diff].lanes);
+  }, [diff]);
+
+  // Spawn des blocs
+  useEffect(() => {
+    if (phase !== 'play') return;
+    const { spawnInterval } = PRESETS[diff];
+    const spawn = () => {
+      const id = blockId.current++;
+      const lane = Math.floor(Math.random() * lanes);
+      setBlocks(b => [...b, { id, lane, y: 0 }]);
     };
-    loop();
-    return ()=>cancelAnimationFrame(tid);
-  },[phase]);
+    const interval = setInterval(spawn, spawnInterval);
+    return () => clearInterval(interval);
+  }, [phase, diff, lanes]);
 
-  // ------------ Gameplay ------------
-  const canvasGame = useRef(null);
-  const notesRef = useRef([]);
-  const startTime = useRef(0);
-  const raf = useRef(null);
-  const synth = new Tone.MembraneSynth().toDestination();
+  // Animation descente
+  useEffect(() => {
+    if (phase !== 'play') return;
+    const speed = PRESETS[diff].speed;
+    const update = () => {
+      setBlocks(b => b.map(block => ({ ...block, y: block.y + speed })))
+                 .filter(block => {
+                   if (block.y < 100) return true;
+                   // si bloc dépassé sans appui
+                   setLives(l => l - 1);
+                   return false;
+                 });
+      animRef.current = requestAnimationFrame(update);
+    };
+    animRef.current = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [phase, diff]);
 
-  const genNotes = ()=>{
-    const { bpm, lanes } = SETTINGS[level];
-    const interval = 60/bpm;
-    const notes=[];
-    for(let t=1;t<30;t+=interval) notes.push({ lane:rand(lanes), time:t, hit:false });
-    return notes;
-  };
+  // Gestion input clavier
+  useEffect(() => {
+    if (phase !== 'play') return;
+    const onKey = e => {
+      const key = e.key;
+      const idx = '12345'.indexOf(key);
+      if (idx >= 0 && idx < lanes) {
+        toneSampler.current.triggerAttackRelease('C4', '8n');
+        // check bloc proche de la zone d'impact (y > 80)
+        setBlocks(b => {
+          let hit = false;
+          const rest = b.filter(block => {
+            if (!hit && block.lane === idx && block.y > 80 && block.y < 95) {
+              hit = true;
+              setScore(s => s + 10);
+              return false;
+            }
+            return true;
+          });
+          if (!hit) setLives(l => l - 1);
+          return rest;
+        });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phase, lanes, diff]);
 
-  const drawGame = ()=>{
-    const ctx = canvasGame.current.getContext('2d');
-    const w=canvasGame.current.width, h=canvasGame.current.height;
-    ctx.clearRect(0,0,w,h);
-    const { lanes } = SETTINGS[level];
-    const lw = w/lanes;
-    // zone de hit
-    ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(0,HIT_Y-20,w,40);
-    ctx.strokeStyle='#55efc4'; ctx.lineWidth=3; ctx.strokeRect(0,HIT_Y-20,w,40);
-    // notes tombantes
-    const now = Tone.now()-startTime.current;
-    notesRef.current.forEach(n=>{
-      if(n.hit) return;
-      const y = (n.time-now)*200 + HIT_Y;
-      if(y<-50||y>h+50) return;
-      ctx.shadowColor = colorAt(n.lane);
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = colorAt(n.lane);
-      ctx.fillRect(n.lane*lw + lw*0.3, y-30, lw*0.4, 60);
-      ctx.shadowBlur = 0;
-    });
-    raf.current = requestAnimationFrame(drawGame);
-  };
+  // Vérifie fin de partie
+  useEffect(() => {
+    if (lives <= 0) setPhase('over');
+  }, [lives]);
 
-  const startGame = async()=>{
-    await Tone.start();
-    setScore(0); setCombo(0); setHp(1);
-    notesRef.current = genNotes();
-    startTime.current = Tone.now();
+  const startGame = () => {
+    setScore(0); setLives(3); setBlocks([]);
     setPhase('play');
-    canvasGame.current.width = window.innerWidth;
-    canvasGame.current.height = window.innerHeight;
-    raf.current = requestAnimationFrame(drawGame);
-  };
-  useEffect(()=>()=>cancelAnimationFrame(raf.current),[]);
-
-  // ------------ Input (clavier & tactile) ------------
-  const hit = lane=>{
-    const now = Tone.now()-startTime.current;
-    const note = notesRef.current.find(n=>!n.hit && n.lane===lane && Math.abs(n.time-now)<0.2);
-    if(note){
-      note.hit = true;
-      setScore(s=>s+100+combo*10);
-      setCombo(c=>c+1);
-      setHp(h=>Math.min(1,h+0.05));
-      synth.triggerAttackRelease('C4','8n');
-    } else {
-      setCombo(0);
-      setHp(h=>Math.max(0,h-0.1));
-    }
-  };
-  useEffect(()=>{
-    const onKey = e=>{
-      const map = { KeyQ:0, KeyS:1, KeyD:2, KeyF:3 };
-      if(map[e.code]!=null) hit(map[e.code]);
-    };
-    window.addEventListener('keydown',onKey);
-    return ()=>window.removeEventListener('keydown',onKey);
-  });
-
-  // ------------ Barre de PV (style Timer) ------------
-  const HealthBar = ()=>{
-    const lw = hp*50;
-    return (
-      <div style={{position:'fixed',top:'7vh',left:0,right:0,height:8,background:'rgba(255,255,255,0.08)',overflow:'hidden',pointerEvents:'none',zIndex:3}}>
-        <div style={{position:'absolute',left:0,width:`${lw}%`,height:'100%',background:'#fff',transformOrigin:'left',transition:'width .3s'}} />
-        <div style={{position:'absolute',right:0,width:`${lw}%`,height:'100%',background:'#fff',transformOrigin:'right',transition:'width .3s'}} />
-      </div>
-    );
   };
 
-  // ------------ Interface ------------
-  if(phase==='menu') return (
-    <div style={{position:'fixed',inset:0,background:'#111',color:'#fff',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center'}}>
-      <canvas ref={canvasBG} style={{position:'absolute',inset:0,zIndex:-1}} />
-      <button onClick={()=>window.location.href='https://pianovisual.com'} style={navBtn}>↩ Back to PianoVisual</button>
-      <h2 style={titleStyle(isPhone)}>Rhythm Tap</h2>
-      <label style={labelStyle}>Level&nbsp;
-        <select value={level} onChange={e=>setLevel(e.target.value)}>
-          {Object.keys(SETTINGS).map(l=><option key={l}>{l}</option>)}
-        </select>
-      </label>
-      <button style={btnStyle} onClick={startGame}>PLAY</button>
-      <a href='https://ko-fi.com/pianovisual' target='_blank' rel='noopener' className='kofi-mobile-button'></a>
+  const quitToMenu = () => {
+    setPhase('menu'); setBlocks([]);
+  };
+
+  // Composants UI
+  const Screen = ({ children }) => (
+    <div style={{ position:'fixed', inset:0, background:'#111', color:'#fff', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center' }}>
+      {children}
     </div>
   );
+  const btn = { padding:'0.9rem 2.1rem', fontSize:'1.25rem', border:'none', borderRadius:10, background:'#55efc4', color:'#111', cursor:'pointer', margin:8 };
 
-  if(phase==='play') return (
-    <div style={wrapper}>
-      <canvas ref={canvasGame} style={{position:'absolute',inset:0}} />
-      {/* zones tactiles/clic */}
-      <div style={{position:'absolute',inset:0,display:'grid',gridTemplateColumns:`repeat(${SETTINGS[level].lanes},1fr)`,zIndex:2}}>
-        {[...Array(SETTINGS[level].lanes)].map((_,i)=>(
-          <div key={i} onPointerDown={()=>hit(i)} style={{width:'100%',height:'100%'}} />
+  if (phase === 'menu') return (
+    <Screen>
+      <button onClick={() => window.location.href='https://pianovisual.com'} style={btn}>↩ Back to PianoVisual</button>
+      <h2 style={{ fontSize:'4rem' }}>Rhythm Tiles</h2>
+      <label style={{ margin:'1rem' }}>
+        Difficulty&nbsp;
+        <select value={diff} onChange={e => setDiff(e.target.value)}>{Object.keys(PRESETS).map(d => <option key={d}>{d}</option>)}</select>
+      </label>
+      <button style={btn} onClick={startGame}>START</button>
+      <a href="https://ko-fi.com/pianovisual" className="kofi-mobile-button" />
+    </Screen>
+  );
+
+  if (phase === 'over') return (
+    <Screen>
+      <h2>Game Over</h2>
+      <p>Score: {score}</p>
+      <button style={btn} onClick={startGame}>Retry</button>
+      <button style={btn} onClick={quitToMenu}>Menu</button>
+    </Screen>
+  );
+
+  // Zone de jeu
+  return (
+    <div style={{ position:'fixed', inset:0, background:'#111' }}>
+      <button onClick={quitToMenu} style={{ ...btn, position:'fixed', top:16, left:16 }}>↩ Menu</button>
+      <div style={{ position:'relative', width:'80vw', height:'100vh', margin:'0 auto', overflow:'hidden', display:'flex' }}>
+        {[...Array(lanes)].map((_, i) => (
+          <div key={i} style={{ flex:1, borderLeft: i>0?'1px solid #333':0, position:'relative' }}>
+            {blocks.filter(b => b.lane===i).map(b => (
+              <div key={b.id} style={{ position:'absolute', top: `${b.y}%`, left:0, right:0, height: '5%', background: '#55efc4', borderRadius:4, margin:'0 4px' }} />
+            ))}
+          </div>
         ))}
       </div>
-      <HealthBar />
-      <div style={hudStyle}>Score: {score}  Combo: {combo}</div>
-      <button onClick={()=>{cancelAnimationFrame(raf.current); setPhase('menu');}} style={navBtn}>↩ Menu</button>
+      <div style={{ position:'fixed', bottom:16, left:'50%', transform:'translateX(-50%)', color:'#fff' }}>
+        <span style={{ margin:'0 1rem' }}>Lives: {'♥︎'.repeat(lives)}</span>
+        <span style={{ margin:'0 1rem' }}>Score: {score}</span>
+      </div>
     </div>
   );
-
-  return null;
 }
