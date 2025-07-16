@@ -1360,14 +1360,7 @@ const labelByMidi = useMemo(() => {
       className="slider progress-slider"
     />
 
-    <div className="toolbar-item">
-      {/* ouvre dans le même onglet */}
-      <a href="/game" style={{ textDecoration: "none" }}>
-        <button>
-          🎮 Memory Game
-        </button>
-      </a>
-    </div>
+
 
   
     <details className="about" ref={aboutRef}>
