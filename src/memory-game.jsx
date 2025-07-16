@@ -170,11 +170,15 @@ export default function PianoMemory(){
   useEffect(()=>{
     if(phase!=="menu") return;
     let timeoutId;
-    const cycle=()=>{
+    const cycle = () => {
       const idx = rand(totalBg);
       setBgActive(idx);
       setBgColor(colorAt(rand(20)));
-      timeoutId = setTimeout(cycle, 700 + Math.random()*1000);
+      // clear after 0.7s
+      setTimeout(() => setBgActive(-1), 700);
+      // next activation between 0.4 – 1.4 s
+      timeoutId = setTimeout(cycle, 400 + Math.random() * 1000);
+    };
     };
     cycle();
     return ()=>clearTimeout(timeoutId);
@@ -374,7 +378,7 @@ export default function PianoMemory(){
     <Screen>
       {/* Background animated squares */}
       <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, gap:"0.5vw", pointerEvents:"none", zIndex:-1}}>
-        {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"transparent", boxShadow:bgActive===i?`0 0 14px 6px ${bgColor}bb`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
+        {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"transparent", boxShadow:bgActive===i?`0 0 20px 8px ${bgColor}cc`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
       </div>
       {/* Bouton Home vers pianovisual.com */}
       <button onClick={()=>window.location.href='https://pianovisual.com'}
