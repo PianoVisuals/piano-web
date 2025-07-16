@@ -80,7 +80,7 @@ export default function PianoMemory(){
   const [flash,setFlash] = useState(null);
   const [tProg,setTProg] = useState(1);
   // ---- Animated background squares (menu) ----
-  const BG_COLS = 6, BG_ROWS = 4;
+  const BG_COLS = 10, BG_ROWS = 6;
   const totalBg = BG_COLS*BG_ROWS;
   const [bgActive, setBgActive] = useState(-1);
   const [bgColor, setBgColor] = useState('#ffffff');                // barre timer 1 → 0
@@ -173,7 +173,7 @@ export default function PianoMemory(){
     const cycle=()=>{
       const idx = rand(totalBg);
       setBgActive(idx);
-      setBgColor(colorAt(rand(10)));
+      setBgColor(colorAt(rand(20)));
       timeoutId = setTimeout(cycle, 700 + Math.random()*1000);
     };
     cycle();
@@ -374,7 +374,7 @@ export default function PianoMemory(){
     <Screen>
       {/* Background animated squares */}
       <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, pointerEvents:"none", zIndex:0}}>
-        {[...Array(totalBg)].map((_,i)=><div key={i} style={{opacity:bgActive===i?0.6:0.05, transition:"opacity .4s", background:bgActive===i?bgColor:"#ffffff10"}} />)}
+        {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"#1c1c1c", boxShadow:bgActive===i?`0 0 20px 8px ${bgColor}99`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
       </div>
       {/* Bouton Home vers pianovisual.com */}
       <button onClick={()=>window.location.href='https://pianovisual.com'}
