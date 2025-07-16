@@ -12,7 +12,7 @@ import * as Tone from "tone";
 if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
   const kofiStyle = document.createElement('style');
   kofiStyle.id = 'kofi-style';
-  kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:3rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
+  kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
   document.head.appendChild(kofiStyle);
 }
 
@@ -35,8 +35,8 @@ const shadowColor = i => i < BASE_COL.length ? colorAt(i)+"ee" : `hsla(${(i*23)%
 const PRESETS = {
   Easy:   { lanes:3,  demoDelay:900,  hasTimer:false },
   Normal: { lanes:5,  demoDelay:650,  hasTimer:false },
-  Hard:   { lanes:10, demoDelay:480,  hasTimer:true,  inputFactor:2.5 },
-  Harder: { lanes:20, demoDelay:420,  hasTimer:true,  inputFactor:2.0 },
+  Hard:   { lanes:10, demoDelay:480,  hasTimer:true,  inputFactor:3.0 },
+  Harder: { lanes:20, demoDelay:420,  hasTimer:true,  inputFactor:2.5 },
   Insane: { lanes:50, demoDelay:360,  hasTimer:true,  inputFactor:2.0 }
 };
 
@@ -56,7 +56,7 @@ const successFx = new Tone.Synth({ oscillator:{type:"triangle"}, envelope:{attac
 const failFx    = new Tone.MembraneSynth({ volume:0 }).toDestination();
 
 export default function PianoMemory(){
-  const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
+  const isMobile = false; // mobile restriction removed
   const lang = typeof navigator !== 'undefined' ? (navigator.language || navigator.userLanguage) : 'en';
   if(isMobile){
     const msg = lang && lang.startsWith('fr')
@@ -299,7 +299,7 @@ export default function PianoMemory(){
       <button onClick={()=>window.location.href='https://pianovisual.com'}
         style={{ position:"fixed", top:"2vh", left:"2vw", zIndex:3, padding:"0.4rem 0.8rem", fontSize:"1rem", borderRadius:8,
           background:"#fff", color:"#111", border:"none", cursor:"pointer", boxShadow:"0 2px 4px rgba(0,0,0,0.45)", transition:"transform .18s" }}>
-        ↩ PianoVisual
+        ↩ Back to PianoVisual
       </button>
 
       <h2 style={{animation:"fadeIn .6s", fontSize:"4rem", marginTop:"-20vh"}}>Piano Memory</h2>
