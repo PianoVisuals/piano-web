@@ -20,10 +20,11 @@ const DAMAGE = 20;
 const HEAL_PER_HIT = 2;
 const MAX_HP = 100;
 const DIFFICULTIES = {
-  Easy:    { lanes: 4, speed: 3000, interval: 800, hp: MAX_HP, multiplier: 1 },
-  Normal:  { lanes: 6, speed: 2500, interval: 650, hp: 90, multiplier: 2 },
-  Hard:    { lanes: 8, speed: 2000, interval: 500, hp: 70, multiplier: 4 },
-  Insane:  { lanes: 20, speed: 1200, interval: 300, hp: 50, multiplier: 8 }
+  Easy:    { lanes: 4, speed: 3000, interval: 800, hp: 100, multiplier: 1 },
+  Normal:  { lanes: 6, speed: 2500, interval: 650, hp: 100, multiplier: 2 },
+  Hard:    { lanes: 8, speed: 2000, interval: 500, hp: 100, multiplier: 4 },
+  Harder:  { lanes: 10, speed: 1200, interval: 300, hp: 100, multiplier: 6 },
+  Insane:  { lanes: 12, speed: 1200, interval: 300, hp: 100, multiplier: 8 }
 };
 const DIFF_NAMES = Object.keys(DIFFICULTIES);
 
@@ -97,7 +98,7 @@ export default function RhythmGame() {
       return newCombo;
     });
     setScore(s => s + 1 * settings.multiplier);
-    setHp(h => Math.min(MAX_HP, h + HEAL_PER_HIT));
+    setHp(h => Math.min(settings.hp, h + HEAL_PER_HIT));
     setNotes(n => n.filter(x => x.id !== note.id));
   };
 
@@ -156,7 +157,8 @@ export default function RhythmGame() {
 
   return (
     <div style={gameWrapper} onMouseDown={onWrongClick}>
-      <CentralHPBar hp={hp} maxHp={MAX_HP} flash={flashRed} />
+      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
+      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
       <div style={laneContainer}>
         {notes.map(note => (
           <div
@@ -183,8 +185,8 @@ function CentralHPBar({ hp, maxHp, flash }) {
         style={{
           ...centralHpBar,
           transform: `scaleX(${pct})`,
-          background: flash ? `rgba(255,50,50,${FLASH_ALPHA})` : '#fff',
-          boxShadow: flash ? `0 0 22px 8px rgba(255,0,0,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)'
+          background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff',
+          boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)'
         }}
       />
     </div>
@@ -200,7 +202,7 @@ const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', b
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
 const laneContainer = { position: 'relative', height: '100%', width: '100%', display: 'block' };
-const hud = { position: 'fixed', top: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
+const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
 const noteStyle = (note, totalLanes, fallDuration) => ({
