@@ -1248,9 +1248,16 @@ const labelByMidi = useMemo(() => {
 
 
 
-  .nav-toggle.open{
-    transform:translateY(-50%) rotate(0deg);    /* pointe vers la gauche quand ouvert */
+  /* ────── TOGGLE ────── */
+  .nav-toggle{
+    position:fixed; top:50%; left:0;
+    transform:translateY(-50%) rotate(180deg);
+    background:#333; color:#fff; border:none;
+    padding:0.45rem 0.6rem; border-radius:0 4px 4px 0;
+    font-size:1rem; cursor:pointer; z-index:30;
+    transition:transform .25s;
   }
+  .nav-toggle.open{ transform:translateY(-50%) rotate(0deg); }
   
   /* ────── BARRE LATERALE ────── */
   .side-nav{
@@ -1287,6 +1294,7 @@ const labelByMidi = useMemo(() => {
     aria-label="Menu"
   >
     >
+    <span className="chevron">&gt;</span>
   </button>
 
   {/* ───────── BARRE LATÉRALE ───────── */}
