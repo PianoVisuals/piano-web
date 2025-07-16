@@ -180,7 +180,10 @@ export default function PianoMemory(){
     const cycle=()=>{
       const idx = rand(totalBg);
       setBgActive(idx);
-      setBgColor(colorAt(rand(20)));
+      const note = rand(20);  // Choisir une note aléatoire
+      setBgColor(colorAt(note));  // Appliquer la couleur associée à cette note
+      const synth = new Tone.Synth().toDestination();  // Créer un synthétiseur
+      synth.triggerAttackRelease(midiToFreq(note + 60), "8n");  // Jouer la note (ex : C4, D4, etc.)
       setTimeout(()=>setBgActive(-1),1500);
       timeoutId = setTimeout(cycle, 1750);
     };
