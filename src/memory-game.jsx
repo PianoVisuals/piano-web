@@ -278,7 +278,7 @@ export default function PianoMemory(){
   const TimerBar = ()=>{
     if(!hasTimer || phase!=="input") return null;
     return (
-      <div style={{ position:"fixed", top:"3.5vh", left:"50%", transform:"translateX(-50%)", width:"88vw", maxWidth:580, height:10, borderRadius:5,
+      <div style={{ position:"fixed", top:isPhone?"7vh":"3.5vh", left:"50%", transform:"translateX(-50%)", width:"88vw", maxWidth:580, height:10, borderRadius:5,
                     overflow:"hidden", background:"rgba(255,255,255,0.08)", boxShadow:"0 0 10px rgba(255,255,255,0.25)", pointerEvents:"none" }}>
         <div style={{ width:"100%", height:"100%", background:"#fff", transformOrigin:"center", transform:`scaleX(${tProg})`, transition:"transform .11s linear",
                       boxShadow:"0 0 8px 2px rgba(255,255,255,0.9)", pointerEvents:"none" }} />
@@ -289,7 +289,8 @@ export default function PianoMemory(){
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
     if(isPhone){
-      return <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(60px,1fr))", gap:4, width:"95vw", margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/> )}</div>;
+      const minSize = lanes>20 ? 40 : 60; // smaller pads for Insane
+      return <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/> )}</div>;
     }
     if(lanes<=8) return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
