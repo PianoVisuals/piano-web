@@ -1304,7 +1304,7 @@ const labelByMidi = useMemo(() => {
     className={`nav-toggle ${navOpen ? "open" : ""}`}
     onClick={toggleNav}
     aria-label="Menu"
-    ᐅ
+    ➤
     <span className="chevron">&gt;</span>
   </button>
 
