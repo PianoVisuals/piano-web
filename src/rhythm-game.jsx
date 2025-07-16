@@ -1,5 +1,5 @@
-// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar, Click Damage & Red Glow on HP Loss
-// Updated: red glow effect when losing HP
+// RhythmGame.jsx — Piano Tiles Rhythm Game with Centralized White HP Bar & Red Flash on HP Loss
+// Updated: HP bar flashes red glow when losing HP
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -52,6 +52,7 @@ export default function RhythmGame() {
     setScore(0);
     setHp(MAX_HP);
     setNotes([]);
+    setFlashRed(false);
     setPhase("play");
     spawnTimer.current = setInterval(() => {
       const now = Date.now();
@@ -108,11 +109,6 @@ export default function RhythmGame() {
     if (phase !== "play") clearInterval(spawnTimer.current);
   }, [phase]);
 
-  // Determine wrapper style with red glow
-  const wrapperStyle = flashRed
-    ? { ...gameWrapper, boxShadow: '0 0 20px 10px rgba(255,0,0,0.8)' }
-    : gameWrapper;
-
   // Menu screen
   if (phase === "menu") {
     return (
@@ -139,9 +135,9 @@ export default function RhythmGame() {
 
   // Gameplay
   return (
-    <div style={wrapperStyle}>
-      <CentralHPBar hp={hp} maxHp={MAX_HP} />
-      <div style={laneContainer} onMouseDown={onWrongClick}>
+    <div style={gameWrapper} onMouseDown={onWrongClick}>
+      <CentralHPBar hp={hp} maxHp={MAX_HP} flash={flashRed} />
+      <div style={laneContainer}>
         {notes.map(note => (
           <div
             key={note.id}
@@ -159,11 +155,20 @@ export default function RhythmGame() {
   );
 }
 
-function CentralHPBar({ hp, maxHp }) {
+function CentralHPBar({ hp, maxHp, flash }) {
   const pct = Math.max(0, hp / maxHp);
   return (
     <div style={centralHpContainer}>
-      <div style={{ ...centralHpBar, transform: `scaleX(${pct})` }} />
+      <div
+        style={{
+          ...centralHpBar,
+          transform: `scaleX(${pct})`,
+          background: flash ? 'rgba(255,0,0,0.9)' : '#fff',
+          boxShadow: flash
+            ? '0 0 12px 4px rgba(255,0,0,0.9)'
+            : '0 0 12px 4px rgba(255,255,255,0.8)'
+        }}
+      />
     </div>
   );
 }
@@ -180,7 +185,7 @@ const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow:
 const laneContainer = { position: 'relative', height: '100%', width: '100%', display: 'block' };
 const hud = { position: 'fixed', top: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
-const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', background: '#fff', transformOrigin: 'center', boxShadow: '0 0 12px 4px rgba(255,255,255,0.8)', transition: 'transform 0.3s ease' };
+const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
 const noteStyle = (note) => ({
   position: 'absolute',
   left: `${(note.lane / LANES) * 100}%`,
