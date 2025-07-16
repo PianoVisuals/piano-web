@@ -15,7 +15,7 @@ export default defineConfig({
       input: {
         // clé : nom souhaité (sera l’URL), valeur : chemin du fichier
         main: resolve(__dirname, "index.html"),   // https://…/   (page piano)
-        game: resolve(__dirname, "game.html")     // https://…/game.html
+        game: resolve(__dirname, "MemoryGame.html")     // https://…/MemoryGame.html
       }
     }
   }
