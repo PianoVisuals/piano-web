@@ -1313,7 +1313,7 @@ const labelByMidi = useMemo(() => {
     <h3>Mini‑games</h3>
     <ul>
       <li><a href="/pianomemory">🟥 Piano Memory</a></li>
-      <li><a href="/pianorhythm">/!\under construction/!\/a></li>
+      <li><a href="/pianorhythm">/!\under construction/!\</a></li>
       <li><span className="soon">More Coming Soon…</span></li>
     </ul>
   </nav>
