@@ -167,31 +167,19 @@ export default function PianoMemory(){
   const fail    = ()=>{ clearAll(); failFx.triggerAttackRelease("C2","8n"); setLives(l=>l-1); setFlash("bad"); if(lives-1<=0) setPhase("over"); else setPhase("pause"); };
 
   /* --- Background squares effect (menu only) --- */
-  useEffect(() => {
-    if (phase !== "menu") return;
-    const ids = [];
-    const flash = () => {
+  useEffect(()=>{
+    if(phase!=="menu") return;
+    let timeoutId;
+    const cycle=()=>{
       const idx = rand(totalBg);
-      const color = colorAt(rand(20));
-      setBgMap(prev => {
-        const m = [...prev];
-        m[idx] = color;
-        return m;
-      });
-      // turn off after 0.7s
-      ids.push(setTimeout(() => {
-        setBgMap(prev => {
-          const m = [...prev];
-          m[idx] = null;
-          return m;
-        });
-      }, 700));
-      // schedule next flash
-      ids.push(setTimeout(flash, 400 + Math.random() * 1000));
+      setBgActive(idx);
+      setBgColor(colorAt(rand(20)));
+      setTimeout(()=>setBgActive(-1),700);
+      timeoutId = setTimeout(cycle, 400 + Math.random()*1000);
     };
-    flash();
-    return () => ids.forEach(clearTimeout);
-  }, [phase]);
+    cycle();
+    return ()=>clearTimeout(timeoutId);
+  },[phase]);
 
   /* --- Pause → manche suivante --- */
   useEffect(()=>{ if(phase!=="pause") return; const t=setTimeout(()=>{ setFlash(null); addNote(); setPhase("show"); },700); return ()=>clearTimeout(t); },[phase]);
@@ -386,8 +374,8 @@ export default function PianoMemory(){
   if(phase==="menu") return (
     <Screen>
       {/* Background animated squares */}
-      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, gap:"0.5vw", padding:"3vw", pointerEvents:"none", zIndex:-1}}>
-        {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"transparent", boxShadow:bgActive===i?`0 0 14px 6px ${bgColor}bb`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
+      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, gap:"0.8vw", padding:"2vw", pointerEvents:"none", zIndex:-1}}>
+        {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"transparent", boxShadow:bgActive===i?`0 0 24px 10px ${bgColor}`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
       </div>
       {/* Bouton Home vers pianovisual.com */}
       <button onClick={()=>window.location.href='https://pianovisual.com'}
