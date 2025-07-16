@@ -104,26 +104,27 @@ export default function RhythmGame() {
     ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, 600, 600);
   
-    // Trois notes tombantes (rectangles colorés et glow)
-    const noteWidth = 80;
-    const noteHeight = 20;
-    const lanes = settings.lanes;  // nombre de colonnes selon la difficulté
-    for (let i = 0; i < 3; i++) {
-      const lane = i * Math.floor(lanes / 3);
-      const x = 50 + (lane / lanes) * 500;  // marge de 50px à gauche et à droite
-      const y = 150 + i * 120;              // espacement vertical
+    // Trois notes tombantes compactes en haut à gauche
+    const noteWidth = 40;
+    const noteHeight = 16;
+    const x = 40;             // position fixe à gauche
+    const centerY = 300;      // milieu vertical
+    const yPositions = [centerY, centerY - 50, centerY + 50];
+    const lanes = settings.lanes;
+    yPositions.forEach((y, idx) => {
+      const lane = Math.floor((idx / 3) * lanes);
       ctx.fillStyle = colorAt(lane);
       ctx.shadowColor = colorAt(lane);
       ctx.shadowBlur = 10;
       ctx.fillRect(x, y, noteWidth, noteHeight);
       ctx.shadowBlur = 0;
-    }
+    });
   
-    // Titre
+    // Titre (plus bas pour ne pas chevaucher les notes)
     ctx.fillStyle = '#55efc4';
     ctx.font = 'bold 70px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Piano Rhythm', 300, 80);
+    ctx.fillText('Piano Rhythm', 300, 140);
   
     // Données du score
     ctx.fillStyle = '#fff';
@@ -132,13 +133,13 @@ export default function RhythmGame() {
     ctx.fillText('Max combo: ' + maxCombo, 300, 380);
     ctx.fillText('Difficulty: ' + diff, 300, 440);
   
-    // Footer / promotion
+    // Footer / promo
     ctx.fillStyle = '#ffeaa7';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText('pianovisual.com  |  Piano Rhythm', 580, 580);
-
-    // Export de l'image
+    
+    // Export
     const link = document.createElement('a');
     link.download = 'piano_rhythm_score.png';
     link.href = canvas.toDataURL('image/png');
@@ -188,7 +189,7 @@ export default function RhythmGame() {
   if (phase === "menu") {
     return (
       <Screen>
-        <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh' }}>Piano Tiles Rhythm</h2>
+        <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh' }}>Piano Rhythm</h2>
         <label>Difficulty:
           <select value={diff} onChange={e => setDiff(e.target.value)}>
             {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
