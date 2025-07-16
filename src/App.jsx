@@ -1371,6 +1371,8 @@ const labelByMidi = useMemo(() => {
       </div>
     </details>
 
+    <a href="/memorygame.html" className="toolbar-item">Piano Memory</a>
+
     <a
       href="https://ko-fi.com/pianovisual"
       target="_blank"
