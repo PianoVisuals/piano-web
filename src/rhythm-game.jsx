@@ -96,56 +96,58 @@ export default function RhythmGame() {
   };
 
   const downloadScore = () => {
+    const w = 600, h = 600;
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 600;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d');
+  
     // Fond
     ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, 600, 600);
+    ctx.fillRect(0, 0, w, h);
   
-    // Trois notes tombantes compactes en haut à gauche
-    const noteWidth = 40;
-    const noteHeight = 16;
-    const x = 40;             // position fixe à gauche
-    const centerY = 300;      // milieu vertical
-    const yPositions = [centerY, centerY - 50, centerY + 50];
-    const lanes = settings.lanes;
-    yPositions.forEach((y, idx) => {
-      const lane = Math.floor((idx / 3) * lanes);
+    // Trois notes tombantes compactes (32×80 px) en haut à gauche
+    const noteWidth = 32;
+    const noteHeight = 80;
+    const notePos = [
+      { x: 60,  y: 160, lane: 0 },   // note centrale verticalement
+      { x: 120, y: 120, lane: 1 },   // note à droite un peu plus haute
+      { x: 180, y: 200, lane: 2 }    // note à droite plus basse
+    ];
+    notePos.forEach(({ x, y, lane }) => {
       ctx.fillStyle = colorAt(lane);
       ctx.shadowColor = colorAt(lane);
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 12;
       ctx.fillRect(x, y, noteWidth, noteHeight);
       ctx.shadowBlur = 0;
     });
   
-    // Titre (plus bas pour ne pas chevaucher les notes)
+    // Titre “Piano Rhythm” à y = 210
     ctx.fillStyle = '#55efc4';
     ctx.font = 'bold 70px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Piano Rhythm', 300, 140);
+    ctx.fillText('Piano Rhythm', w / 2, 210);
   
-    // Données du score
-    ctx.fillStyle = '#fff';
+    // Données de score
+    ctx.fillStyle = '#ffffff';
     ctx.font = '36px monospace';
-    ctx.fillText('Score: ' + score, 300, 320);
-    ctx.fillText('Max combo: ' + maxCombo, 300, 380);
-    ctx.fillText('Difficulty: ' + diff, 300, 440);
+    ctx.fillText('Score: ' + score, w / 2, 320);
+    ctx.fillText('Max combo: ' + maxCombo, w / 2, 380);
+    ctx.fillText('Difficulty: ' + diff, w / 2, 440);
   
     // Footer / promo
     ctx.fillStyle = '#ffeaa7';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('pianovisual.com  |  Piano Rhythm', 580, 580);
-    
-    // Export
+    ctx.fillText('pianovisual.com  |  Piano Rhythm', w - 20, h - 20);
+  
+    // Export de l’image
     const link = document.createElement('a');
     link.download = 'piano_rhythm_score.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
-  
+
   const onHit = (note, e) => {
     e.stopPropagation();
     const NOTE_KEYS = Object.keys(NOTE_SOUNDS);
