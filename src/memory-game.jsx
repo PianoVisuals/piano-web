@@ -78,7 +78,12 @@ export default function PianoMemory(){
   const [score,setScore] = useState(0);
   const [lit,setLit]     = useState(null);
   const [flash,setFlash] = useState(null);
-  const [tProg,setTProg] = useState(1);                // barre timer 1 → 0
+  const [tProg,setTProg] = useState(1);
+  // ---- Animated background squares (menu) ----
+  const BG_COLS = 6, BG_ROWS = 4;
+  const totalBg = BG_COLS*BG_ROWS;
+  const [bgActive, setBgActive] = useState(-1);
+  const [bgColor, setBgColor] = useState('#ffffff');                // barre timer 1 → 0
 
   const timerRef = useRef(null);
   const rafRef   = useRef(null);
@@ -160,6 +165,20 @@ export default function PianoMemory(){
   };
   const succeed = ()=>{ clearAll(); setFlash("good"); setPhase("pause"); };
   const fail    = ()=>{ clearAll(); failFx.triggerAttackRelease("C2","8n"); setLives(l=>l-1); setFlash("bad"); if(lives-1<=0) setPhase("over"); else setPhase("pause"); };
+
+  /* --- Background squares effect (menu only) --- */
+  useEffect(()=>{
+    if(phase!=="menu") return;
+    let timeoutId;
+    const cycle=()=>{
+      const idx = rand(totalBg);
+      setBgActive(idx);
+      setBgColor(colorAt(rand(10)));
+      timeoutId = setTimeout(cycle, 700 + Math.random()*1000);
+    };
+    cycle();
+    return ()=>clearTimeout(timeoutId);
+  },[phase]);
 
   /* --- Pause → manche suivante --- */
   useEffect(()=>{ if(phase!=="pause") return; const t=setTimeout(()=>{ setFlash(null); addNote(); setPhase("show"); },700); return ()=>clearTimeout(t); },[phase]);
@@ -353,6 +372,10 @@ export default function PianoMemory(){
   /* --- Screens / UI --- */
   if(phase==="menu") return (
     <Screen>
+      {/* Background animated squares */}
+      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, pointerEvents:"none", zIndex:0}}>
+        {[...Array(totalBg)].map((_,i)=><div key={i} style={{opacity:bgActive===i?0.6:0.05, transition:"opacity .4s", background:bgActive===i?bgColor:"#ffffff10"}} />)}
+      </div>
       {/* Bouton Home vers pianovisual.com */}
       <button onClick={()=>window.location.href='https://pianovisual.com'}
         style={{ position:"fixed", top:"2vh", left:"2vw", zIndex:3, padding:"0.4rem 0.8rem", fontSize:"1rem", borderRadius:8,
