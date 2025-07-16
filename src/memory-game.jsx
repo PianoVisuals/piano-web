@@ -56,16 +56,8 @@ const successFx = new Tone.Synth({ oscillator:{type:"triangle"}, envelope:{attac
 const failFx    = new Tone.MembraneSynth({ volume:0 }).toDestination();
 
 export default function PianoMemory(){
-  const isPhone = typeof window !== 'undefined' && window.innerWidth <= 600;
-  const isLandscape = isPhone && typeof window !== 'undefined' && window.innerWidth > window.innerHeight; // ≤600px = mobile view
+  const isPhone = typeof window !== 'undefined' && window.innerWidth <= 600; // ≤600px = mobile view
   const isMobile = false; // mobile restriction removed
-  if(isLandscape){
-    return (
-      <div style={{position:'fixed',inset:0,background:'#111',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',padding:'2rem',zIndex:2000}}>
-        <p>Please rotate your device to portrait mode.</p>
-      </div>
-    );
-  }
   const lang = typeof navigator !== 'undefined' ? (navigator.language || navigator.userLanguage) : 'en';
   if(isMobile){
     const msg = lang && lang.startsWith('fr')
@@ -297,22 +289,21 @@ export default function PianoMemory(){
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
     if(isPhone){
-      const padCount = diff==="Insane" ? lanes+6 : lanes;
-      const minSize = diff==="Insane" ? 40 : (lanes>20?40:60);
-      return <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
-        {Array.from({length:padCount}).map((_,i)=> i<lanes ? <Pad key={i} i={i}/> : <div key={'d'+i} style={{width:"100%",aspectRatio:"1",margin:"0.5vw",borderRadius:12,background:"#222"}} />)}
-      </div>;
+      const phoneLanes = diff==="Insane" ? 56 : lanes; // add 6 dummy pads for Insane to complete grid lines
+      const minSize = phoneLanes>20 ? 40 : 60; // smaller pads for many squares
+      return (
+        <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
+          {[...Array(phoneLanes)].map((_,i)=><Pad key={i} i={i%lanes}/>)}
+        </div>
+      );
     }
     if(lanes<=8){
       return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     }
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
-    return <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/> )}</div>;
-    }
-    if(lanes<=8) return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
-    const cols = (lanes===10 || lanes===20) ? 5 : 10;
     return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: lanes===20 ? 12 : 20, width: lanes===20 ? "min(85vw,540px)" : "90vw", margin:"0 auto", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
   };
+
 
   /* --- Screens / UI --- */
   if(phase==="menu") return (
