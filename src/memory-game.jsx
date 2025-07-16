@@ -373,7 +373,7 @@ export default function PianoMemory(){
   if(phase==="menu") return (
     <Screen>
       {/* Background animated squares */}
-      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, pointerEvents:"none", zIndex:0}}>
+      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, gap:"1vw", pointerEvents:"none", zIndex:-1}}>
         {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"#1c1c1c", boxShadow:bgActive===i?`0 0 20px 8px ${bgColor}99`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
       </div>
       {/* Bouton Home vers pianovisual.com */}
