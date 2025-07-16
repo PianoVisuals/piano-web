@@ -174,8 +174,8 @@ export default function PianoMemory(){
       const idx = rand(totalBg);
       setBgActive(idx);
       setBgColor(colorAt(rand(20)));
-      setTimeout(()=>setBgActive(-1),1000);
-      timeoutId = setTimeout(cycle, 1000);
+      setTimeout(()=>setBgActive(-1),1500);
+      timeoutId = setTimeout(cycle, 1250);
     };
     cycle();
     return ()=>clearTimeout(timeoutId);
