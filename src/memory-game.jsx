@@ -290,27 +290,54 @@ export default function PianoMemory(){
 
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
+    // Mobile: auto-fit grid, Insane gets 56 real pads for full 7×8 grid
     if(isPhone){
-      const phoneLanes = diff==="Insane" ? 56 : lanes; // true lanes on phone for Insane
-      const minSize = phoneLanes>20 ? 40 : 60; // smaller pads for many squares
+      const phoneLanes = diff === "Insane" ? 56 : lanes;
+      const minSize = phoneLanes > 20 ? 40 : 60;
       return (
-        <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
-          {[...Array(phoneLanes)].map((_,i)=><Pad key={i} i={i}/>)}
-        </div>
-      );
-    } // add 6 dummy pads for Insane to complete grid lines
-      const minSize = phoneLanes>20 ? 40 : 60; // smaller pads for many squares
-      return (
-        <div style={{display:"grid", gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`, gap:4, width:"95vw", margin:"0 auto"}}>
-          {[...Array(phoneLanes)].map((_,i)=><Pad key={i} i={i%lanes}/>)}
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:`repeat(auto-fit,minmax(${minSize}px,1fr))`,
+          gap:4,
+          width:"95vw",
+          margin:"0 auto"
+        }}>
+          {[...Array(phoneLanes)].map((_, i) => <Pad key={i} i={i} />)}
         </div>
       );
     }
-    if(lanes<=8){
-      return <div style={{display:"flex",width:"95vw",maxWidth:560,margin:"0 auto"}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+
+    // Desktop small grids (≤8 pads)
+    if(lanes <= 8){
+      return (
+        <div style={{
+          display:"flex",
+          width:"95vw",
+          maxWidth:560,
+          margin:"0 auto"
+        }}>
+          {[...Array(lanes)].map((_, i) => <Pad key={i} i={i} />)}
+        </div>
+      );
     }
-    const cols = (lanes===10 || lanes===20) ? 5 : 10;
-    return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: lanes===20 ? 12 : 20, width: lanes===20 ? "min(85vw,540px)" : "90vw", margin:"0 auto", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+
+    // Desktop large grids
+    const cols = (lanes === 10 || lanes === 20) ? 5 : 10;
+    const gap = lanes === 20 ? 12 : 20;
+    const width = lanes === 20 ? "min(85vw,540px)" : "90vw";
+
+    return (
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:`repeat(${cols}, 1fr)`,
+        gap,
+        width,
+        margin:"0 auto",
+        maxWidth:620
+      }}>
+        {[...Array(lanes)].map((_, i) => <Pad key={i} i={i} />)}
+      </div>
+    );
   };
 
 
