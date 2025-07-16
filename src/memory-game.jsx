@@ -35,8 +35,8 @@ const shadowColor = i => i < BASE_COL.length ? colorAt(i)+"ee" : `hsla(${(i*23)%
 const PRESETS = {
   Easy:   { lanes:3,  demoDelay:900,  hasTimer:false },
   Normal: { lanes:5,  demoDelay:650,  hasTimer:false },
-  Hard:   { lanes:10, demoDelay:480,  hasTimer:true,  inputFactor:3.0 },
-  Harder: { lanes:20, demoDelay:420,  hasTimer:true,  inputFactor:2.5 },
+  Hard:   { lanes:10, demoDelay:480,  hasTimer:true,  inputFactor:2.5 },
+  Harder: { lanes:20, demoDelay:420,  hasTimer:true,  inputFactor:2.0 },
   Insane: { lanes:50, demoDelay:360,  hasTimer:true,  inputFactor:2.0 }
 };
 
