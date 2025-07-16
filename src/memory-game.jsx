@@ -181,9 +181,12 @@ export default function PianoMemory(){
       const idx = rand(totalBg);
       setBgActive(idx);
       const note = rand(20);  // Choisir une note aléatoire
-      setBgColor(colorAt(note));  // Appliquer la couleur associée à cette note
-      const synth = new Tone.Synth().toDestination();  // Créer un synthétiseur
-      synth.triggerAttackRelease(midiToFreq(note + 60), "8n");  // Jouer la note (ex : C4, D4, etc.)
+      setBgColor(colorAt(note));  // Appliquer la couleur de la note
+      // Créer un synthétiseur et jouer la note en utilisant les mêmes fonctions
+      const synth = new Tone.Synth().toDestination();
+      const midiNote = note + 60; // Note MIDI de base (C4 + note aléatoire)
+      const frequency = Tone.Frequency(midiNote, "midi").toFrequency();  // Convertir en fréquence
+      synth.triggerAttackRelease(frequency, "8n"); // Jouer la note pendant 1 noire
       setTimeout(()=>setBgActive(-1),1500);
       timeoutId = setTimeout(cycle, 1750);
     };
