@@ -265,17 +265,26 @@ export default function PianoMemory(){
     const global = flash; // "good" | "bad" | null
     const glowColor = shadowColor(i);
     const bg = global ? (global==="good"?"#2ecc71":"#e74c3c") : (active?colorAt(i):"#1c1c1c");
-    const box = global ? (global==='good'
+    const glow = global ? (global==='good'
         ? `0 0 ${lanes>8?18:24}px ${lanes>8?6:12}px #2ecc7188`
         : `0 0 ${lanes>8?18:24}px ${lanes>8?6:12}px #e74c3c99`) :
         (active ? (lanes>8?`0 0 12px 4px ${glowColor}`:`0 0 34px 14px ${glowColor}`) : "none");
+
+    // Wrapper ensures glow layer is under every square
     return (
-      <div onPointerDown={()=>onPadTap(i)}
-        style={{ width:"100%", aspectRatio:"1", margin: isPhone?"0.5vw":(lanes>10?4:lanes>8?8:20), borderRadius:12, cursor:phase==="input"?"pointer":"default", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", outline:"none", 
-          background:bg, transition:"background .22s, transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s",
-          transform:active?"scale(1.06)":"scale(1)", boxShadow: box }} />
+      <div style={{position:"relative", width:"100%", aspectRatio:"1", margin:isPhone?"0.5vw":(lanes>10?4:lanes>8?8:20)}}>
+        {/* Glow layer behind all */}
+        <div style={{position:"absolute", inset:0, borderRadius:12, boxShadow:glow, zIndex:0, pointerEvents:"none"}} />
+
+        {/* Interactive square */}
+        <div onPointerDown={()=>onPadTap(i)}
+             style={{position:"relative", zIndex:1, width:"100%", height:"100%", borderRadius:12, cursor:phase==="input"?"pointer":"default",
+                    WebkitTapHighlightColor:"transparent", touchAction:"manipulation", outline:"none", background:bg,
+                    transition:"background .22s, transform .22s cubic-bezier(.22,1,.36,1)", transform:active?"scale(1.06)":"scale(1)"}} />
+      </div>
     );
   };
+
 
   const TimerBar = ()=>{
     if(!hasTimer || phase!=="input") return null;
