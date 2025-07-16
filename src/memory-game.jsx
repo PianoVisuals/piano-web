@@ -120,21 +120,6 @@ export default function PianoMemory(){
 
 
 
-  useEffect(() => {
-    const handleOrientationChange = () => {
-      if (window.innerWidth > window.innerHeight) {
-        document.body.style.display = 'none'; // masque la page en mode paysage
-      } else {
-        document.body.style.display = 'block'; // réactive la page en portrait
-      }
-    };
-    window.addEventListener('resize', handleOrientationChange);
-    handleOrientationChange(); // initial check
-  
-    return () => window.removeEventListener('resize', handleOrientationChange);
-  }, []);
-
-
 
 
 
