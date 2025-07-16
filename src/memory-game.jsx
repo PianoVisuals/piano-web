@@ -118,6 +118,28 @@ export default function PianoMemory(){
     setPhase("pause");
   };  
 
+
+
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      if (window.innerWidth > window.innerHeight) {
+        document.body.style.display = 'none'; // masque la page en mode paysage
+      } else {
+        document.body.style.display = 'block'; // réactive la page en portrait
+      }
+    };
+    window.addEventListener('resize', handleOrientationChange);
+    handleOrientationChange(); // initial check
+  
+    return () => window.removeEventListener('resize', handleOrientationChange);
+  }, []);
+
+
+
+
+
+
+
   /* --- Lecture de la séquence --- */
   useEffect(()=>{
     if(phase!=="show" || !seq.length) return;
@@ -175,7 +197,7 @@ export default function PianoMemory(){
       setBgActive(idx);
       setBgColor(colorAt(rand(20)));
       setTimeout(()=>setBgActive(-1),1500);
-      timeoutId = setTimeout(cycle, 1250);
+      timeoutId = setTimeout(cycle, 1750);
     };
     cycle();
     return ()=>clearTimeout(timeoutId);
