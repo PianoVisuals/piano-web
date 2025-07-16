@@ -110,9 +110,9 @@ export default function RhythmGame() {
     const noteWidth = 16;
     const noteHeight = 40;
     const notePos = [
-      { x: 30,  y: 80, lane: 0 },   // note centrale verticalement
-      { x: 60, y: 60, lane: 1 },   // note à droite un peu plus haute
-      { x: 90, y: 100, lane: 2 }    // note à droite plus basse
+      { x: 30,  y: 50, lane: 0 },   // note centrale verticalement
+      { x: 60, y: 30, lane: 1 },   // note à droite un peu plus haute
+      { x: 90, y: 70, lane: 2 }    // note à droite plus basse
     ];
     notePos.forEach(({ x, y, lane }) => {
       ctx.fillStyle = colorAt(lane);
