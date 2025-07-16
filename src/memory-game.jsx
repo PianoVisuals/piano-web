@@ -287,7 +287,7 @@ export default function PianoMemory(){
 
   /* --- Grille de pads --- */
   const renderPadGrid = ()=>{
-    if(lanes<=8) return <div style={{display:"flex",width:"min(90vw,560px)",maxWidth:560}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
+    if(lanes<=8) return <div style={{display:"flex",width:"95vw",maxWidth:560}}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
     const cols = (lanes===10 || lanes===20) ? 5 : 10;
     return <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap: lanes===20 ? 12 : 20, width: lanes===20 ? "min(85vw,540px)" : "90vw", maxWidth:620 }}>{[...Array(lanes)].map((_,i)=><Pad key={i} i={i}/>)}</div>;
   };
