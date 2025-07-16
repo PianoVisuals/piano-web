@@ -1,47 +1,49 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- ░░░  Google Analytics  ░░░ -->
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G‑Y19Z9KM7EN"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag('js',   new Date());
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
     gtag('config','G‑Y19Z9KM7EN');
   </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <title>PianoVisual – Memory Game</title>
-  <meta name="description"
-        content="Train your musical memory with PianoVisual’s browser‑based Simon‑style game. Repeat the glowing note sequence, climb the levels and enjoy real piano samples. Works on desktop & mobile." />
+  <!-- désactive tout comportement “web‑app” -->
+  <meta name="mobile-web-app-capable"  content="no">
+  <meta name="apple-mobile-web-app-capable" content="no">
 
-  <!-- Favicon & app icons (mêmes fichiers que la page principale) -->
-  <link rel="icon"              type="image/png" sizes="96x96"  href="/favicon-96x96.png" />
-  <link rel="icon"              type="image/svg+xml"            href="/favicon.svg"        />
-  <link rel="shortcut icon"                                 href="/favicon.ico"        />
-  <link rel="apple-touch-icon"  sizes="180x180"                href="/apple-touch-icon.png" />
-  <meta name="apple-mobile-web-app-title" content="PianoVisual" />
+  <title>Piano Memory – PianoVisual</title>
+  <meta name="description"
+        content="Piano Memory is a desktop‑only pattern game: watch the glowing squares, replay the sequence and test your memory. No installation needed." />
+
+  <!-- Favicon identique au site principal -->
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml"      href="/favicon.svg">
+  <link rel="shortcut icon"                  href="/favicon.ico">
 
   <!-- Canonical & Open Graph -->
-  <link rel="canonical"        href="https://pianovisual.com/memorygame.html" />
-  <meta property="og:site_name" content="PianoVisual" />
-  <meta property="og:title"     content="PianoVisual – Memory Game" />
+  <link rel="canonical" href="https://pianovisual.com/memorygame.html">
+  <meta property="og:site_name"  content="PianoVisual">
+  <meta property="og:title"      content="Piano Memory – Pattern Game">
   <meta property="og:description"
-        content="Repeat the musical pattern, level‑up and sharpen your ear." />
-  <meta property="og:type"      content="website" />
-  <meta property="og:url"       content="https://pianovisual.com/memorygame.html" />
-  <meta property="og:image"     content="https://pianovisual.com/og‑memory.jpg" />
+        content="Repeat the piano pattern, build combos and test your musical memory. Desktop only.">
+  <meta property="og:type"       content="website">
+  <meta property="og:url"        content="https://pianovisual.com/memorygame.html">
+  <meta property="og:image"      content="https://pianovisual.com/og‑memory.jpg">
 
-  <!-- Google AdSense -->
+  <!-- AdSense -->
   <script async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1502213318168443"
           crossorigin="anonymous"></script>
   <script async
           src="https://fundingchoicesmessages.google.com/i/pub-1502213318168443?ers=1"></script>
 
-  <!-- Schema.org micro‑data (organisation inchangée) -->
+  <!-- Organisation Schema -->
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
@@ -52,28 +54,25 @@
   }
   </script>
 
-  <!-- Design minimal : plein écran sombre comme l’app principale -->
   <style>
-    html,body{margin:0;background:#111;color:#fff;font-family:system-ui, sans-serif;
-              height:100%;display:flex;flex-direction:column;overflow:hidden}
-    #root{flex:1;display:flex;justify-content:center;align-items:center}
-    .link-row{padding:0.75rem 1rem;text-align:center;font-size:0.85rem}
-    .link-row a{color:#aaa;text-decoration:none;margin:0 1rem}
+    html,body{margin:0;height:100%;background:#111;color:#fff;
+              font-family:system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+    #root{flex:1;display:flex;align-items:center;justify-content:center}
+    .link-row{padding:0.75rem;text-align:center;font-size:.85rem}
+    .link-row a{margin:0 1rem;color:#aaa;text-decoration:none}
     .link-row a:hover{text-decoration:underline}
   </style>
 </head>
 
 <body>
-  <!-- point de montage React/JSX -->
   <div id="root">loading…</div>
 
-  <!-- petit bandeau lien privacy / contact -->
   <div class="link-row">
-    <a href="/privacy.html">Privacy&nbsp;Policy</a>
+    <a href="/privacy.html">Privacy Policy</a>
     <a href="mailto:pianovisualmidi@gmail.com">Contact</a>
   </div>
 
-  <!-- Vite entry : build inclura /src/main-game.jsx -->
+  <!-- point d’entrée Vite / React du mini‑jeu -->
   <script type="module" src="/src/main-game.jsx"></script>
 </body>
 </html>
