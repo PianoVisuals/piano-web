@@ -330,7 +330,7 @@ export default function PianoMemory(){
         background:"#fff", color:"#111", border:"none", cursor:"pointer", boxShadow:"0 2px 4px rgba(0,0,0,0.45)", transition:"transform .18s" }}>↩ Menu</button>
       <TimerBar />
       {renderPadGrid()}
-      <div style={{...hud, marginTop: isPhone ? (lanes>8?40:32) : 24}}>
+      <div style={{...hud, marginTop: isPhone ? (lanes>8?60:40) : 24}}>
         <p style={{margin:4}}>Lives : {"♥︎".repeat(lives)}</p>
         <p style={{margin:4}}>Score : {score}</p>
         <p style={{margin:4,opacity:.65,height:24}}>{phase==="input"?"Repeat!":phase==="show"?"Listen…":""}</p>
