@@ -1299,23 +1299,21 @@ const labelByMidi = useMemo(() => {
   
 
   .side-nav {
-    display: flex;
-    flex-direction: column;
-    /* … tes autres règles … */
+    padding-bottom: env(safe-area-inset-bottom, 1.5rem);
   }
   
-  .side-nav ul {
-    flex: 1;            /* prend tout l’espace restant */
-  }
-  
-  /* Footer collé en bas */
+  /* 2) Footer collant juste au-dessus du bas de .side-nav */
   .sidebar-footer {
-    padding-top: 1rem;
-    border-top: 1px solid #333;
-    text-align: center;
+    position: sticky;
+    bottom: env(safe-area-inset-bottom, 1rem);
+    margin-top: auto;
+    padding: 0.5rem 0;
+    background: inherit;       /* hérite de l’arrière‑plan de .side-nav */
   }
   
+  /* Style du lien */
   .sidebar-footer a {
+    display: inline-block;
     color: #bbb;
     font-size: 0.9rem;
     text-decoration: none;
