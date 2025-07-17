@@ -61,28 +61,29 @@ export default function RhythmGame() {
   const settings = DIFFICULTIES[diff];
 
   useEffect(() => {
-    Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
-    audioSampler.current = new Tone.Sampler({
-      urls: NOTE_SOUNDS,
-      baseUrl: SOUNDFONT + "acoustic_grand_piano-mp3/",
-      release: 1,
-      volume: 0
-    }).toDestination();
-    damageFx.current = new Tone.MembraneSynth({ volume: -6 }).toDestination();
-  }, []);
-
-  // Spawn background notes when in menu
-  useEffect(() => {
-    if (phase === 'menu') {
-      // spawn slower than Easy frequency
-      const interval = settings.interval * 2;
+    let intervalMs = settings.interval * 2;
+    const startBg = () => {
       bgTimer.current = setInterval(() => {
         const cols = window.innerWidth <= 600 ? 6 : 10;
         const lane = Math.floor(Math.random() * cols);
         setBgNotes(arr => [...arr, { id: bgId.current++, lane, cols }]);
-      }, interval);
+      }, intervalMs);
+    };
+    const stopBg = () => clearInterval(bgTimer.current);
+
+    if (phase === 'menu') {
+      startBg();
+      const handleVisibility = () => {
+        if (document.hidden) stopBg(); else startBg();
+      };
+      document.addEventListener('visibilitychange', handleVisibility);
+      return () => {
+        stopBg();
+        document.removeEventListener('visibilitychange', handleVisibility);
+      };
     }
-    return () => clearInterval(bgTimer.current);
+    // cleanup if phase changes
+    return () => stopBg();
   }, [phase]);
 
   const startGame = async () => {
