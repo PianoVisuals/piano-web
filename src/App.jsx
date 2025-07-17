@@ -1446,16 +1446,17 @@ const labelByMidi = useMemo(() => {
     </details>
 
 
-
-    <a
-      href="https://ko-fi.com/pianovisual"
-      target="_blank"
-      rel="noopener"
-      className="kofi-link"
-      title="Support me on Ko-fi"
-    >
-      <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
-    </a>
+    <div className="toolbar-item">
+      <a
+        href="https://ko-fi.com/pianovisual"
+        target="_blank"
+        rel="noopener"
+        className="kofi-link"
+        title="Support me on Ko-fi"
+      >
+        <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
+      </a>
+    </div>
 
     <a
       href="https://ko-fi.com/pianovisual"
