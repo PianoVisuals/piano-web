@@ -61,7 +61,6 @@ export default function RhythmGame() {
   const menuInterval = DIFFICULTIES.Easy.interval * 2; // less frequent than easy
 
   useEffect(() => {
-    // Audio sampler init
     Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
     audioSampler.current = new Tone.Sampler({
       urls: NOTE_SOUNDS,
@@ -75,13 +74,12 @@ export default function RhythmGame() {
   // Handle menu background animation
   useEffect(() => {
     if (phase === "menu") {
-      // clear any existing
       clearInterval(spawnMenuTimer.current);
       const isMobile = window.innerWidth < 768;
       const columns = isMobile ? 6 : 10;
       spawnMenuTimer.current = setInterval(() => {
         const lane = Math.floor(Math.random() * columns);
-        setMenuNotes(arr => [...arr, { id: nextId.current++, lane, cols: columns, t0: Date.now() }]);
+        setMenuNotes(arr => [...arr, { id: nextId.current++, lane, cols: columns }]);
       }, menuInterval);
     } else {
       clearInterval(spawnMenuTimer.current);
@@ -163,14 +161,20 @@ export default function RhythmGame() {
     if (phase !== "play") clearInterval(spawnTimer.current);
   }, [phase]);
 
-  // Download score omitted for brevity...
-
   if (phase === "menu") return (
     <Screen>
       {/* Background falling notes */}
-      <div style={menuBackgroundStyle}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#111', zIndex: 1 }}>
         {menuNotes.map(n => (
-          <div key={n.id} style={menuNoteStyle(n)} />
+          <div key={n.id} style={{
+            position: 'absolute',
+            left: `${(n.lane / n.cols) * 100}%`,
+            width: `${100 / n.cols}%`,
+            height: '15%',
+            background: colorAt(n.lane),
+            opacity: 0.5,
+            animation: `fall ${menuSpeed}ms linear infinite`
+          }} />
         ))}
       </div>
       <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh', zIndex: 2 }}>Piano Rhythm</h2>
@@ -200,18 +204,30 @@ export default function RhythmGame() {
       <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
       <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
       {comboEffects.map(fe => (
-        <div key={fe.id} style={{ ...comboEffectStyle, left: fe.x, top: fe.y }}>{fe.text}</div>
+        <div key={fe.id} style={{ position: 'absolute', left: fe.x, top: fe.y, pointerEvents: 'none', fontSize: '2rem', fontWeight: 'bold', color: '#ffeaa7', animation: 'fadeUp 1s ease-out forwards' }}>
+          {fe.text}
+        </div>
       ))}
-      <div style={laneContainer}>{notes.map(note => (
-        <div key={note.id} onMouseDown={e => onHit(note, e)} onAnimationEnd={() => onMissNote(note)} style={noteStyle(note, settings.lanes, settings.speed)} />
-      ))}</div>
+      <div style={laneContainer}>
+        {notes.map(note => (
+          <div key={note.id} onMouseDown={e => onHit(note, e)} onAnimationEnd={() => onMissNote(note)} style={noteStyle(note, settings.lanes, settings.speed)} />
+        ))}
+      </div>
       <div style={hud}>Score: {score} — Combo: {combo}</div>
     </div>
   );
 }
 
-// Styles and helper functions
-const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{children}</div>;
+function CentralHPBar({ hp, maxHp, flash }) {
+  const pct = Math.max(0, hp / maxHp);
+  return (
+    <div style={centralHpContainer}>
+      <div style={{ ...centralHpBar, transform: `scaleX(${pct})`, background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff', boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)' }} />
+    </div>
+  );
+}
+
+const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'centrem justifyContent: 'center', textAlign: 'center' }}>{children}</div>;
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
