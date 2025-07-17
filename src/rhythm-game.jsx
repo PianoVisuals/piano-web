@@ -196,7 +196,7 @@ export default function RhythmGame() {
         {bgNotes.map(note => (
           <div key={note.id} style={{
             position: 'absolute',
-            top: '0',
+            top: '-10%',
             left: `${(note.lane / note.cols) * 100}%`,
             width: `${100 / note.cols}%`,
             height: '8%',
@@ -245,7 +245,7 @@ export default function RhythmGame() {
       </div>
       <div style={hud}>Score: {score} — Combo: {combo}</div>
       <style>{`
-        @keyframes fall { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } } to { transform: translateY(100vh); } }
+        @keyframes fall { from { top: -10%; } to { top: 100%; } } to { transform: translateY(100vh); } }
         @keyframes fadeUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
       `}</style>
     </div>
