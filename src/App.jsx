@@ -1299,36 +1299,43 @@ const labelByMidi = useMemo(() => {
   
 
 
-  .side-nav-footer {
-    margin-top: auto;      /* pousse le footer en bas */
+
+  /* 1) Assure-toi que la sidebar est un flex vertical plein écran */
+  .side-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding-top: 1rem;
+    height: 100vh;           /* occupe toute la hauteur */
+    padding-bottom: 1rem;    /* espace sous le footer */
+    overflow-y: auto;        /* scroll si le contenu dépasse */
+  }
+  
+  /* 2) Rends le footer “collant” en bas de son conteneur flex */
+  .side-nav-footer {
+    margin-top: auto;        /* pousse vers le bas */
+    position: sticky;
+    bottom: 0;               /* reste collé au bas de .side-nav */
+    background: #1a1a1a;     /* même fond que la sidebar */
+    padding: 1rem 1.2rem 0;   /* espace autour */
     border-top: 1px solid rgba(255,255,255,0.2);
   }
-
-  .side-nav-footer button,
-  .side-nav-footer a {
-    background: none;
-    border: none;
-    color: #ddd;
-    text-align: left;
-    padding: 0;
+  
+  /* 3) Ajuste la taille et l’espacement des liens */
+  .side-nav-footer a,
+  .side-nav-footer button {
     font-size: 0.80rem;
-    cursor: pointer;
-  }
-
-  .side-nav-footer button:hover,
-  .side-nav-footer a:hover {
+    padding: 0.25rem 0;
+    text-decoration: none;
+    color: #ddd;
+    }
+  .side-nav-footer a:hover,
+  .side-nav-footer button:hover {
     color: #fff;
     text-decoration: underline;
   }
-
-
-
-
-
+  
+  
+  
+  
   
 `}</style>
 
@@ -1356,6 +1363,9 @@ const labelByMidi = useMemo(() => {
       {/* Liens Privacy et Contact */}
       <a href={privacyHref} target="_blank" rel="noopener">
         {privacyText}
+      </a>
+      <a href={contactHref}>
+        Contact : pianovisualmidi@gmail.com
       </a>
     </div>
 
