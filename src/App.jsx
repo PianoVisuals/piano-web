@@ -1352,17 +1352,13 @@ const labelByMidi = useMemo(() => {
     </ul>
 
     <div className="side-nav-footer">
-      {/* Ouvre le panneau "About" */}
-      <button onClick={() => aboutRef.current?.setAttribute('open', '')}>
-        {title}
-      </button>
-  
+
       {/* Liens Privacy et Contact */}
       <a href={privacyHref} target="_blank" rel="noopener">
         {privacyText}
       </a>
       <a href={contactHref}>
-        {contactText}
+        {contactText} : {contactHref.replace('mailto:', '')}
       </a>
     </div>
 
