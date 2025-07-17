@@ -191,6 +191,9 @@ export default function RhythmGame() {
 
   if (phase === "menu") return (
     <Screen>
+      <style>{`  
+        @keyframes fall { from { top: -10%; } to { top: 100%; } }  
+      `}</style>
       {/* Background falling notes */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         {bgNotes.map(note => (
