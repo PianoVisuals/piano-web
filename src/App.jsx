@@ -1300,33 +1300,34 @@ const labelByMidi = useMemo(() => {
 
 
 
-  /* 1) Assure-toi que la sidebar est un flex vertical plein écran */
+  /* 1) Sidebar en flex vertical plein écran */
   .side-nav {
     display: flex;
     flex-direction: column;
-    height: 100vh;           /* occupe toute la hauteur */
-    padding-bottom: 1rem;    /* espace sous le footer */
-    overflow-y: auto;        /* scroll si le contenu dépasse */
+    height: 100vh;        /* occupe tout l’écran */
+    overflow-y: auto;     /* scroll si nécessaire */
+    position: relative;   /* context for sticky */
   }
   
+  /* 2) Footer collé en bas et empilé */
   .side-nav-footer {
-    /* garde le sticky/footer collé en bas */
+    margin-top: auto;        /* pousse en bas */
     position: sticky;
-    bottom: 0;
-    background: #1a1a1a;
-    padding: 1rem 1.2rem 0;
+    bottom: 0;               /* reste collé en bas lors du scroll */
+    background: #1a1a1a;     /* même couleur que sidebar */
+    padding: 1rem 1.2rem 0;   /* espace interne */
     border-top: 1px solid rgba(255,255,255,0.2);
   
-    /* empile les éléments verticalement */
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;    /* espace entre chaque lien */
+    flex-direction: column;  /* empile verticalement */
+    gap: 0.25rem;            /* espacement entre lignes */
   }
-  
+
+  /* 3) Chaque lien sur sa propre ligne */
   .side-nav-footer a,
   .side-nav-footer button {
-    display: block;  /* chaque lien sur sa propre ligne */
-    font-size: 0.80rem;
+    display: block;          /* force un retour à la ligne */
+    font-size: 0.70rem;
     color: #ddd;
     text-decoration: none;
   }
