@@ -1303,8 +1303,8 @@ const labelByMidi = useMemo(() => {
     margin-top: auto;      /* pousse le footer en bas */
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    padding-top: 0.4rem;
+    gap: 0.5rem;
+    padding-top: 1rem;
     border-top: 1px solid rgba(255,255,255,0.2);
   }
 
@@ -1356,9 +1356,6 @@ const labelByMidi = useMemo(() => {
       {/* Liens Privacy et Contact */}
       <a href={privacyHref} target="_blank" rel="noopener">
         {privacyText}
-      </a>
-      <a href={contactHref}>
-        Contact : pianovisualmidi@gmail.com
       </a>
     </div>
 
