@@ -45,7 +45,6 @@ export default function RhythmGame() {
   const [notes, setNotes] = useState([]);
   const [hp, setHp] = useState(MAX_HP);
   const [flashRed, setFlashRed] = useState(false);
-  // Nouvel état pour gérer plusieurs effets de combo
   const [comboEffects, setComboEffects] = useState([]);
 
   const nextId = useRef(0);
@@ -134,29 +133,21 @@ export default function RhythmGame() {
     const NOTE_KEYS = Object.keys(NOTE_SOUNDS);
     const key = NOTE_KEYS[note.lane % NOTE_KEYS.length];
     audioSampler.current.triggerAttackRelease(key, "8n");
-    // Calcul du combo et bonus de points
     setCombo(c => {
       const newCombo = c + 1;
       setMaxCombo(m => Math.max(m, newCombo));
       const points = settings.multiplier * newCombo;
       setScore(s => s + points);
-      // Créer un nouvel effet visuel avec durée fixe
       const effectId = Date.now() + Math.random();
-      setComboEffects(arr => [
-        ...arr,
-        { id: effectId, text: `+${points}`, x: e.clientX, y: e.clientY }
-      ]);
-      // Nettoyer l'effet après 1s
-      setTimeout(() => {
-        setComboEffects(arr => arr.filter(fe => fe.id !== effectId));
-      }, 1000);
+      setComboEffects(arr => [...arr, { id: effectId, text: `+${points}`, x: e.clientX, y: e.clientY }]);
+      setTimeout(() => setComboEffects(arr => arr.filter(fe => fe.id !== effectId)), 1000);
       return newCombo;
     });
     setHp(h => Math.min(settings.hp, h + HEAL_PER_HIT));
     setNotes(n => n.filter(x => x.id !== note.id));
   };
 
-  const onMissNote = (note) => {
+  const onMissNote = note => {
     setNotes(n => n.filter(x => x.id !== note.id));
     flashDamage();
     setHp(h => {
@@ -177,67 +168,44 @@ export default function RhythmGame() {
     setCombo(0);
   };
 
-  useEffect(() => {
-    if (phase !== "play") clearInterval(spawnTimer.current);
-  }, [phase]);
+  useEffect(() => { if (phase !== "play") clearInterval(spawnTimer.current); }, [phase]);
 
-  if (phase === "menu") {
-    return (
-      <Screen>
-        <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh' }}>Piano Rhythm</h2>
-        <label>Difficulty:
-          <select value={diff} onChange={e => setDiff(e.target.value)}>
-            {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
-          </select>
-        </label>
-        <button style={btn} onClick={startGame}>START</button>
-        <button onClick={() => window.location.href='https://pianovisual.com'} style={backBtn}>
-          ↩ PianoVisual
-        </button>
-        <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" title="Support me on Ko‑fi" className="kofi-mobile-button"></a>
-      </Screen>
-    );
-  }
+  if (phase === "menu") return (
+    <Screen>
+      <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh' }}>Piano Rhythm</h2>
+      <label>Difficulty:
+        <select value={diff} onChange={e => setDiff(e.target.value)}>
+          {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
+        </select>
+      </label>
+      <button style={btn} onClick={startGame}>START</button>
+      <button onClick={() => window.location.href='https://pianovisual.com'} style={backBtn}>↩ PianoVisual</button>
+      <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button" title="Support me on Ko‑fi"></a>
+    </Screen>
+  );
 
-  if (phase === "over") {
-    return (
-      <Screen>
-        <h2>Game Over</h2>
-        <p>Your score: {score}</p>
-        <p>Max combo: {maxCombo}</p>
-        <button style={btn} onClick={downloadScore}>Download Score</button>
-        <button style={btn} onClick={() => setPhase("menu")}>Menu</button>
-      </Screen>
-    );
-  }
+  if (phase === "over") return (
+    <Screen>
+      <h2>Game Over</h2>
+      <p>Your score: {score}</p>
+      <p>Max combo: {maxCombo}</p>
+      <button style={btn} onClick={downloadScore}>Download Score</button>
+      <button style={btn} onClick={() => setPhase("menu")}>Menu</button>
+    </Screen>
+  );
 
   return (
-    <div style={gameWrapper} onMouseDown={onWrongClick}>\
-n      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>\
-n      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
-      {/* Affichage des effets visuels de combo multiples */}
+    <div style={gameWrapper} onMouseDown={onWrongClick}>
+      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
+      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
       {comboEffects.map(fe => (
-        <div key={fe.id} style={{
-          position: 'absolute',
-          left: fe.x,
-          top: fe.y,
-          pointerEvents: 'none',
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          color: '#ffeaa7',
-          animation: 'fadeUp 1s ease-out'
-        }}>
+        <div key={fe.id} style={{ position: 'absolute', left: fe.x, top: fe.y, pointerEvents: 'none', fontSize: '2rem', fontWeight: 'bold', color: '#ffeaa7', animation: 'fadeUp 1s ease-out' }}>
           {fe.text}
         </div>
       ))}
       <div style={laneContainer}>
         {notes.map(note => (
-          <div
-            key={note.id}
-            onMouseDown={(e) => onHit(note, e)}
-            onAnimationEnd={() => onMissNote(note)}
-            style={noteStyle(note, settings.lanes, settings.speed)}
-          />
+          <div key={note.id} onMouseDown={e => onHit(note, e)} onAnimationEnd={() => onMissNote(note)} style={noteStyle(note, settings.lanes, settings.speed)} />
         ))}
       </div>
       <div style={hud}>Score: {score} — Combo: {combo}</div>
@@ -253,45 +221,17 @@ function CentralHPBar({ hp, maxHp, flash }) {
   const pct = Math.max(0, hp / maxHp);
   return (
     <div style={centralHpContainer}>
-      <div
-        style={{
-          ...centralHpBar,
-          transform: `scaleX(${pct})`,
-          background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff',
-          boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)'
-        }}
-      />
+      <div style={{ ...centralHpBar, transform: `scaleX(${pct})`, background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff', boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)' }} />
     </div>
   );
 }
 
-const Screen = ({ children }) => (
-  <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-    {children}
-  </div>
-);
+const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{children}</div>;
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
-const laneContainer = {
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  left: '50px',
-  right: '50px',
-  display: 'block'
-};
+const laneContainer = { position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px' };
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
-const noteStyle = (note, totalLanes, fallDuration) => ({
-  position: 'absolute',
-  left: `${(note.lane / totalLanes) * 100}%`,
-  width: `${100 / totalLanes}%`,
-  height: '10%',
-  background: colorAt(note.lane),
-  borderRadius: 4,
-  boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`,
-  pointerEvents: 'auto',
-  animation: `fall ${fallDuration}ms linear forwards`
-});
+const noteStyle = (note, totalLanes, fallDuration) => ({ position: 'absolute', left: `${(note.lane / totalLanes) * 100}%`, width: `${100 / totalLanes}%`, height: '10%', background: colorAt(note.lane), borderRadius: 4, boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`, pointerEvents: 'auto', animation: `fall ${fallDuration}ms linear forwards` });
