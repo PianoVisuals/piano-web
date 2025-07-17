@@ -1366,7 +1366,7 @@ const labelByMidi = useMemo(() => {
         {privacyText}
       </a>
       <a href={contactHref}>
-        Contact : pianovisualmidi@gmail.com
+        pianovisualmidi@gmail.com
       </a>
     </div>
 
