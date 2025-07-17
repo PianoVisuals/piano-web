@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
 
-// Meta viewport
+// Meta viewport for mobile
 if (typeof document !== 'undefined' && !document.querySelector('meta[name=viewport]')) {
   const meta = document.createElement('meta');
   meta.name = 'viewport';
@@ -17,6 +17,19 @@ if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
   kofiStyle.id = 'kofi-style';
   kofiStyle.innerHTML = `.kofi-mobile-button{position:fixed;bottom:0.5rem;right:1rem;width:100px;height:100px;background:url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') center center/contain no-repeat;opacity:0.7;transition:opacity .2s;z-index:1000;} .kofi-mobile-button:hover{opacity:1;}`;
   document.head.appendChild(kofiStyle);
+}
+
+// Fall animation style for notes
+if (typeof document !== 'undefined' && !document.getElementById('fall-style')) {
+  const fallStyle = document.createElement('style');
+  fallStyle.id = 'fall-style';
+  fallStyle.innerHTML = `
+    @keyframes fall {
+      0% { transform: translateY(0%); }
+      100% { transform: translateY(100vh); }
+    }
+  `;
+  document.head.appendChild(fallStyle);
 }
 
 // Pulse effect style
@@ -220,7 +233,9 @@ export default function RhythmGame() {
         <p>Your score: {score}</p>
         <p>Max combo: {maxCombo}</p>
         <button style={btn} onClick={downloadScore}>Download Score</button>
-        <button style={btn} onClick={() => setPhase("menu")}>Menu</button>
+        <button style={btn} onClick={() => setPhase("menu")}>
+          Menu
+        </button>
       </Screen>
     );
   }
@@ -265,28 +280,12 @@ const Screen = ({ children }) => (
     {children}
   </div>
 );
+
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
-const laneContainer = {
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  left: '50px',
-  right: '50px',
-  display: 'block'
-};
+const laneContainer = { position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px', display: 'block' };
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
-const noteStyle = (note, totalLanes, fallDuration) => ({
-  position: 'absolute',
-  left: `${(note.lane / totalLanes) * 100}%`,
-  width: `${100 / totalLanes}%`,
-  height: '10%',
-  background: colorAt(note.lane),
-  borderRadius: 4,
-  boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`,
-  pointerEvents: 'auto',
-  animation: `fall ${fallDuration}ms linear forwards`
-});
+const noteStyle = (note, totalLanes, fallDuration) => ({ position: 'absolute', left: `${(note.lane / totalLanes) * 100}%`, width: `${100 / totalLanes}%`, height: '10%', background: colorAt(note.lane), borderRadius: 4, boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`, pointerEvents: 'auto', animation: `fall ${fallDuration}ms linear forwards` });
