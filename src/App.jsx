@@ -260,6 +260,22 @@ const texts = {
 };
 
 
+const footerLinks = {
+  en: {
+    privacyText: 'Privacy Policy',
+    privacyHref: '/privacy.html',
+    contactText: 'Contact',
+    contactHref: 'mailto:pianovisualmidi@gmail.com'
+  },
+  fr: {
+    privacyText: 'Politique de confidentialité',
+    privacyHref: '/privacy-fr.html',
+    contactText: 'Contact :',
+    contactHref: 'mailto:pianovisualmidi@gmail.com'
+  }
+};
+
+
 
 /**
  * Charge un fichier MIDI de la bibliothèque et le joue
@@ -1298,45 +1314,31 @@ const labelByMidi = useMemo(() => {
   
   
 
-
-
-  /* 1) Assure-toi que la sidebar est un flex vertical plein écran */
   .side-nav {
     display: flex;
     flex-direction: column;
-    height: 100vh;           /* occupe toute la hauteur */
-    padding-bottom: 2rem;    /* espace sous le footer */
-    overflow-y: auto;        /* scroll si le contenu dépasse */
+    justify-content: space-between; /* espace entre le ul et le footer */
   }
   
-  /* 2) Rends le footer “collant” en bas de son conteneur flex */
   .side-nav-footer {
-    margin-top: auto;        /* pousse vers le bas */
-    position: sticky;
-    bottom: 0;               /* reste collé au bas de .side-nav */
-    background: #1a1a1a;     /* même fond que la sidebar */
-    padding: 1rem 1.2rem 0;   /* espace autour */
-    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 1rem;
+    border-top: 1px solid #444;
+    font-size: 0.9rem;
+    color: #ccc;
   }
   
-  /* 3) Ajuste la taille et l’espacement des liens */
-  .side-nav-footer a,
-  .side-nav-footer button {
-    display: block;  /* chaque lien sur sa propre ligne */
-    font-size: 0.70rem;
-    padding: 0.25rem 0;
+  .side-nav-footer a {
+    color: inherit;
     text-decoration: none;
-    color: #ddd;
-    }
-  .side-nav-footer a:hover,
-  .side-nav-footer button:hover {
-    color: #fff;
+  }
+  .side-nav-footer a:hover {
     text-decoration: underline;
   }
-  
-  
-  
-  
+
+
+
+
+
   
 `}</style>
 
@@ -1360,16 +1362,13 @@ const labelByMidi = useMemo(() => {
     </ul>
 
     <div className="side-nav-footer">
-  
-      {/* Liens Privacy et Contact */}
-      <a href={privacyHref} target="_blank" rel="noopener">
-        {privacyText}
+      <a href={footerLinks[userLang].privacyHref}>
+        {footerLinks[userLang].privacyText}
       </a>
-      <a href={contactHref}>
-        pianovisualmidi@gmail.com
+      <a href={footerLinks[userLang].contactHref} style={{ marginLeft: '1rem' }}>
+        {footerLinks[userLang].contactText}
       </a>
     </div>
-
 
   </nav>
 
