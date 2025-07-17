@@ -1298,10 +1298,36 @@ const labelByMidi = useMemo(() => {
   
   
 
-
-
-
-
+  .side-nav {
+    display: flex;
+    flex-direction: column;
+    /* … tes autres règles … */
+  }
+  
+  .side-nav ul {
+    flex: 1;            /* prend tout l’espace restant */
+  }
+  
+  /* Footer collé en bas */
+  .sidebar-footer {
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+    text-align: center;
+  }
+  
+  .sidebar-footer a {
+    color: #bbb;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+  
+  .sidebar-footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+  
+  
+  
 
 
   
@@ -1326,8 +1352,22 @@ const labelByMidi = useMemo(() => {
       <li><span className="soon">More Coming Soon…</span></li>
     </ul>
 
-
-
+    <div className="sidebar-footer">
+      <a
+        href={
+          navigator.language && navigator.language.startsWith("fr")
+            ? "/privacy-fr.html"
+            : "/privacy.html"
+        }
+        target="_blank"
+        rel="noopener"
+      >
+        {navigator.language && navigator.language.startsWith("fr")
+          ? "Politique de confidentialité"
+          : "Privacy Policy"}
+      </a>
+    </div>
+  
   </nav>
 
 
