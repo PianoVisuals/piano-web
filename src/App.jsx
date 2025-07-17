@@ -1312,6 +1312,7 @@ const labelByMidi = useMemo(() => {
   <nav className={`side-nav ${navOpen ? "show" : ""}`}>
     <h3>Mini‑games</h3>
     <ul>
+      <li><a href="/pianorhythm">🎹 Piano Rhythm</a></li>
       <li><a href="/pianomemory">🟥 Piano Memory</a></li>
       <li><span className="soon">More Coming Soon…</span></li>
     </ul>
