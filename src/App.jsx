@@ -1303,8 +1303,8 @@ const labelByMidi = useMemo(() => {
     margin-top: auto;      /* pousse le footer en bas */
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding-top: 2rem;
+    gap: 0.4rem;
+    padding-top: 0.4rem;
     border-top: 1px solid rgba(255,255,255,0.2);
   }
 
