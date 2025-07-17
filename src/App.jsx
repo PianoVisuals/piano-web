@@ -1305,7 +1305,7 @@ const labelByMidi = useMemo(() => {
     display: flex;
     flex-direction: column;
     height: 100vh;           /* occupe toute la hauteur */
-    padding-bottom: 1rem;    /* espace sous le footer */
+    padding-bottom: 2rem;    /* espace sous le footer */
     overflow-y: auto;        /* scroll si le contenu dépasse */
   }
   
@@ -1323,7 +1323,7 @@ const labelByMidi = useMemo(() => {
   .side-nav-footer a,
   .side-nav-footer button {
     display: block;  /* chaque lien sur sa propre ligne */
-    font-size: 0.80rem;
+    font-size: 0.70rem;
     padding: 0.25rem 0;
     text-decoration: none;
     color: #ddd;
