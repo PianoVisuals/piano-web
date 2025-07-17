@@ -1170,11 +1170,11 @@ const labelByMidi = useMemo(() => {
 
   
   .kofi-link {
-    position: absolute;
-    top: 55%;
-    right: 5rem;           /* ajuster la marge à droite */
+    position: static !important;
+    margin-left: auto;
+
     transform: translateY(-50%);
-    display: inline-block;
+
     opacity: 0.7;
     transition: opacity 0.2s;
   }
