@@ -61,32 +61,44 @@ export default function RhythmGame() {
   const settings = DIFFICULTIES[diff];
 
   useEffect(() => {
-    let intervalId;
-    const spawnBg = () => {
-      const cols = window.innerWidth <= 600 ? 6 : 10;
-      const lane = Math.floor(Math.random() * cols);
-      setBgNotes(arr => [...arr, { id: bgId.current++, lane, cols }]);
+    Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
+    audioSampler.current = new Tone.Sampler({
+      urls: NOTE_SOUNDS,
+      baseUrl: SOUNDFONT + "acoustic_grand_piano-mp3/",
+      release: 1,
+      volume: 0
+    }).toDestination();
+    damageFx.current = new Tone.MembraneSynth({ volume: -6 }).toDestination();
+  }, []);
+
+  // Spawn background notes when in menu
+  useEffect(() => {
+    let visibilityHandler = null;
+    const startBg = () => {
+      const intervalTime = settings.interval * 2;
+      bgTimer.current = setInterval(() => {
+        const cols = window.innerWidth <= 600 ? 6 : 10;
+        const lane = Math.floor(Math.random() * cols);
+        setBgNotes(arr => [...arr, { id: bgId.current++, lane, cols }]);
+      }, intervalTime);
+    };
+    const stopBg = () => {
+      clearInterval(bgTimer.current);
+      setBgNotes([]);
     };
     if (phase === 'menu') {
-      const interval = settings.interval * 2;
-      intervalId = setInterval(spawnBg, interval);
-      bgTimer.current = intervalId;
+      startBg();
+      visibilityHandler = () => {
+        if (document.hidden) stopBg();
+        else startBg();
+      };
+      document.addEventListener('visibilitychange', visibilityHandler);
     }
-    const handleVisibility = () => {
-      if (document.hidden) {
-        clearInterval(bgTimer.current);
-      } else if (phase === 'menu') {
-        const interval = settings.interval * 2;
-        bgTimer.current = setInterval(spawnBg, interval);
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      clearInterval(bgTimer.current);
-      document.removeEventListener('visibilitychange', handleVisibility);
+      stopBg();
+      if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
     };
-  }, [phase]);
-  }, [phase]);
+  }, [phase, settings.interval]);
 
   const startGame = async () => {
     await Tone.start();
@@ -198,7 +210,7 @@ export default function RhythmGame() {
         @keyframes fall { from { top: -10%; } to { top: 100%; } }  
       `}</style>
       {/* Background falling notes */}
-      <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, padding: '0 50px', overflow: 'visible', zIndex: 0 }}>
+      <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px', overflow: 'visible', zIndex: 0 }}>
         {bgNotes.map(note => (
           <div key={note.id} style={{
             position: 'absolute',
