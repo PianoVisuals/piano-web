@@ -244,9 +244,9 @@ export default function RhythmGame() {
         ))}
       </div>
       <div style={hud}>Score: {score} — Combo: {combo}</div>
-      <style>{`
-        @keyframes fall { from { top: -10%; } to { top: 100%; } } to { transform: translateY(100vh); } }
-        @keyframes fadeUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
+      <style>{`  
+        @keyframes fall { from { top: -10%; } to { top: 100%; } }  
+        @keyframes fadeUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }  
       `}</style>
     </div>
   );
