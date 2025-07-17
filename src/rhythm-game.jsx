@@ -45,9 +45,8 @@ export default function RhythmGame() {
   const [notes, setNotes] = useState([]);
   const [hp, setHp] = useState(MAX_HP);
   const [flashRed, setFlashRed] = useState(false);
-  // Nouvelle logique d'effet visuel de combo
-  const [comboEffect, setComboEffect] = useState(null);
-  const [effectStyle, setEffectStyle] = useState({ x: 0, y: 0 });
+  // Nouvel état pour gérer plusieurs effets de combo
+  const [comboEffects, setComboEffects] = useState([]);
 
   const nextId = useRef(0);
   const spawnTimer = useRef(null);
@@ -77,6 +76,7 @@ export default function RhythmGame() {
     setMaxCombo(0);
     setNotes([]);
     setFlashRed(false);
+    setComboEffects([]);
     setPhase("play");
     startTimeRef.current = Date.now();
     spawnTimer.current = setInterval(() => {
@@ -138,13 +138,18 @@ export default function RhythmGame() {
     setCombo(c => {
       const newCombo = c + 1;
       setMaxCombo(m => Math.max(m, newCombo));
-      // Score en fonction du combo en chaîne
       const points = settings.multiplier * newCombo;
       setScore(s => s + points);
-      // Effet visuel du combo
-      setComboEffect(`+${points}`);
-      setEffectStyle({ x: e.clientX, y: e.clientY });
-      setTimeout(() => setComboEffect(null), 500);
+      // Créer un nouvel effet visuel avec durée fixe
+      const effectId = Date.now() + Math.random();
+      setComboEffects(arr => [
+        ...arr,
+        { id: effectId, text: `+${points}`, x: e.clientX, y: e.clientY }
+      ]);
+      // Nettoyer l'effet après 1s
+      setTimeout(() => {
+        setComboEffects(arr => arr.filter(fe => fe.id !== effectId));
+      }, 1000);
       return newCombo;
     });
     setHp(h => Math.min(settings.hp, h + HEAL_PER_HIT));
@@ -207,22 +212,24 @@ export default function RhythmGame() {
   }
 
   return (
-    <div style={gameWrapper} onMouseDown={onWrongClick}>
-      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
-      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
-      {/* Affichage de l'effet visuel du combo */}
-      {comboEffect && (
-        <div style={{
+    <div style={gameWrapper} onMouseDown={onWrongClick}>\
+n      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>\
+n      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
+      {/* Affichage des effets visuels de combo multiples */}
+      {comboEffects.map(fe => (
+        <div key={fe.id} style={{
           position: 'absolute',
-          left: effectStyle.x,
-          top: effectStyle.y,
+          left: fe.x,
+          top: fe.y,
           pointerEvents: 'none',
           fontSize: '2rem',
           fontWeight: 'bold',
           color: '#ffeaa7',
-          animation: 'fadeUp 0.5s ease-out'
-        }}> {comboEffect} </div>
-      )}
+          animation: 'fadeUp 1s ease-out'
+        }}>
+          {fe.text}
+        </div>
+      ))}
       <div style={laneContainer}>
         {notes.map(note => (
           <div
