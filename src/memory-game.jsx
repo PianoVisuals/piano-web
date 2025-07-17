@@ -84,7 +84,7 @@ export default function PianoMemory(){
   // Portrait detection on phone for menu grid
   const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
   // half columns in portrait mobile
-  const menuCols = isPhone && isPortrait ? Math.floor(BG_COLS / 2) : BG_COLS;
+  const menuCols = isPhone && isPortrait ? Math.max(1, Math.floor(BG_COLS / 2) - 2) : BG_COLS; // moitié moins 2 colonnes en portrait mobile
   // total squares in menu grid
   const totalBgMenu = menuCols * BG_ROWS;
   const totalBg = BG_COLS*BG_ROWS;
@@ -184,7 +184,8 @@ export default function PianoMemory(){
     if(phase!=="menu") return;
     let timeoutId;
     const cycle=()=>{
-      const idx = rand(totalBg);
+      const maxBg = totalBgMenu;
+      const idx = rand(maxBg);
       setBgActive(idx);
       setBgColor(colorAt(rand(20)));
       setTimeout(()=>setBgActive(-1),1500);
