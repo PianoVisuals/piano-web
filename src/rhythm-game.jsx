@@ -211,22 +211,6 @@ export default function RhythmGame() {
 }
 
 // Styles and helper functions
-const menuBackgroundStyle = {
-  position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 1, background: '#111'
-};
-const menuNoteStyle = ({ lane, cols }) => ({
-  position: 'absolute',
-  left: `${(lane / cols) * 100}%`,
-  width: `${100 / cols}%`,
-  height: '15%',
-  background: colorAt(lane),
-  opacity: 0.5,
-  animation: `fall ${menuSpeed}ms linear infinite`
-});
-const comboEffectStyle = {
-  position: 'absolute', pointerEvents: 'none', fontSize: '2rem', fontWeight: 'bold', color: '#ffeaa7', animation: 'fadeUp 1s ease-out forwards'
-};
-
 const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{children}</div>;
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
