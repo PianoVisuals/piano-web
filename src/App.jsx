@@ -1300,43 +1300,40 @@ const labelByMidi = useMemo(() => {
 
 
 
-  /* 1) Sidebar en flex vertical plein écran */
+  /* 1) Assure-toi que la sidebar est un flex vertical plein écran */
   .side-nav {
     display: flex;
     flex-direction: column;
-    height: 100vh;        /* occupe tout l’écran */
-    overflow-y: auto;     /* scroll si nécessaire */
-    position: relative;   /* context for sticky */
+    height: 100vh;           /* occupe toute la hauteur */
+    padding-bottom: 1rem;    /* espace sous le footer */
+    overflow-y: auto;        /* scroll si le contenu dépasse */
   }
   
-  /* 2) Footer collé en bas et empilé */
+  /* 2) Rends le footer “collant” en bas de son conteneur flex */
   .side-nav-footer {
-    margin-top: auto;        /* pousse en bas */
+    margin-top: auto;        /* pousse vers le bas */
     position: sticky;
-    bottom: 0;               /* reste collé en bas lors du scroll */
-    background: #1a1a1a;     /* même couleur que sidebar */
-    padding: 1rem 1.2rem 0;   /* espace interne */
+    bottom: 0;               /* reste collé au bas de .side-nav */
+    background: #1a1a1a;     /* même fond que la sidebar */
+    padding: 1rem 1.2rem 0;   /* espace autour */
     border-top: 1px solid rgba(255,255,255,0.2);
-  
-    display: flex;
-    flex-direction: column;  /* empile verticalement */
-    gap: 0.25rem;            /* espacement entre lignes */
   }
-
-  /* 3) Chaque lien sur sa propre ligne */
+  
+  /* 3) Ajuste la taille et l’espacement des liens */
   .side-nav-footer a,
   .side-nav-footer button {
-    display: block;          /* force un retour à la ligne */
-    font-size: 0.70rem;
-    color: #ddd;
+    display: block;  /* chaque lien sur sa propre ligne */
+    font-size: 0.80rem;
+    padding: 0.25rem 0;
     text-decoration: none;
-  }
-  
+    color: #ddd;
+    }
   .side-nav-footer a:hover,
   .side-nav-footer button:hover {
     color: #fff;
     text-decoration: underline;
   }
+  
   
   
   
