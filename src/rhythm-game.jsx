@@ -188,6 +188,23 @@ export default function RhythmGame() {
     if (phase !== "play") clearInterval(spawnTimer.current);
   }, [phase]);
 
+  // Fonction de style pour le conteneur des lanes, avec délimitation fine des colonnes
+  const laneContainerStyle = {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '50px',
+    right: '50px',
+    backgroundImage: `repeating-linear-gradient(
+      to right,
+      rgba(200,200,200,0.3),
+      rgba(200,200,200,0.3) 1px,
+      transparent 1px,
+      transparent ${100 / settings.lanes}%
+    )`,
+    backgroundSize: `${100 / settings.lanes}% 100%`
+  };
+
   if (phase === "menu") {
     return (
       <Screen>
@@ -222,7 +239,7 @@ export default function RhythmGame() {
     <div style={gameWrapper} onMouseDown={onWrongClick}>
       <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
       <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
-      <div style={laneContainer}>
+      <div style={laneContainerStyle}>
         {notes.map(note => (
           <div
             key={note.id}
@@ -264,14 +281,6 @@ const Screen = ({ children }) => (
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
-const laneContainer = {
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  left: '50px',   // espace à gauche
-  right: '50px',  // espace à droite
-  display: 'block'
-};
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
