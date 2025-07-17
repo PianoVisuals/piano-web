@@ -196,7 +196,7 @@ export default function RhythmGame() {
         @keyframes fall { from { top: -10%; } to { top: 100%; } }  
       `}</style>
       {/* Background falling notes */}
-      <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px', overflow: 'hidden', zIndex: 0 }}>
+      <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px', overflow: 'visible', zIndex: 0 }}>
         {bgNotes.map(note => (
           <div key={note.id} style={{
             position: 'absolute',
