@@ -271,7 +271,6 @@ const laneContainer = {
   padding: '0 20px',
   boxSizing: 'border-box',
   backgroundImage: 'linear-gradient(to right, #444 1px, transparent 1px)',
-  backgroundSize: `${100 / settings.lanes}% 100%`
 };
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
