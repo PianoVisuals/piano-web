@@ -268,9 +268,11 @@ const laneContainer = {
   position: 'absolute',
   top: 0,
   bottom: 0,
-  left: '20px',   // espace à gauche
-  right: '20px',  // espace à droite
-  display: 'block'
+  left: '50px',
+  right: '50px',
+  // repères gris toutes les (100/lanes)% de largeur
+  backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px)',
+  backgroundSize: `${100 / settings.lanes}% 100%`
 };
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
