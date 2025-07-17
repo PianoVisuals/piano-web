@@ -28,9 +28,9 @@ const DAMAGE = 20;
 const HEAL_PER_HIT = 2;
 const MAX_HP = 100;
 const DIFFICULTIES = {
-  Easy:    { lanes: 4, speed: 3000, interval: 800, hp: 100, multiplier: 1 },
-  Normal:  { lanes: 6, speed: 2500, interval: 650, hp: 100, multiplier: 2 },
-  Hard:    { lanes: 8, speed: 2000, interval: 500, hp: 100, multiplier: 4 },
+  Easy:    { lanes: 4, speed: 2400, interval: 650, hp: 100, multiplier: 1 },
+  Normal:  { lanes: 6, speed: 2000, interval: 500, hp: 100, multiplier: 2 },
+  Hard:    { lanes: 8, speed: 1500, interval: 400, hp: 100, multiplier: 4 },
   Harder:  { lanes: 10, speed: 1200, interval: 300, hp: 100, multiplier: 6 },
   Insane:  { lanes: 12, speed: 1200, interval: 300, hp: 100, multiplier: 8 }
 };
@@ -264,7 +264,15 @@ const Screen = ({ children }) => (
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
-const laneContainer = { position: 'relative', height: '100%', width: '100%', display: 'block' };
+const laneContainer = {
+  position: 'relative',
+  height: '100%',
+  width: '100%',
+  padding: '0 20px',
+  boxSizing: 'border-box',
+  backgroundImage: 'linear-gradient(to right, #444 1px, transparent 1px)',
+  backgroundSize: `${100 / settings.lanes}% 100%`
+};
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
