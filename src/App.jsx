@@ -260,22 +260,6 @@ const texts = {
 };
 
 
-const footerLinks = {
-  en: {
-    privacyText: 'Privacy Policy',
-    privacyHref: '/privacy.html',
-    contactText: 'Contact',
-    contactHref: 'mailto:pianovisualmidi@gmail.com'
-  },
-  fr: {
-    privacyText: 'Politique de confidentialité',
-    privacyHref: '/privacy-fr.html',
-    contactText: 'Contact :',
-    contactHref: 'mailto:pianovisualmidi@gmail.com'
-  }
-};
-
-
 
 /**
  * Charge un fichier MIDI de la bibliothèque et le joue
@@ -1314,26 +1298,7 @@ const labelByMidi = useMemo(() => {
   
   
 
-  .side-nav {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* espace entre le ul et le footer */
-  }
-  
-  .side-nav-footer {
-    padding-top: 1rem;
-    border-top: 1px solid #444;
-    font-size: 0.9rem;
-    color: #ccc;
-  }
-  
-  .side-nav-footer a {
-    color: inherit;
-    text-decoration: none;
-  }
-  .side-nav-footer a:hover {
-    text-decoration: underline;
-  }
+
 
 
 
@@ -1361,14 +1326,7 @@ const labelByMidi = useMemo(() => {
       <li><span className="soon">More Coming Soon…</span></li>
     </ul>
 
-    <div className="side-nav-footer">
-      <a href={footerLinks[userLang].privacyHref}>
-        {footerLinks[userLang].privacyText}
-      </a>
-      <a href={footerLinks[userLang].contactHref} style={{ marginLeft: '1rem' }}>
-        {footerLinks[userLang].contactText}
-      </a>
-    </div>
+
 
   </nav>
 
