@@ -1297,6 +1297,38 @@ const labelByMidi = useMemo(() => {
   
   
   
+
+
+  .side-nav-footer {
+    margin-top: auto;      /* pousse le footer en bas */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .side-nav-footer button,
+  .side-nav-footer a {
+    background: none;
+    border: none;
+    color: #ddd;
+    text-align: left;
+    padding: 0;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .side-nav-footer button:hover,
+  .side-nav-footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+
+
+
+
   
 `}</style>
 
@@ -1318,6 +1350,23 @@ const labelByMidi = useMemo(() => {
       <li><a href="/pianomemory">🟥 Piano Memory</a></li>
       <li><span className="soon">More Coming Soon…</span></li>
     </ul>
+
+    <div className="side-nav-footer">
+      {/* Ouvre le panneau "About" */}
+      <button onClick={() => aboutRef.current?.setAttribute('open', '')}>
+        {title}
+      </button>
+  
+      {/* Liens Privacy et Contact */}
+      <a href={privacyHref} target="_blank" rel="noopener">
+        {privacyText}
+      </a>
+      <a href={contactHref}>
+        {contactText}
+      </a>
+    </div>
+
+
   </nav>
 
 
