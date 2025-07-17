@@ -1315,7 +1315,7 @@ const labelByMidi = useMemo(() => {
     color: #ddd;
     text-align: left;
     padding: 0;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     cursor: pointer;
   }
 
