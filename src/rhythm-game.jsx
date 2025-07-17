@@ -243,7 +243,7 @@ export default function RhythmGame() {
         ))}
       </div>
       <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh', position: 'relative', zIndex: 1 }}>Piano Rhythm</h2>
-      <label style={{ position: 'relative', zIndex: 1 }}>Difficulty:
+      <label style={{ position: 'relative', zIndex: 1 }}>Difficulty : 
         <select value={diff} onChange={e => setDiff(e.target.value)}>
           {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
         </select>

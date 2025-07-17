@@ -399,7 +399,7 @@ export default function PianoMemory(){
       </button>
 
       <h2 style={{animation:"fadeIn .6s", fontSize:isPhone?"2.6rem":"4rem", marginTop:isPhone?"-10vh":"-20vh"}}>Piano Memory</h2>
-      <label style={{margin:"1rem 0"}}>Difficulty&nbsp;
+      <label style={{margin:"1rem 0"}}>Difficulty : &nbsp;
         <select value={diff} onChange={e=>setDiff(e.target.value)}>{Object.keys(PRESETS).map(d=><option key={d}>{d}</option>)}</select>
       </label>
       <button style={btn} onClick={start}>START</button>
