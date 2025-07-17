@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
-
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
@@ -1174,7 +1174,7 @@ const labelByMidi = useMemo(() => {
     margin-left: auto;
 
     transform: translateY(-50%);
-
+    height: 2.5rem;
     opacity: 0.7;
     transition: opacity 0.2s;
   }
@@ -1245,27 +1245,58 @@ const labelByMidi = useMemo(() => {
 
 
   /* ─── NAV TOGGLE ───────────────────────── */
-  .nav-toggle{
-    position:fixed;
-    top:50%; left:0;
-    transform:translateY(-50%) rotate(180deg);   /* fermé : pointe vers la droite */
-    width:24px; height:40px;                    /* ▶︎ → plus fin et moins haut   */
-    background:#333; border:none; color:#fff;
-    border-radius:0 4px 4px 0;
-    cursor:pointer; z-index:30;
-    transition:transform .25s;
-    display:flex; align-items:center; justify-content:center; /* centrage du span */
-    padding:0;                                         /* plus de padding   */
+  .nav-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      rgba(var(--act-w-r),var(--act-w-g),var(--act-w-b),1) 0%,
+      rgba(var(--act-b-r),var(--act-b-g),var(--act-b-b),1) 100%
+    );
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
   }
   
-  .nav-toggle.open{
-    transform:translateY(-50%) rotate(0deg);           /* ouvert : vers la gauche */
+  .nav-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
   }
   
-  .chevron{
-    font-size:1rem;        /* taille du ‘>’ */
-    line-height:1;         /* retire espace vertical superflu */
-    pointer-events:none;   /* évite le survol du span seulement */
+  .nav-toggle.open {
+    animation: bounceIn 0.3s forwards;
+  }
+  
+  @keyframes bounceIn {
+    0%   { transform: translateX(-100%) rotate(0deg); }
+    60%  { transform: translateX(10%)  rotate(0deg); }
+    80%  { transform: translateX(-5%)  rotate(0deg); }
+    100% { transform: translateX(0)    rotate(0deg); }
+  }
+
+  .nav-toggle::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-toggle:hover::after {
+    opacity: 1;
   }
   
   /* ────── BARRE LATERALE ────── */
@@ -1300,9 +1331,11 @@ const labelByMidi = useMemo(() => {
   <button
     className={`nav-toggle ${navOpen ? "open" : ""}`}
     onClick={toggleNav}
-    aria-label="Menu"
-    >
-    <span className="chevron">&gt;</span>
+    aria-label={navOpen ? "Close" : "Open"}
+  >
+    {navOpen
+      ? <ChevronLeft size={20} strokeWidth={2} />
+      : <ChevronRight size={20} strokeWidth={2} />}
   </button>
 
   {/* ───────── BARRE LATÉRALE ───────── */}
