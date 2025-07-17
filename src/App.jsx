@@ -1309,30 +1309,33 @@ const labelByMidi = useMemo(() => {
     overflow-y: auto;        /* scroll si le contenu dépasse */
   }
   
-  /* 2) Rends le footer “collant” en bas de son conteneur flex */
   .side-nav-footer {
-    margin-top: auto;        /* pousse vers le bas */
+    /* garde le sticky/footer collé en bas */
     position: sticky;
-    bottom: 0;               /* reste collé au bas de .side-nav */
-    background: #1a1a1a;     /* même fond que la sidebar */
-    padding: 1rem 1.2rem 0;   /* espace autour */
+    bottom: 0;
+    background: #1a1a1a;
+    padding: 1rem 1.2rem 0;
     border-top: 1px solid rgba(255,255,255,0.2);
+  
+    /* empile les éléments verticalement */
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;    /* espace entre chaque lien */
   }
   
-  /* 3) Ajuste la taille et l’espacement des liens */
   .side-nav-footer a,
   .side-nav-footer button {
+    display: block;  /* chaque lien sur sa propre ligne */
     font-size: 0.80rem;
-    padding: 0.25rem 0;
-    text-decoration: none;
     color: #ddd;
-    }
+    text-decoration: none;
+  }
+  
   .side-nav-footer a:hover,
   .side-nav-footer button:hover {
     color: #fff;
     text-decoration: underline;
   }
-  
   
   
   
