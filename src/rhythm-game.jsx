@@ -218,54 +218,43 @@ export default function RhythmGame() {
     );
   }
 
-return (
-  <div style={gameWrapper} onMouseDown={onWrongClick}>
-    <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
-    <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
-
-    {/* Grille de fond (lignes grises) */}
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: '50px',
-        right: '50px',
-        backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px)',
-        backgroundSize: `${100 / settings.lanes}% 100%`,
-        pointerEvents: 'none'
-      }}
-    />
-
-    {/* Container des notes */}
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: '20px',
-        right: '20px'
-      }}
-    >
-      {notes.map(note => (
-        <div
-          key={note.id}
-          onMouseDown={e => onHit(note, e)}
-          onAnimationEnd={() => onMissNote(note)}
-          style={noteStyle(note, settings.lanes, settings.speed)}
-        />
-      ))}
+  return (
+    <div style={gameWrapper} onMouseDown={onWrongClick}>
+      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
+      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
+      <div style={laneContainer}>
+        {notes.map(note => (
+          <div
+            key={note.id}
+            onMouseDown={(e) => onHit(note, e)}
+            onAnimationEnd={() => onMissNote(note)}
+            style={noteStyle(note, settings.lanes, settings.speed)}
+          />
+        ))}
+      </div>
+      <div style={hud}>Score: {score} — Combo: {combo}</div>
+      <style>{`
+        @keyframes fall { from { transform: translateY(-100%); } to { transform: translateY(100vh); } }
+      `}</style>
     </div>
+  );
+}
 
-    <div style={hud}>Score: {score} — Combo: {combo}</div>
-    <style>{`
-      @keyframes fall {
-        from { transform: translateY(-100%); }
-        to   { transform: translateY(100vh); }
-      }
-    `}</style>
-  </div>
-);
+function CentralHPBar({ hp, maxHp, flash }) {
+  const pct = Math.max(0, hp / maxHp);
+  return (
+    <div style={centralHpContainer}>
+      <div
+        style={{
+          ...centralHpBar,
+          transform: `scaleX(${pct})`,
+          background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff',
+          boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)'
+        }}
+      />
+    </div>
+  );
+}
 
 const Screen = ({ children }) => (
   <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
@@ -275,6 +264,16 @@ const Screen = ({ children }) => (
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
+const laneContainer = {
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: '50px',
+  right: '50px',
+  // repères gris toutes les (100/lanes)% de largeur
+  backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px)',
+  backgroundSize: `${100 / settings.lanes}% 100%`
+};
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
