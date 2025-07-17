@@ -81,6 +81,12 @@ export default function PianoMemory(){
   const [tProg,setTProg] = useState(1);
   // ---- Animated background squares (menu) ----
   const BG_COLS = 16, BG_ROWS = 9;
+  // Portrait detection on phone for menu grid
+  const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
+  // half columns in portrait mobile
+  const menuCols = isPhone && isPortrait ? Math.floor(BG_COLS / 2) : BG_COLS;
+  // total squares in menu grid
+  const totalBgMenu = menuCols * BG_ROWS;
   const totalBg = BG_COLS*BG_ROWS;
   const [bgActive, setBgActive] = useState(-1);
   const [bgColor, setBgColor] = useState('#ffffff');                // barre timer 1 → 0
@@ -381,8 +387,8 @@ export default function PianoMemory(){
   if(phase==="menu") return (
     <Screen>
       {/* Background animated squares */}
-      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${BG_COLS},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, gap:"0.8vw", padding:"2vw", pointerEvents:"none", zIndex:-1}}>
-        {[...Array(totalBg)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"transparent", boxShadow:bgActive===i?`0 0 24px 10px ${bgColor}`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
+      <div style={{position:"fixed", inset:0, display:"grid", gridTemplateColumns:`repeat(${menuCols},1fr)`, gridTemplateRows:`repeat(${BG_ROWS},1fr)`, gap:"0.8vw", padding:"2vw", pointerEvents:"none", zIndex:-1}}>
+        {[...Array(totalBgMenu)].map((_,i)=><div key={i} style={{background:bgActive===i?bgColor:"transparent", boxShadow:bgActive===i?`0 0 24px 10px ${bgColor}`:"none", borderRadius:12, transition:"background .4s, box-shadow .4s"}} />)}
       </div>
       {/* Bouton Home vers pianovisual.com */}
       <button onClick={()=>window.location.href='https://pianovisual.com'}
