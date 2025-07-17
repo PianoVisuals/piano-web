@@ -1,4 +1,4 @@
-// RhythmGame.jsx — Piano Tiles Rhythm Game with Menu Background Animation + Gameplay
+// RhythmGame.jsx — Piano Tiles Rhythm Game with Difficulty Modes, Combo System, HP Bar Flash + Sound + Menu Background Effect
 
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
@@ -10,7 +10,7 @@ if (typeof document !== 'undefined' && !document.querySelector('meta[name=viewpo
   document.head.appendChild(meta);
 }
 
-// Ko-fi button style
+// Ko-fi button style (menu only)
 if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
   const kofiStyle = document.createElement('style');
   kofiStyle.id = 'kofi-style';
@@ -35,6 +35,9 @@ const DIFFICULTIES = {
   Insane:  { lanes: 12, speed: 1200, interval: 300, hp: 100, multiplier: 8 }
 };
 const DIFF_NAMES = Object.keys(DIFFICULTIES);
+// Menu background settings (based on Easy but half frequency)
+const MENU_SPEED = DIFFICULTIES.Easy.speed;
+const MENU_INTERVAL = DIFFICULTIES.Easy.interval * 2;
 
 export default function RhythmGame() {
   const [phase, setPhase] = useState("menu");
@@ -46,20 +49,41 @@ export default function RhythmGame() {
   const [hp, setHp] = useState(MAX_HP);
   const [flashRed, setFlashRed] = useState(false);
   const [comboEffects, setComboEffects] = useState([]);
-
   // Menu background notes
-  const [menuNotes, setMenuNotes] = useState([]);
+  const [bgNotes, setBgNotes] = useState([]);
+  const nextBgId = useRef(0);
+  const bgTimer = useRef(null);
+  
+
+  // Background notes state
+  const [bgNotes, setBgNotes] = useState([]);
+  const nextBgId = useRef(0);
+  const bgTimer = useRef(null);
 
   const nextId = useRef(0);
   const spawnTimer = useRef(null);
-  const spawnMenuTimer = useRef(null);
   const audioSampler = useRef(null);
   const damageFx = useRef(null);
+  const startTimeRef = useRef(null);
 
   const settings = DIFFICULTIES[diff];
-  const menuSpeed = DIFFICULTIES.Easy.speed;
-  const menuInterval = DIFFICULTIES.Easy.interval * 2; // less frequent than easy
 
+  // Determine number of columns for menu background
+  const getMenuCols = () => window.innerWidth < 768 ? 6 : 10;
+
+  // Spawn background notes while in menu
+  useEffect(() => {
+    if (phase === "menu") {
+      bgTimer.current = setInterval(() => {
+        const cols = getMenuCols();
+        const lane = Math.floor(Math.random() * cols);
+        setBgNotes(a => [...a, { id: nextBgId.current++, lane, cols }]);
+      }, MENU_INTERVAL);
+    }
+    return () => clearInterval(bgTimer.current);
+  }, [phase]);
+
+  // Audio init
   useEffect(() => {
     Tone.setContext(new Tone.Context({ latencyHint: "interactive" }));
     audioSampler.current = new Tone.Sampler({
@@ -71,40 +95,17 @@ export default function RhythmGame() {
     damageFx.current = new Tone.MembraneSynth({ volume: -6 }).toDestination();
   }, []);
 
-  // Handle menu background animation
+  // Spawn background notes while in menu
   useEffect(() => {
     if (phase === "menu") {
-      clearInterval(spawnMenuTimer.current);
-      const isMobile = window.innerWidth < 768;
-      const columns = isMobile ? 6 : 10;
-      spawnMenuTimer.current = setInterval(() => {
-        const lane = Math.floor(Math.random() * columns);
-        setMenuNotes(arr => [...arr, { id: nextId.current++, lane, cols: columns }]);
-      }, menuInterval);
-    } else {
-      clearInterval(spawnMenuTimer.current);
-      setMenuNotes([]);
+      bgTimer.current = setInterval(() => {
+        const cols = getMenuCols();
+        const lane = Math.floor(Math.random() * cols);
+        setBgNotes(a => [...a, { id: nextBgId.current++, lane, cols }]);
+      }, MENU_INTERVAL);
     }
-    return () => clearInterval(spawnMenuTimer.current);
+    return () => clearInterval(bgTimer.current);
   }, [phase]);
-
-  const startGame = async () => {
-    await Tone.start();
-    const { lanes, interval, hp } = settings;
-    setScore(0);
-    setHp(hp);
-    setCombo(0);
-    setMaxCombo(0);
-    setNotes([]);
-    setFlashRed(false);
-    setComboEffects([]);
-    setPhase("play");
-    spawnTimer.current = setInterval(() => {
-      const now = Date.now();
-      const lane = Math.floor(Math.random() * lanes);
-      setNotes(n => [...n, { id: nextId.current++, lane, t0: now }]);
-    }, interval);
-  };
 
   const stopGame = () => {
     clearInterval(spawnTimer.current);
@@ -117,127 +118,106 @@ export default function RhythmGame() {
     setTimeout(() => setFlashRed(false), 200);
   };
 
-  const onHit = (note, e) => {
+  const downloadScore = () => {
+    const w = 600, h = 600;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#111'; ctx.fillRect(0, 0, w, h);
+    const noteWidth = 16, noteHeight = 40;
+    const notePos = [
+      { x: 30,  y: 50, lane: 0 },
+      { x: 60, y: 30, lane: 1 },
+      { x: 90, y: 70, lane: 2 }
+    ];
+    notePos.forEach(({ x, y, lane }) => {
+      ctx.fillStyle = colorAt(lane);
+      ctx.shadowColor = colorAt(lane);
+      ctx.shadowBlur = 12;
+      ctx.fillRect(x, y, noteWidth, noteHeight);
+      ctx.shadowBlur = 0;
+    });
+    ctx.fillStyle = '#55efc4'; ctx.font = 'bold 70px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Piano Rhythm', w/2, 210);
+    ctx.fillStyle = '#fff'; ctx.font = '36px monospace';
+    ctx.fillText('Score: '+score, w/2, 320);
+    ctx.fillText('Max combo: '+maxCombo, w/2, 380);
+    ctx.fillText('Difficulty: '+diff, w/2, 440);
+    ctx.fillStyle = '#ffeaa7'; ctx.font = '22px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('pianovisual.com  |  Piano Rhythm', w-20, h-20);
+    const link = document.createElement('a'); link.download='piano_rhythm_score.png';
+    link.href = canvas.toDataURL('image/png'); link.click();
+  };
+
+  const onHit = (note,e) => {
     e.stopPropagation();
-    const NOTE_KEYS = Object.keys(NOTE_SOUNDS);
-    const key = NOTE_KEYS[note.lane % NOTE_KEYS.length];
-    audioSampler.current.triggerAttackRelease(key, "8n");
+    const KEY = Object.keys(NOTE_SOUNDS)[note.lane % 4];
+    audioSampler.current.triggerAttackRelease(KEY, '8n');
     setCombo(c => {
-      const newCombo = c + 1;
-      setMaxCombo(m => Math.max(m, newCombo));
-      const points = settings.multiplier * newCombo;
-      setScore(s => s + points);
-      const effectId = Date.now() + Math.random();
-      setComboEffects(arr => [...arr, { id: effectId, text: `+${points}`, x: e.clientX, y: e.clientY }]);
-      setTimeout(() => setComboEffects(arr => arr.filter(fe => fe.id !== effectId)), 1000);
-      return newCombo;
+      const nc = c+1;
+      setMaxCombo(m=>Math.max(m,nc));
+      const pts = settings.multiplier*nc;
+      setScore(s=>s+pts);
+      const id=Date.now()+Math.random();
+      setComboEffects(a=>[...a,{id,text:`+${pts}`,x:e.clientX,y:e.clientY}]);
+      setTimeout(()=>setComboEffects(a=>a.filter(f=>f.id!==id)),1000);
+      return nc;
     });
-    setHp(h => Math.min(settings.hp, h + HEAL_PER_HIT));
-    setNotes(n => n.filter(x => x.id !== note.id));
+    setHp(h=>Math.min(settings.hp,h+HEAL_PER_HIT));
+    setNotes(n=>n.filter(x=>x.id!==note.id));
   };
+  const onMissNote=note=>{ setNotes(n=>n.filter(x=>x.id!==note.id)); flashDamage(); setHp(h=>{const nh=h-DAMAGE; if(nh<=0)stopGame(); return nh;}); setCombo(0); };
+  const onWrongClick=()=>{ flashDamage(); setHp(h=>{const nh=h-DAMAGE; if(nh<=0)stopGame(); return nh;}); setCombo(0); };
+  useEffect(()=>{ if(phase!=='play')clearInterval(spawnTimer.current); },[phase]);
 
-  const onMissNote = note => {
-    setNotes(n => n.filter(x => x.id !== note.id));
-    flashDamage();
-    setHp(h => {
-      const nh = h - DAMAGE;
-      if (nh <= 0) stopGame();
-      return nh;
-    });
-    setCombo(0);
-  };
-
-  const onWrongClick = () => {
-    flashDamage();
-    setHp(h => {
-      const nh = h - DAMAGE;
-      if (nh <= 0) stopGame();
-      return nh;
-    });
-    setCombo(0);
-  };
-
-  useEffect(() => {
-    if (phase !== "play") clearInterval(spawnTimer.current);
-  }, [phase]);
-
-  if (phase === "menu") return (
-    <Screen>
-      {/* Background falling notes */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#111', zIndex: 1 }}>
-        {menuNotes.map(n => (
-          <div key={n.id} style={{
-            position: 'absolute',
-            left: `${(n.lane / n.cols) * 100}%`,
-            width: `${100 / n.cols}%`,
-            height: '15%',
-            background: colorAt(n.lane),
-            opacity: 0.5,
-            animation: `fall ${menuSpeed}ms linear infinite`
-          }} />
-        ))}
-      </div>
-      <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh', zIndex: 2 }}>Piano Rhythm</h2>
-      <label style={{ zIndex: 2 }}>Difficulty:
-        <select value={diff} onChange={e => setDiff(e.target.value)}>
-          {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
+  // RENDER
+  if(phase==='menu'){
+    const cols=getMenuCols();
+    return <Screen>
+      {/* BACKGROUND */}
+      <div style={menuBgContainer}>{bgNotes.map(n=>
+        <div key={n.id}
+             onAnimationEnd={()=>setBgNotes(a=>a.filter(x=>x.id!==n.id))}
+             style={menuBgNoteStyle(n.lane,n.cols,MENU_SPEED)}/>
+      )}</div>
+      {/* UI */}
+      <h2 style={{fontSize:'3.5rem',marginTop:'-18vh'}}>Piano Rhythm</h2>
+      <label>Difficulty:
+        <select value={diff} onChange={e=>setDiff(e.target.value)}>
+          {DIFF_NAMES.map(d=> <option key={d}>{d}</option> )}
         </select>
       </label>
-      <button style={{ ...btn, zIndex: 2 }} onClick={startGame}>START</button>
-      <button style={{ ...backBtn, zIndex: 2 }} onClick={() => window.location.href='https://pianovisual.com'}>↩ PianoVisual</button>
-      <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button" title="Support me on Ko‑fi" />
-    </Screen>
-  );
-
-  if (phase === "over") return (
-    <Screen>
-      <h2>Game Over</h2>
-      <p>Your score: {score}</p>
-      <p>Max combo: {maxCombo}</p>
-      <button style={btn} onClick={() => {/* download */}}>Download Score</button>
-      <button style={btn} onClick={() => setPhase("menu")}>Menu</button>
-    </Screen>
-  );
-
-  return (
-    <div style={gameWrapper} onMouseDown={onWrongClick}>
-      <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
-      <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
-      {comboEffects.map(fe => (
-        <div key={fe.id} style={{ position: 'absolute', left: fe.x, top: fe.y, pointerEvents: 'none', fontSize: '2rem', fontWeight: 'bold', color: '#ffeaa7', animation: 'fadeUp 1s ease-out forwards' }}>
-          {fe.text}
-        </div>
-      ))}
-      <div style={laneContainer}>
-        {notes.map(note => (
-          <div key={note.id} onMouseDown={e => onHit(note, e)} onAnimationEnd={() => onMissNote(note)} style={noteStyle(note, settings.lanes, settings.speed)} />
-        ))}
-      </div>
-      <div style={hud}>Score: {score} — Combo: {combo}</div>
-    </div>
-  );
+      <button style={btn} onClick={startGame}>START</button>
+      <button style={backBtn} onClick={()=>window.location.href='https://pianovisual.com'}>↩ PianoVisual</button>
+      <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button"/>
+    </Screen>;
+  }
+  if(phase==='over') return <Screen>
+    <h2>Game Over</h2><p>Your score: {score}</p><p>Max combo: {maxCombo}</p>
+    <button style={btn} onClick={downloadScore}>Download Score</button>
+    <button style={btn} onClick={()=>setPhase('menu')}>Menu</button>
+  </Screen>;
+  // PLAY
+  return <div style={gameWrapper} onMouseDown={onWrongClick}>
+    <button style={backBtn} onClick={()=>setPhase('menu')}>↩ Menu</button>
+    <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed}/>
+    {comboEffects.map(fe=><div key={fe.id} style={{position:'absolute',left:fe.x,top:fe.y,pointerEvents:'none',fontSize:'2rem',fontWeight:'bold',color:'#ffeaa7',animation:'fadeUp 1s ease-out forwards'}}>{fe.text}</div>)}
+    <div style={laneContainer}>{notes.map(note=><div key={note.id} onMouseDown={e=>onHit(note,e)} onAnimationEnd={()=>onMissNote(note)} style={noteStyle(note,settings.lanes,settings.speed)}/>)}</div>
+    <div style={hud}>Score: {score} — Combo: {combo}</div>
+    <style>{`@keyframes fall{from{transform:translateY(-100%)}to{transform:translateY(100vh)}}@keyframes fadeUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-50px)}}`}</style>
+  </div>;
 }
 
-function CentralHPBar({ hp, maxHp, flash }) {
-  const pct = Math.max(0, hp / maxHp);
-  return (
-    <div style={centralHpContainer}>
-      <div style={{ ...centralHpBar, transform: `scaleX(${pct})`, background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff', boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)' }} />
-    </div>
-  );
-}
-
-const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'centrem justifyContent: 'center', textAlign: 'center' }}>{children}</div>;
-const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
-const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
-const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
-const laneContainer = { position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px' };
-const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
-const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
-const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
-const noteStyle = (note, totalLanes, fallDuration) => ({ position: 'absolute', left: `${(note.lane / totalLanes) * 100}%`, width: `${100 / totalLanes}%`, height: '10%', background: colorAt(note.lane), borderRadius: 4, boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`, pointerEvents: 'auto', animation: `fall ${fallDuration}ms linear forwards` });
-
-// Keyframes
-const styleSheet = document.styleSheets[0];
-styleSheet.insertRule(`@keyframes fall { from { transform: translateY(-100%); } to { transform: translateY(100vh); } }`, styleSheet.cssRules.length);
-styleSheet.insertRule(`@keyframes fadeUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }`, styleSheet.cssRules.length);
+// STYLES & HELPERS
+const menuBgContainer={position:'absolute',inset:0,overflow:'hidden',zIndex:0};
+const menuBgNoteStyle=(lane,cols,speed)=>({position:'absolute',top:'-10%',left:`${(lane/cols)*100}%`,width:`${100/cols}%`,height:'10%',background:'rgba(255,255,255,0.1)',borderRadius:4,animation:`fall ${speed}ms linear forwards`});
+const Screen = ({children})=><div style={{position:'fixed',inset:0,background:'#111',color:'#fff',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center'}}>{children}</div>;
+const btn={margin:'0.5rem',padding:'0.9rem 2.1rem',fontSize:'1.25rem',border:'none',borderRadius:10,cursor:'pointer',background:'#55efc4',color:'#111',fontWeight:600};
+const backBtn={position:'fixed',top:'2vh',left:'2vw',zIndex:3,padding:'0.4rem 0.8rem',fontSize:'1rem',borderRadius:8,background:'#fff',color:'#111',border:'none',cursor:'pointer',boxShadow:'0 2px 4px rgba(0,0,0,0.45)',transition:'transform .18s'};
+const gameWrapper={position:'fixed',inset:0,background:'#111',overflow:'hidden'};
+const laneContainer={position:'absolute',inset:'0 50px'};
+const hud={position:'fixed',bottom:'1rem',right:'1rem',color:'#fff',fontSize:'1.2rem'};
+const centralHpContainer={position:'fixed',top:'1rem',left:'50%',transform:'translateX(-50%)',width:'80%',height:12,background:'rgba(255,255,255,0.2)',borderRadius:6,overflow:'hidden'};
+const centralHpBar={position:'absolute',top:0,height:'100%',width:'100%',transformOrigin:'center',transition:'transform .3s ease,background .2s ease,box-shadow .2s ease'};
+const noteStyle=(note,totalLanes,fallDuration)=>({position:'absolute',left:`${(note.lane/totalLanes)*100}%`,width:`${100/totalLanes}%`,height:'10%',background:colorAt(note.lane),borderRadius:4,boxShadow:`0 0 12px 4px ${colorAt(note.lane)}`,pointerEvents:'auto',animation:`fall ${fallDuration}ms linear forwards`});
