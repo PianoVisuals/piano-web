@@ -223,29 +223,28 @@ return (
     <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
     <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
 
-    {/* Container des colonnes avec repères visuels */}
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: '20px',
-        right: '20px',
-        // grille verticale grise (1px) toutes les (100/settings.lanes)% de largeur
-        backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px)',
-        backgroundSize: `${100 / settings.lanes}% 100%`,
-        pointerEvents: 'none'  // pour que les clics passent vers les notes
-      }}
-    />
-
-    {/* Notes */}
+    {/* Grille de fond (lignes grises) */}
     <div
       style={{
         position: 'absolute',
         top: 0,
         bottom: 0,
         left: '50px',
-        right: '50px'
+        right: '50px',
+        backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px)',
+        backgroundSize: `${100 / settings.lanes}% 100%`,
+        pointerEvents: 'none'
+      }}
+    />
+
+    {/* Container des notes */}
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: '20px',
+        right: '20px'
       }}
     >
       {notes.map(note => (
@@ -267,21 +266,6 @@ return (
     `}</style>
   </div>
 );
-function CentralHPBar({ hp, maxHp, flash }) {
-  const pct = Math.max(0, hp / maxHp);
-  return (
-    <div style={centralHpContainer}>
-      <div
-        style={{
-          ...centralHpBar,
-          transform: `scaleX(${pct})`,
-          background: flash ? `rgba(255,80,80,${FLASH_ALPHA})` : '#fff',
-          boxShadow: flash ? `0 0 30px 10px rgba(255,60,60,${FLASH_ALPHA})` : '0 0 12px 4px rgba(255,255,255,0.9)'
-        }}
-      />
-    </div>
-  );
-}
 
 const Screen = ({ children }) => (
   <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
