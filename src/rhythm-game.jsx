@@ -171,7 +171,7 @@ export default function RhythmGame() {
     ctx.fillText('Piano Rhythm', w / 2, 210);
     ctx.fillStyle = '#ffffff'; ctx.font = '36px monospace';
     ctx.fillText('Score: ' + score, w / 2, 320);
-    ctx.fillText('Max combo: ' + maxCombo, w / 2, 380);
+    ctx.fillText('Longest combo: ' + maxCombo, w / 2, 380);
     ctx.fillText('Difficulty: ' + diff, w / 2, 440);
     ctx.fillStyle = '#ffeaa7'; ctx.font = '22px sans-serif'; ctx.textAlign = 'right';
     ctx.fillText('pianovisual.com  |  Piano Rhythm', w - 20, h - 20);
@@ -302,6 +302,6 @@ const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
 const laneContainer = { position: 'absolute', top: 0, bottom: 0, left: '50px', right: '50px' };
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
-const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
+const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden', zIndex: 5 };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
 const noteStyle = (note, totalLanes, fallDuration) => ({ position: 'absolute', left: `${(note.lane / totalLanes) * 100}%`, width: `${100 / totalLanes}%`, height: '10%', background: colorAt(note.lane), borderRadius: 4, boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`, pointerEvents: 'auto', animation: `fall ${fallDuration}ms linear forwards` });
