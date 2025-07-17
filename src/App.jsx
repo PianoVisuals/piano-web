@@ -1358,7 +1358,8 @@ const labelByMidi = useMemo(() => {
         {privacyText}
       </a>
       <a href={contactHref}>
-        {contactText}
+        <span>Contact : </span>
+        <a href={contactHref}>{contactHref.replace('mailto:', '')}</a>
       </a>
     </div>
 
