@@ -1179,10 +1179,7 @@ const labelByMidi = useMemo(() => {
     transition: opacity 0.2s;
   }
   
-  .kofi-link img {
-    height: 20px;
-    width: auto;
-  }
+
 
   .kofi-link:hover {
     opacity: 1;
