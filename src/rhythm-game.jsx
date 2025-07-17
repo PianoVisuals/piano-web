@@ -199,7 +199,7 @@ export default function RhythmGame() {
       <button onClick={() => setPhase("menu")} style={backBtn}>↩ Menu</button>
       <CentralHPBar hp={hp} maxHp={settings.hp} flash={flashRed} />
       {comboEffects.map(fe => (
-        <div key={fe.id} style={{ position: 'absolute', left: fe.x, top: fe.y, pointerEvents: 'none', fontSize: '2rem', fontWeight: 'bold', color: '#ffeaa7', animation: 'fadeUp 1s ease-out' }}>
+        <div key={fe.id} style={{ position: 'absolute', left: fe.x, top: fe.y, pointerEvents: 'none', fontSize: '2rem', fontWeight: 'bold', color: '#ffeaa7', animation: 'fadeUp 1s ease-out forwards' }}>
           {fe.text}
         </div>
       ))}
