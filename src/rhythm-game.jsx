@@ -265,12 +265,12 @@ const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', b
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
 const laneContainer = {
-  position: 'relative',
-  height: '100%',
-  width: '100%',
-  display: 'block',
-  padding: '0 20px',        // 20px d’espace à gauche et droite
-  boxSizing: 'border-box'   // pour inclure le padding dans la largeur totale
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: '20px',   // espace à gauche
+  right: '20px',  // espace à droite
+  display: 'block'
 };
 const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', fontSize: '1.2rem' };
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
