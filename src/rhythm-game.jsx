@@ -46,25 +46,11 @@ export default function RhythmGame() {
   const [hp, setHp] = useState(MAX_HP);
   const [flashRed, setFlashRed] = useState(false);
   const [comboEffects, setComboEffects] = useState([]);
-  // Notes de fond dans le menu
-  const [menuBgNotes, setMenuBgNotes] = useState([]);
-  const nextBgId = useRef(0);
+
+  // Background notes in menu
+  const [bgNotes, setBgNotes] = useState([]);
+  const bgId = useRef(0);
   const bgTimer = useRef(null);
-
-  // Nombre de colonnes pour le fond du menu : 10 sur PC, 6 sur mobile
-  const getMenuLanes = () => window.innerWidth < 768 ? 6 : 10;
-
-  // Effet infini de notes tombantes en fond (phase menu)
-  useEffect(() => {
-    if (phase === "menu") {
-      bgTimer.current = setInterval(() => {
-        const lanes = getMenuLanes();
-        const lane = Math.floor(Math.random() * lanes);
-        setMenuBgNotes(arr => [...arr, { id: nextBgId.current++, lane }]);
-      }, settings.interval * 2);
-    }
-    return () => clearInterval(bgTimer.current);
-  }, [phase]);
 
   const nextId = useRef(0);
   const spawnTimer = useRef(null);
@@ -84,6 +70,20 @@ export default function RhythmGame() {
     }).toDestination();
     damageFx.current = new Tone.MembraneSynth({ volume: -6 }).toDestination();
   }, []);
+
+  // Spawn background notes when in menu
+  useEffect(() => {
+    if (phase === 'menu') {
+      // spawn slower than Easy frequency
+      const interval = settings.interval * 2;
+      bgTimer.current = setInterval(() => {
+        const cols = window.innerWidth <= 600 ? 6 : 10;
+        const lane = Math.floor(Math.random() * cols);
+        setBgNotes(arr => [...arr, { id: bgId.current++, lane, cols }]);
+      }, interval);
+    }
+    return () => clearInterval(bgTimer.current);
+  }, [phase]);
 
   const startGame = async () => {
     await Tone.start();
@@ -191,27 +191,31 @@ export default function RhythmGame() {
 
   if (phase === "menu") return (
     <Screen>
-      {/* Fond animé de notes tombantes */}
-      <div style={menuBgContainer}>
-        {menuBgNotes.map(n => (
-          <div key={n.id}
-               onAnimationEnd={() => setMenuBgNotes(arr => arr.filter(x => x.id !== n.id))}
-               style={menuBgNoteStyle(n.lane, getMenuLanes(), settings.speed)} />
+      {/* Background falling notes */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+        {bgNotes.map(note => (
+          <div key={note.id} style={{
+            position: 'absolute',
+            top: '-10%',
+            left: `${(note.lane / note.cols) * 100}%`,
+            width: `${100 / note.cols}%`,
+            height: '8%',
+            background: colorAt(note.lane),
+            borderRadius: 4,
+            boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`,
+            animation: `fall ${settings.speed}ms linear forwards`
+          }} onAnimationEnd={() => setBgNotes(arr => arr.filter(n => n.id !== note.id))} />
         ))}
       </div>
-
-      {/* UI menu principal */}
       <h2 style={{ fontSize: '3.5rem', marginTop: '-18vh', position: 'relative', zIndex: 1 }}>Piano Rhythm</h2>
       <label style={{ position: 'relative', zIndex: 1 }}>Difficulty:
         <select value={diff} onChange={e => setDiff(e.target.value)}>
           {DIFF_NAMES.map(d => <option key={d}>{d}</option>)}
         </select>
       </label>
-      <button style={btn} onClick={startGame}>START</button>
-      <button onClick={() => window.location.href='https://pianovisual.com'} style={backBtn}>↩ PianoVisual</button>
-      <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button" style={{position:'relative', zIndex:1}} title="Support me on Ko‑fi"></a>
-
-      <style>{`@keyframes fall { from { transform: translateY(-100%); } to { transform: translateY(100vh); } }`}</style>
+      <button style={{ ...btn, position: 'relative', zIndex: 1 }} onClick={startGame}>START</button>
+      <button onClick={() => window.location.href='https://pianovisual.com'} style={{ ...backBtn, zIndex: 1 }}>↩ PianoVisual</button>
+      <a href="https://ko-fi.com/pianovisual" target="_blank" rel="noopener" className="kofi-mobile-button"></a>
     </Screen>
   );
 
@@ -257,7 +261,7 @@ function CentralHPBar({ hp, maxHp, flash }) {
   );
 }
 
-const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{children}</div>;
+const Screen = ({ children }) => <div style={{ position: 'fixed', inset: 0, background: '#111', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', overflow: 'hidden' }}>{children}</div>;
 const btn = { margin: '0.5rem', padding: '0.9rem 2.1rem', fontSize: '1.25rem', border: 'none', borderRadius: 10, cursor: 'pointer', background: '#55efc4', color: '#111', fontWeight: 600 };
 const backBtn = { position: 'fixed', top: '2vh', left: '2vw', zIndex: 3, padding: '0.4rem 0.8rem', fontSize: '1rem', borderRadius: 8, background: '#fff', color: '#111', border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.45)', transition: 'transform .18s' };
 const gameWrapper = { position: 'fixed', inset: 0, background: '#111', overflow: 'hidden' };
@@ -266,9 +270,3 @@ const hud = { position: 'fixed', bottom: '1rem', right: '1rem', color: '#fff', f
 const centralHpContainer = { position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' };
 const centralHpBar = { position: 'absolute', top: 0, height: '100%', width: '100%', transformOrigin: 'center', transition: 'transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease' };
 const noteStyle = (note, totalLanes, fallDuration) => ({ position: 'absolute', left: `${(note.lane / totalLanes) * 100}%`, width: `${100 / totalLanes}%`, height: '10%', background: colorAt(note.lane), borderRadius: 4, boxShadow: `0 0 12px 4px ${colorAt(note.lane)}`, pointerEvents: 'auto', animation: `fall ${fallDuration}ms linear forwards` });
-
-// Styles pour le fond du menu
-const menuBgContainer = { position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 };
-const menuBgNoteStyle = (lane, totalLanes, speed) => ({
-  position: 'absolute', top: '-10%', left: `${(lane / totalLanes) * 100}%`, width: `${100 / totalLanes}%`, height: '10%', background: 'rgba(255,255,255,0.1)', borderRadius: 4, animation: `fall ${speed}ms linear forwards`
-});
