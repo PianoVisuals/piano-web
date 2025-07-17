@@ -21,6 +21,13 @@ if (typeof document !== 'undefined' && !document.getElementById('kofi-style')) {
 /* ===== CONFIG ===== */
 const SOUNDFONT = "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/";
 const NOTE_SOUNDS = { C4: "C4.mp3", D4: "D4.mp3", E4: "E4.mp3", F4: "F4.mp3" };
+// Instruments à choisir aléatoirement à chaque partie
+const INSTRS = [
+  "acoustic_grand_piano", "bright_acoustic_piano", "electric_grand_piano",
+  "electric_piano_1", "electric_piano_2", "honkytonk_piano",
+  "harpsichord", "music_box", "celesta", "vibraphone",
+  "marimba", "glockenspiel"
+];
 const BASE_COL = ["#ff7675","#ffeaa7","#55efc4","#74b9ff"];
 const colorAt = i => BASE_COL[i % BASE_COL.length];
 const FLASH_ALPHA = 0.9;
@@ -101,6 +108,16 @@ export default function RhythmGame() {
   }, [phase, settings.interval]);
 
   const startGame = async () => {
+    // Sélection aléatoire de l'instrument
+    const slug = INSTRS[Math.floor(Math.random() * INSTRS.length)];
+    // Recrée le sampler avec l'instrument choisi
+    if (audioSampler.current) audioSampler.current.dispose();
+    audioSampler.current = new Tone.Sampler({
+      urls: NOTE_SOUNDS,
+      baseUrl: SOUNDFONT + slug + "-mp3/",
+      release: 1,
+      volume: 0
+    }).toDestination();
     await Tone.start();
     const { lanes, interval, hp } = settings;
     setScore(0);
