@@ -1174,7 +1174,7 @@ const labelByMidi = useMemo(() => {
     margin-left: auto;
 
     transform: translateY(-50%);
-    height: -20.5rem;
+    align-items: center;
     opacity: 0.7;
     transition: opacity 0.2s;
   }
