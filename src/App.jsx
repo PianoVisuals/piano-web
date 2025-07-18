@@ -1253,31 +1253,38 @@ const labelByMidi = useMemo(() => {
     position: fixed;
     top: 50%; left: 0;
     transform: translateY(-50%);
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f9c74f 0%, #f8961e 100%);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    border: none;
+    width: 8px; height: 60px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 0 8px 8px 0;
+    border: 1px solid rgba(255,255,255,0.2);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     z-index: 30;
+    transition: width 0.3s ease;
+    overflow: hidden;
   }
   
   .nav-toggle:hover {
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    width: 24px;
   }
   
   .nav-toggle .chevron {
-    font-size: 1.2rem;
-    color: #111;
+    font-size: 1rem;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .nav-toggle:hover .chevron {
+    opacity: 1;
   }
   
   .nav-toggle.open {
-    transform: translateY(-50%) rotate(180deg) scale(1.1);
+    width: 24px;
+    transform: translateY(-50%) rotate(180deg);
   }
   
   /* ────── BARRE LATERALE ────── */
