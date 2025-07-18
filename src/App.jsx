@@ -1249,28 +1249,35 @@ const labelByMidi = useMemo(() => {
 
 
 
-  /* ─── NAV TOGGLE ───────────────────────── */
-  .nav-toggle{
-    position:fixed;
-    top:50%; left:0;
-    transform:translateY(-50%) rotate(180deg);   /* fermé : pointe vers la droite */
-    width:24px; height:40px;                    /* ▶︎ → plus fin et moins haut   */
-    background:#333; border:none; color:#fff;
-    border-radius:0 4px 4px 0;
-    cursor:pointer; z-index:30;
-    transition:transform .25s;
-    display:flex; align-items:center; justify-content:center; /* centrage du span */
-    padding:0;                                         /* plus de padding   */
+  .nav-toggle {
+    position: fixed;
+    top: 50%; left: 0;
+    transform: translateY(-50%);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f9c74f 0%, #f8961e 100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 30;
   }
   
-  .nav-toggle.open{
-    transform:translateY(-50%) rotate(0deg);           /* ouvert : vers la gauche */
+  .nav-toggle:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
   }
   
-  .chevron{
-    font-size:1rem;        /* taille du ‘>’ */
-    line-height:1;         /* retire espace vertical superflu */
-    pointer-events:none;   /* évite le survol du span seulement */
+  .nav-toggle .chevron {
+    font-size: 1.2rem;
+    color: #111;
+  }
+  
+  .nav-toggle.open {
+    transform: translateY(-50%) rotate(180deg) scale(1.1);
   }
   
   /* ────── BARRE LATERALE ────── */
