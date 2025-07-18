@@ -1262,6 +1262,7 @@ const labelByMidi = useMemo(() => {
     border: none;
     cursor: pointer;
     z-index: 30;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   
   /* 2) Centre la flèche avec position absolue */
@@ -1349,6 +1350,7 @@ const labelByMidi = useMemo(() => {
     className={`nav-toggle ${navOpen ? "open" : ""}`}
     onClick={toggleNav}
     aria-label="Menu"
+    >
     <span className="chevron">&gt;</span>
   </button>
 
