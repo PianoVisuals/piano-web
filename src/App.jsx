@@ -1253,38 +1253,35 @@ const labelByMidi = useMemo(() => {
     position: fixed;
     top: 50%; left: 0;
     transform: translateY(-50%);
-    width: 8px; height: 60px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 0 8px 8px 0;
-    border: 1px solid rgba(255,255,255,0.2);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5c4f68 0%, #454347 100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     z-index: 30;
-    transition: width 0.3s ease;
-    overflow: hidden;
   }
   
   .nav-toggle:hover {
-    width: 24px;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
   }
   
   .nav-toggle .chevron {
-    font-size: 1rem;
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    display: flex;              /* on transforme le span en flex container */
+    width: 100%;                /* il remplit tout le bouton */
+    height: 100%;               /* idem en hauteur */
+    justify-content: center;    /* centré horizontalement */
+    align-items: center;        /* centré verticalement */
+    font-size: 1.2rem;          /* ajuste la taille si besoin */
+    line-height: 1;             /* reset au cas où */
   }
-  
-  .nav-toggle:hover .chevron {
-    opacity: 1;
-  }
-  
   .nav-toggle.open {
-    width: 24px;
-    transform: translateY(-50%) rotate(180deg);
+    transform: translateY(-50%) rotate(180deg) scale(1.1);
   }
   
   /* ────── BARRE LATERALE ────── */
