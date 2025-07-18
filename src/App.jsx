@@ -1251,19 +1251,28 @@ const labelByMidi = useMemo(() => {
 
   .nav-toggle {
     position: fixed;
-    top: 50%; left: 0;
+    top: 50%;
+    left: 0;
     transform: translateY(-50%);
-    width: 30px; height: 30px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #5c4f68 0%, #454347 100%);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #575757 0%, #5c4f68 100%);
+    padding: 0;
     border: none;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     z-index: 30;
+  }
+  
+  /* 2) Centre la flèche avec position absolue */
+  .nav-toggle .chevron {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 1.2rem !important;
+    line-height: 1;
+    pointer-events: none;
   }
   
   .nav-toggle:hover {
@@ -1271,13 +1280,6 @@ const labelByMidi = useMemo(() => {
     box-shadow: 0 6px 12px rgba(0,0,0,0.4);
   }
   
-  .nav-toggle .chevron {
-    display: block;
-    width: 100%;
-    height: 100%;
-    text-align: center;     /* centrage horizontal */
-    line-height: 40px;      /* même valeur que la hauteur du bouton */
-  }  
 
   .nav-toggle.open {
     transform: translateY(-50%) rotate(180deg) scale(1.1);
