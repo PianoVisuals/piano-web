@@ -1257,7 +1257,7 @@ const labelByMidi = useMemo(() => {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #575757 0%, #5c4f68 100%);
+    background: linear-gradient(135deg, #575757 0%, #373434 100%);
     padding: 0;
     border: none;
     cursor: pointer;
@@ -1349,7 +1349,6 @@ const labelByMidi = useMemo(() => {
     className={`nav-toggle ${navOpen ? "open" : ""}`}
     onClick={toggleNav}
     aria-label="Menu"
-    >
     <span className="chevron">&gt;</span>
   </button>
 
