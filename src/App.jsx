@@ -1253,7 +1253,7 @@ const labelByMidi = useMemo(() => {
     position: fixed;
     top: 50%; left: 0;
     transform: translateY(-50%);
-    width: 40px; height: 40px;
+    width: 30px; height: 30px;
     border-radius: 50%;
     background: linear-gradient(135deg, #5c4f68 0%, #454347 100%);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -1272,14 +1272,13 @@ const labelByMidi = useMemo(() => {
   }
   
   .nav-toggle .chevron {
-    display: flex;              /* on transforme le span en flex container */
-    width: 100%;                /* il remplit tout le bouton */
-    height: 100%;               /* idem en hauteur */
-    justify-content: center;    /* centré horizontalement */
-    align-items: center;        /* centré verticalement */
-    font-size: 1.2rem;          /* ajuste la taille si besoin */
-    line-height: 1;             /* reset au cas où */
-  }
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-align: center;     /* centrage horizontal */
+    line-height: 40px;      /* même valeur que la hauteur du bouton */
+  }  
+
   .nav-toggle.open {
     transform: translateY(-50%) rotate(180deg) scale(1.1);
   }
