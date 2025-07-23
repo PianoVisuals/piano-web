@@ -303,6 +303,41 @@ export default function App(){
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
 
 
+  const transposeRef = useRef(0);
+  const [transpose, _setTranspose] = useState(0);
+  const setTranspose = (val) => {
+    transposeRef.current = val;
+    _setTranspose(val);
+  };
+
+  function playTransposedNote(note, velocity = 1) {
+    const midi = n2m(note);
+    if (typeof midi !== "number") return;
+  
+    const transposed = midi + transposeRef.current;
+    if (transposed < NOTE_MIN || transposed > NOTE_MAX) return;
+
+    const name = m2n(transposed);
+    if (!name) return;
+
+    synthRef.current.triggerAttack(name, undefined, velocity);
+  }
+  function releaseTransposedNote(note) {
+    const midi = n2m(note);
+    if (typeof midi !== "number") return;
+  
+    const transposed = midi + transposeRef.current;
+    if (transposed < NOTE_MIN || transposed > NOTE_MAX) return;
+  
+    const name = m2n(transposed);
+    if (!name) return;
+
+    synthRef.current.triggerRelease(name);
+  }
+  
+
+
+
 
   const [navOpen, setNavOpen] = useState(false);
 
@@ -313,7 +348,26 @@ export default function App(){
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
 
     
-  
+  useEffect(() => {
+    if (!midiData || !partRef.current) return;
+
+    // Sauve le temps actuel
+    const currentTime = Tone.Transport.seconds;
+
+    // Supprime la séquence en cours
+    partRef.current.dispose();
+
+    // Recrée une nouvelle part avec la transposition
+    preparePart(midiData);
+
+    // Replace le transport à l'ancien temps
+    Tone.Transport.seconds = currentTime;
+
+    // Relance la lecture si elle était en cours
+    if (playing) {
+      Tone.Transport.start("+0.05");
+    }
+  }, [transpose]);
   
 
   const borderColor = "#000";   // contour noir, ou une couleur de ton thème
@@ -331,6 +385,13 @@ export default function App(){
     actW: "#000000",
     actB: "#d2d2d2"
   };
+
+
+
+
+
+
+
 
 
   const TEMP_THEME_KEY = "Bad Apple";
@@ -546,20 +607,38 @@ export default function App(){
   const preparePart = (midi) => {
     partRef.current?.dispose();
     const events = [];
-    midi.tracks.forEach(track => track.notes.forEach(n => events.push(n)));
-
-    // décale de LEAD pour que le son démarre quand les barres touchent le clavier
+  
+    midi.tracks.forEach(track =>
+      track.notes.forEach(n => {
+        const transposedMidi = n.midi + transposeRef.current;
+        if (transposedMidi >= NOTE_MIN && transposedMidi <= NOTE_MAX) {
+          const name = m2n(transposedMidi);
+          events.push({
+            time: n.time,
+            name,
+            duration: n.duration,
+            velocity: n.velocity
+          });
+        }
+      })
+    );
+  
     partRef.current = new Tone.Part((time, note) => {
       synthRef.current.triggerAttackRelease(note.name, note.duration, time, note.velocity);
-      Tone.Draw.schedule(()=>highlight(n2m(note.name),true),time);
-      Tone.Draw.schedule(()=>highlight(n2m(note.name),false),time+note.duration);
-    }, events.map(n => ({ time: n.time + LEAD, name: n.name, duration: n.duration, velocity: n.velocity })));
+      Tone.Draw.schedule(() => highlight(n2m(note.name), true), time);
+      Tone.Draw.schedule(() => highlight(n2m(note.name), false), time + note.duration);
+    }, events.map(n => ({
+      time: n.time + LEAD,
+      name: n.name,
+      duration: n.duration,
+      velocity: n.velocity
+    })));
 
     partRef.current.start(0);
     Tone.Transport.seconds = 0;
     setProgress(0);
-  
   };
+  
 
 
 
@@ -662,7 +741,10 @@ export default function App(){
           const remaining = impact - t;
           if (remaining < -n.duration || remaining > LEAD) return;
 
-          const keyEl = document.querySelector(`[data-midi='${n.midi}']`);
+          const transposedMidi = n.midi + transposeRef.current;
+          if (transposedMidi < NOTE_MIN || transposedMidi > NOTE_MAX) return;
+
+          const keyEl = document.querySelector(`[data-midi='${transposedMidi}']`);
           if (!keyEl) return;
           const rect = keyEl.getBoundingClientRect();
 
@@ -675,7 +757,7 @@ export default function App(){
           const yTop = yBottom - barHeight;
 
           // couleur et dégradé
-          const baseColor = WHITE.includes(n.midi % 12)
+          const baseColor = WHITE.includes(transposedMidi % 12)
             ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
             : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
           const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
@@ -732,7 +814,7 @@ export default function App(){
       const midi = n2m(note);
       if (kbdSet.current.has(midi)) return;
       kbdSet.current.add(midi);
-      synthRef.current.triggerAttack(note);
+      playTransposedNote(note)
       highlight(midi, true);
     };
     const up = (e) => {
@@ -740,7 +822,7 @@ export default function App(){
       if (!note) return;
       const midi = n2m(note);
       kbdSet.current.delete(midi);
-      synthRef.current.triggerRelease(note);
+      releaseTransposedNote(note)
       highlight(midi, false);
     };
     window.addEventListener('keydown', down);
@@ -762,7 +844,7 @@ export default function App(){
   
           if ((cmd === 0x90 && vel) || (cmd === 0x80 && vel > 0 && false)) {
             // NOTE ON
-            synthRef.current.triggerAttack(m2n(note), undefined, vel/127);
+            playTransposedNote(m2n(note), vel / 127);
             highlight(note, true);
   
             // **Ajout** au set pour les barres montantes
@@ -770,7 +852,7 @@ export default function App(){
           }
           else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
             // NOTE OFF
-            synthRef.current.triggerRelease(m2n(note));
+            releaseTransposedNote(m2n(note));
             highlight(note, false);
   
             // **Suppression** du set
@@ -784,9 +866,9 @@ export default function App(){
   // pointer events (unchanged) ------------------------------------
   const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
   const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
-  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);synthRef.current.triggerAttack(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
+  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);playTransposedNote(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
   const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
-  const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){synthRef.current.triggerRelease(m2n(m));highlight(m,false);} };
+  const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){releaseTransposedNote(m2n(m));highlight(m,false);} };
 
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
@@ -1338,7 +1420,59 @@ const labelByMidi = useMemo(() => {
   }
   
   
+  .transpose-slider {
+    width: 100px;
+    height: 4px;
+    appearance: none;
+    background: #666;
+    border-radius: 2px;
+    outline: none;
+    margin: 0 0.5rem;
+    vertical-align: middle;
+  }
+  .transpose-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid #000;
+  }
+  .transpose-slider::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid #000;
+  }
+
   
+  .top {
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.75rem !important;
+    height: 2rem;
+  }
+  
+  .toolbar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0;
+    font-size: 0.75rem;
+  }
+  
+  .toolbar-item select,
+  .toolbar-item input[type="range"],
+  .toolbar-item label {
+    height: 1.3rem !important;
+    font-size: 0.75rem !important;
+    padding: 0 0.3rem !important;
+  }
+
 
 
   
@@ -1498,7 +1632,21 @@ const labelByMidi = useMemo(() => {
     />
 
 
-
+    <div className="toolbar-item">
+      <label style={{ marginRight: "0.3rem" }}>Transpose</label>
+      <input
+        type="range"
+        min="-12"
+        max="12"
+        step="1"
+        value={transpose}
+        onChange={e => setTranspose(+e.target.value)}
+        className="transpose-slider"
+      />
+      <span style={{ minWidth: "2ch", textAlign: "right" }}>
+        {transpose > 0 ? "+" : ""}{transpose}
+      </span>
+    </div>
   
     <details className="about" ref={aboutRef}>
       <summary>{summary}</summary>
