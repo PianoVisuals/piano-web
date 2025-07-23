@@ -1449,13 +1449,7 @@ const labelByMidi = useMemo(() => {
   }
 
   
-  .top {
-    flex-wrap: nowrap !important;
-    gap: 0.5rem !important;
-    padding: 0.3rem 0.6rem !important;
-    font-size: 0.75rem !important;
-    height: 2rem;
-  }
+
   
   .toolbar-item {
     display: flex;
