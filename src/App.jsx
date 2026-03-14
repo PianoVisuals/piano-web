@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 
-
 // nom des fichiers .mid que tu as mis dans public/demos/
 const DEMOS = [
   "Fur Elise - Beethoven.mid",
@@ -36,7 +35,6 @@ const DEMOS = [
 
 ];
 
-
 // === AdSense -------------------------------------------------------------
 const ADSENSE_ID = "ca-pub-1502213318168443"; // ← remplace par ton ID si différent
 
@@ -62,22 +60,14 @@ const THEMES = {
   "Candy":        { bg: "#222",     barW: "rgba(255,105,180,0.7)", barB: "rgba(255,182,193,0.7)", actW: "#f9acf5", actB: "#f988e6" },
   "Retro":        { bg: "#282828",  barW: "rgba(255,165,0,0.7)",   barB: "rgba(0,255,170,0.7)",   actW: "#ffd166", actB: "#06d6a0" },
   "Neon":         { bg: "#050912",  barW: "rgba(57,255,20,0.8)",   barB: "rgba(0,255,255,0.8)",   actW: "#39ff14", actB: "#00e5ff" },
-  "Hell":         { bg: "#4d2525",  barW: "rgba(40,15,15,0.8)",    barB: "rgba(0,0,0,0.8)",       actW: "#871414", actB: "#5e1d1d" },
-  "Heaven":       { bg: "#aba693",  barW: "rgba(214,191,96,0.8)",  barB: "rgba(133,120,68,0.8)",  actW: "#b89918", actB: "#87731f" },
 
   "Ocean":        { bg: "#002b36",  barW: "rgba(38,139,210,0.7)",  barB: "rgba(7,54,66,0.7)",     actW: "#268bd2", actB: "#073642" },
   "Forest":       { bg: "#1b2f24",  barW: "rgba(133,193,85,0.7)",  barB: "rgba(42,92,47,0.7)",    actW: "#85c155", actB: "#2a5c2f" },
   "Sunset":       { bg: "#3e1f47",  barW: "rgba(255,94,77,0.7)",   barB: "rgba(255,188,117,0.7)", actW: "#ff5e4d", actB: "#ffbc75" },
-  "PastelDream":  { bg: "#f2e9e4",  barW: "rgba(255,179,186,0.6)", barB: "rgba(255,223,186,0.6)", actW: "#ffb3ba", actB: "#ffdfba" },
   "Monochrome":   { bg: "#1c1c1c",  barW: "rgba(200,200,200,0.6)", barB: "rgba(100,100,100,0.6)", actW: "#c8c8c8", actB: "#646464" },
   "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
   "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
   "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
-
-
-
-
-
 
 };
 // ===== Constantes clavier ================================================= =================================================
@@ -226,8 +216,35 @@ const INSTR = {
 
 const URLS = { C3: "C3.mp3", G3: "G3.mp3", C4: "C4.mp3", G4: "G4.mp3", C5: "C5.mp3", G5: "G5.mp3" };
 const LONG_REL = 50; // sustain release seconds
+const MIDI_SUSTAIN_EXTRA = 0.45; // extra hold for imported MIDI playback when sustain is enabled
 const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
 
+const hexToRgba = (hex, alpha = 1) => {
+  if (typeof hex !== "string") return `rgba(8, 6, 18, ${alpha})`;
+  const clean = hex.replace("#", "").trim();
+  if (![3, 6].includes(clean.length)) return `rgba(8, 6, 18, ${alpha})`;
+  const full = clean.length === 3 ? clean.split("").map(c => c + c).join("") : clean;
+  const int = parseInt(full, 16);
+  if (Number.isNaN(int)) return `rgba(8, 6, 18, ${alpha})`;
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const withAlpha = (color, alpha = 1) => {
+  if (typeof color !== "string") return `rgba(255,255,255,${alpha})`;
+  if (color.startsWith("#")) return hexToRgba(color, alpha);
+  if (color.startsWith("rgba(")) {
+    const parts = color.slice(5, -1).split(",").map(p => p.trim());
+    return `rgba(${parts[0] || 255}, ${parts[1] || 255}, ${parts[2] || 255}, ${alpha})`;
+  }
+  if (color.startsWith("rgb(")) {
+    const parts = color.slice(4, -1).split(",").map(p => p.trim());
+    return `rgba(${parts[0] || 255}, ${parts[1] || 255}, ${parts[2] || 255}, ${alpha})`;
+  }
+  return color;
+};
 
 const texts = {
   en: {
@@ -259,8 +276,6 @@ const texts = {
   }
 };
 
-
-
 /**
  * Charge un fichier MIDI de la bibliothèque et le joue
  * @param {string} name  Nom du fichier dans public/demos/
@@ -281,10 +296,6 @@ async function loadDemo(name) {
   }
 }
 
-
-
-
-
 export default function App(){
   // refs & state ----------------------------------------------------
   const pianoRef=useRef(null); const canvasRef=useRef(null);
@@ -295,13 +306,60 @@ export default function App(){
   const [theme,setTheme]=useState("Classic");
   const [volume,setVolume]=useState(250);
   const [sustain,setSustain]=useState(false);
+  const sustainRef = useRef(false);
   const [midiData,setMidiData]=useState(null); // Midi object
   const [duration,setDuration]=useState(0);
   const [playing,setPlaying]=useState(false);
-  const [progress,setProgress]=useState(0);
+  const midiDataRef = useRef(null);
+  const durationRef = useRef(0);
+  const playingRef = useRef(false);
   // état connexion MIDI
   const [midiConnected,setMidiConnected]=useState(false); // 0‑1
+  const [isMidiLoading, setIsMidiLoading] = useState(false);
+  const [midiLoadingText, setMidiLoadingText] = useState("Chargement du MIDI…");
 
+  const currentTheme = THEMES[theme] ?? THEMES.Classic;
+  const midiLoadingDisplay = (midiLoadingText || "MIDI")
+    .replace(/^Chargement de\s*/i, "")
+    .replace(/\s*[….]+$/u, "")
+    .trim() || "MIDI";
+  const loadingOverlayStyle = useMemo(() => ({
+    "--loading-bg": withAlpha(currentTheme.bg, 0.72),
+    "--loading-card-bg": withAlpha(currentTheme.bg, 0.94),
+    "--loading-card-border": withAlpha(currentTheme.actW, 0.22),
+    "--loading-accent-a": currentTheme.actW,
+    "--loading-accent-b": currentTheme.actB,
+    "--loading-spinner-track": "rgba(255,255,255,0.12)",
+  }), [currentTheme]);
+
+  const topBarThemeStyle = useMemo(() => ({
+    "--top-shell-bg": withAlpha(currentTheme.bg, 0.96),
+    "--top-shell-border": withAlpha(currentTheme.actW, 0.16),
+    "--top-shell-shadow": withAlpha(currentTheme.bg, 0.34),
+    "--top-group-bg": `linear-gradient(180deg, ${withAlpha(currentTheme.bg, 0.88)} 0%, ${withAlpha(currentTheme.bg, 0.82)} 100%)`,
+    "--top-group-border": withAlpha(currentTheme.actW, 0.18),
+    "--top-status-bg": withAlpha(currentTheme.actW, 0.08),
+    "--top-status-border": withAlpha(currentTheme.actW, 0.18),
+    "--top-control-bg": withAlpha(currentTheme.actW, 0.10),
+    "--top-control-hover": withAlpha(currentTheme.actW, 0.14),
+    "--top-control-border": withAlpha(currentTheme.actW, 0.18),
+    "--top-toggle-bg": withAlpha(currentTheme.actW, 0.08),
+    "--top-toggle-hover": withAlpha(currentTheme.actW, 0.14),
+    "--top-toggle-border": withAlpha(currentTheme.actW, 0.18),
+    "--top-button-bg": withAlpha(currentTheme.actW, 0.10),
+    "--top-button-hover": withAlpha(currentTheme.actW, 0.16),
+    "--top-button-border": withAlpha(currentTheme.actW, 0.20),
+    "--top-play-bg": `linear-gradient(135deg, ${currentTheme.actW} 0%, ${currentTheme.actB} 100%)`,
+    "--top-play-hover": `linear-gradient(135deg, ${withAlpha(currentTheme.actW, 0.92)} 0%, ${withAlpha(currentTheme.actB, 0.92)} 100%)`,
+    "--top-play-border": withAlpha(currentTheme.actW, 0.42),
+    "--top-focus-ring": withAlpha(currentTheme.actW, 0.24),
+    "--top-value-bg": withAlpha(currentTheme.actW, 0.10),
+    "--top-value-border": withAlpha(currentTheme.actW, 0.18),
+    "--top-label-color": withAlpha(currentTheme.actW, 0.82),
+    "--top-progress-text": withAlpha("#ffffff", 0.86),
+    "--top-range-accent": currentTheme.actW,
+    "--top-range-track": withAlpha("#ffffff", 0.18),
+  }), [currentTheme]);
 
   const transposeRef = useRef(0);
   const [transpose, _setTranspose] = useState(0);
@@ -309,6 +367,10 @@ export default function App(){
     transposeRef.current = val;
     _setTranspose(val);
   };
+
+  midiDataRef.current = midiData;
+  durationRef.current = duration;
+  playingRef.current = playing;
 
   function playTransposedNote(note, velocity = 1) {
     const midi = n2m(note);
@@ -336,13 +398,9 @@ export default function App(){
   }
   
 
-
-
-
   const [navOpen, setNavOpen] = useState(false);
 
   const toggleNav = () => setNavOpen(o => !o);
-
 
   const isFr = navigator.language.startsWith("fr");
   const { summary, title, paragraphs } = texts[isFr ? "fr" : "en"];;
@@ -367,12 +425,13 @@ export default function App(){
     if (playing) {
       Tone.Transport.start("+0.05");
     }
+    requestAnimationFrame(measureScene);
+    queueVisualFrame();
   }, [transpose]);
   
 
   const borderColor = "#000";   // contour noir, ou une couleur de ton thème
   const borderWidth = 1.5;      // épaisseur en pixels
-
 
   // pour gérer le thème temporaire de Bad Apple
   const prevThemeRef = useRef(null);
@@ -385,14 +444,6 @@ export default function App(){
     actW: "#000000",
     actB: "#d2d2d2"
   };
-
-
-
-
-
-
-
-
 
   const TEMP_THEME_KEY = "Bad Apple";
 
@@ -419,12 +470,161 @@ export default function App(){
   // pour afficher/masquer la pop-up de choix
   const [showLibrary, setShowLibrary] = useState(false);
   const aboutRef = useRef(null);
+  const keyMetaRef = useRef(new Map());
+  const visualNotesRef = useRef([]);
+  const visualMaxDurationRef = useRef(0);
+  const canvasCtxRef = useRef(null);
+  const canvasMetricsRef = useRef({ width: 0, height: 0, dpr: 1, pianoTop: 0 });
+  const visualRafRef = useRef(null);
+  const progressRef = useRef(0);
+  const progressInputRef = useRef(null);
+  const isScrubbingRef = useRef(false);
+  const scrubPointerIdRef = useRef(null);
+  const wasPlayingBeforeScrubRef = useRef(false);
+  const loadRequestIdRef = useRef(0);
+  const visualFrameTimeRef = useRef(0);
+  const themeVisualRef = useRef({
+    barWhite: currentTheme.barW,
+    barBlack: currentTheme.barB,
+    activeWhite: currentTheme.actW,
+    activeBlack: currentTheme.actB,
+  });
+
+  const VISUAL_FRAME_MS = 1000 / 45;
+
+  const commitProgress = (next) => {
+    const clamped = Math.max(0, Math.min(next, 1));
+    progressRef.current = clamped;
+    const input = progressInputRef.current;
+    if (input && (!isScrubbingRef.current || document.activeElement !== input)) {
+      input.value = String(clamped);
+    }
+  };
+
+  const stopScrub = (finalClientX = null, pointerId = null) => {
+    if (!isScrubbingRef.current && scrubPointerIdRef.current == null) {
+      return;
+    }
+
+    if (
+      pointerId != null &&
+      scrubPointerIdRef.current != null &&
+      pointerId !== scrubPointerIdRef.current
+    ) {
+      return;
+    }
+
+    if (finalClientX != null) {
+      scrubFromClientX(finalClientX);
+    }
+
+    const input = progressInputRef.current;
+    if (input && scrubPointerIdRef.current != null) {
+      try {
+        input.releasePointerCapture?.(scrubPointerIdRef.current);
+      } catch {}
+    }
+
+    const shouldResume = wasPlayingBeforeScrubRef.current;
+
+    isScrubbingRef.current = false;
+    scrubPointerIdRef.current = null;
+    wasPlayingBeforeScrubRef.current = false;
+
+    syncVisualFromTransport();
+
+    if (shouldResume && midiDataRef.current) {
+      Tone.Transport.start();
+      setPlaying(true);
+      playingRef.current = true;
+    }
+
+    queueVisualFrame();
+  };
+
+  const queueVisualFrame = () => {
+    if (visualRafRef.current != null) return;
+    visualRafRef.current = requestAnimationFrame((now) => {
+      visualRafRef.current = null;
+
+      const hasActiveInteraction =
+        playingRef.current ||
+        isScrubbingRef.current ||
+        kbdSet.current.size > 0 ||
+        pointerMap.current.size > 0;
+
+      if (now - visualFrameTimeRef.current < VISUAL_FRAME_MS) {
+        if (hasActiveInteraction) {
+          queueVisualFrame();
+        } else {
+          drawBars();
+        }
+        return;
+      }
+
+      visualFrameTimeRef.current = now;
+
+      if (playingRef.current && durationRef.current && !isScrubbingRef.current) {
+        const t = Tone.Transport.seconds;
+        commitProgress(transportSecondsToProgress(t));
+      }
+
+      drawBars();
+
+      if (hasActiveInteraction) {
+        queueVisualFrame();
+      }
+    });
+  };
+
+  const measureScene = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    if (
+      canvasMetricsRef.current.width !== width ||
+      canvasMetricsRef.current.height !== height ||
+      canvasMetricsRef.current.dpr !== dpr
+    ) {
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        canvasCtxRef.current = ctx;
+      }
+    }
+
+    const pianoTop = pianoRef.current?.getBoundingClientRect().top
+      ?? (height - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
+
+    canvasMetricsRef.current = { width, height, dpr, pianoTop };
+
+    const nextMeta = new Map();
+    document.querySelectorAll("[data-midi]").forEach((el) => {
+      const midi = Number(el.getAttribute("data-midi"));
+      const rect = el.getBoundingClientRect();
+      nextMeta.set(midi, {
+        el,
+        left: rect.left,
+        width: rect.width,
+        isWhite: WHITE.includes(midi % 12),
+      });
+    });
+    keyMetaRef.current = nextMeta;
+  };
 
   // réinitialise l'état pour revenir à l'écran vide
   const unloadMidi = () => {
-    // 1) Stoppe la lecture
-    Tone.Transport.stop();
-    setPlaying(false);
+    loadRequestIdRef.current += 1;
+
+    // 1) Stoppe la lecture et nettoie le transport
+    resetPlaybackForIncomingMidi();
 
     // 2) Si on venait de Bad Apple, restaure l’ancien thème et nettoie
     if (prevThemeRef.current !== null) {
@@ -434,54 +634,59 @@ export default function App(){
     }
 
     // 3) Réinitialise les données
+    midiDataRef.current = null;
+    durationRef.current = 0;
     setMidiData(null);
-    setProgress(0);
-
-    // 4) Relâche toutes les touches actives
-    clearAllActive();
+    setDuration(0);
   };
-
 
   // À placer DANS ton composant App(), à l’endroit où tu as défini loadDemo
   const loadDemo = async (name) => {
+    if (!name) return;
+    const requestId = ++loadRequestIdRef.current;
+
+    setMidiLoadingText(`Chargement de ${name.replace(/\.mid$/i, "")}…`);
+    setIsMidiLoading(true);
+    closeLibrary();
+    resetPlaybackForIncomingMidi();
+    setMidiData(null);
+    setDuration(0);
+
     try {
-      // 1) Charger le fichier depuis /demos/
       const res = await fetch(`/demos/${encodeURIComponent(name)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const arr = await res.arrayBuffer();
       const midi = new Midi(arr);
 
-      // 2) Mettre à jour l’état et préparer la lecture
+      if (requestId !== loadRequestIdRef.current) return;
+
+      midiDataRef.current = midi;
+      durationRef.current = midi.duration;
       setMidiData(midi);
-      setDuration(midi.duration + LEAD);
+      setDuration(midi.duration);
       preparePart(midi);
+      requestAnimationFrame(measureScene);
+      queueVisualFrame();
 
-      // 3) Gestion du thème spécial Bad Apple
       if (name === "Bad Apple!!.mid") {
-        // injecte le thème temporaire dans l’objet THEMES
         THEMES[TEMP_THEME_KEY] = BAD_APPLE_THEME;
-        // mémorise le thème courant
         prevThemeRef.current = theme;
-        // active le thème Bad Apple
         setTheme(TEMP_THEME_KEY);
-      } else {
-        // si on venait de Bad Apple, restaure l’ancien thème et nettoie
-        if (prevThemeRef.current !== null) {
-          setTheme(prevThemeRef.current);
-          prevThemeRef.current = null;
-          delete THEMES[TEMP_THEME_KEY];
-        }
+      } else if (prevThemeRef.current !== null) {
+        setTheme(prevThemeRef.current);
+        prevThemeRef.current = null;
+        delete THEMES[TEMP_THEME_KEY];
       }
-
-      // 4) Fermer la pop-up
-      closeLibrary();
     } catch (err) {
+      if (requestId !== loadRequestIdRef.current) return;
       console.error("Erreur loadDemo :", err);
       alert("Impossible de charger le morceau : " + name);
-      closeLibrary();
+    } finally {
+      if (requestId === loadRequestIdRef.current) {
+        setIsMidiLoading(false);
+      }
     }
   };
-
 
 
   useEffect(() => {
@@ -493,6 +698,30 @@ export default function App(){
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
+
+  useEffect(() => {
+    const onResize = () => {
+      measureScene();
+      queueVisualFrame();
+    };
+
+    measureScene();
+    queueVisualFrame();
+    const raf = requestAnimationFrame(() => {
+      measureScene();
+      queueVisualFrame();
+    });
+    window.addEventListener("resize", onResize, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      if (visualRafRef.current != null) {
+        cancelAnimationFrame(visualRafRef.current);
+        visualRafRef.current = null;
+      }
+    };
+  }, [isBarCollapsed]);
 
   // ouvrir la pop-up
   const openLibrary = () => setShowLibrary(true);
@@ -512,24 +741,8 @@ export default function App(){
   }, []);
 
   useEffect(() => {
-    const clearOnVisChange = () => {
-      clearAllActive();
-    };
-    document.addEventListener("visibilitychange", clearOnVisChange);
-    return () =>
-      document.removeEventListener("visibilitychange", clearOnVisChange);
-  }, []);
-
-
-
-  useEffect(() => {
     const onBlur = () => {
-      // pareil : release toutes les notes en cours
-      kbdSet.current.forEach(midi => {
-        synthRef.current.triggerRelease(m2n(midi));
-        highlight(midi, false);
-      });
-      kbdSet.current.clear();
+      releaseHeldInteractiveNotes();
     };
 
     window.addEventListener("blur", onBlur);
@@ -538,13 +751,17 @@ export default function App(){
     };
   }, []);
 
-
-
-
   // appliquer thème -------------------------------------------------
   useEffect(()=>{
     const c = THEMES[theme];
     Object.entries({bg:c.bg,"bar-w":c.barW,"bar-b":c.barB,"act-w":c.actW,"act-b":c.actB}).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
+    themeVisualRef.current = {
+      barWhite: c.barW,
+      barBlack: c.barB,
+      activeWhite: c.actW,
+      activeBlack: c.actB,
+    };
+    queueVisualFrame();
   },[theme]);
 
   // inject AdSense auto‑ads once -----------------------------------
@@ -558,11 +775,19 @@ export default function App(){
 
   // create synth ---------------------------------------------------
   useEffect(()=>{Tone.start();synthRef.current?.dispose();synthRef.current=makeSampler(instrument).toDestination();synthRef.current.volume.value=Tone.gainToDb(volume/100);
-    synthRef.current.release = sustain ? LONG_REL : 1;return()=>synthRef.current?.dispose();},[instrument]);
-  useEffect(()=>{if(synthRef.current){synthRef.current.volume.value=Tone.gainToDb(volume/100);synthRef.current.release = sustain ? LONG_REL : 1;}},[volume,sustain]);
+    synthRef.current.release = sustain ? LONG_REL : 1;queueVisualFrame();return()=>synthRef.current?.dispose();},[instrument]);
+  useEffect(()=>{
+    sustainRef.current = sustain;
+    if(synthRef.current){
+      synthRef.current.volume.value=Tone.gainToDb(volume/100);
+      synthRef.current.release = sustain ? LONG_REL : 1;
+    }
+  },[volume,sustain]);
 
   // MIDI import ----------------------------------------------------
   const handleFile = async (eOrFile) => {
+    const requestId = ++loadRequestIdRef.current;
+
     try {
       const file = eOrFile instanceof File
         ? eOrFile
@@ -571,43 +796,94 @@ export default function App(){
         console.warn("handleFile : pas de fichier trouvé");
         return;
       }
-      console.log("handleFile – lecture du fichier :", file);
-  
+
+      setMidiLoadingText(`Chargement de ${file.name.replace(/\.mid$/i, "")}…`);
+      setIsMidiLoading(true);
+      closeLibrary();
+      resetPlaybackForIncomingMidi();
+      setMidiData(null);
+      setDuration(0);
+
       const arr = await file.arrayBuffer();
-      console.log("handleFile – arrayBuffer reçu, longueur :", arr.byteLength);
-  
       const midi = new Midi(arr);
-      console.log("handleFile – objet Midi créé, duration :", midi.duration);
-  
+
+      if (requestId !== loadRequestIdRef.current) return;
+
+      midiDataRef.current = midi;
+      durationRef.current = midi.duration;
       setMidiData(midi);
-      setDuration(midi.duration + LEAD);
+      setDuration(midi.duration);
       preparePart(midi);
+      requestAnimationFrame(measureScene);
+      queueVisualFrame();
     }
     catch (err) {
+      if (requestId !== loadRequestIdRef.current) return;
       console.error("Erreur dans handleFile :", err);
       alert("Erreur lors de la lecture du MIDI : " + err.message);
+    } finally {
+      if (requestId === loadRequestIdRef.current) {
+        setIsMidiLoading(false);
+      }
     }
   };
-  
 
   const clearAllActive = () => {
-    // désactive visuellement + soniquement chaque note “allumée”
-    document.querySelectorAll('.active').forEach(el => {
-      const midi = +el.getAttribute('data-midi');
-      // son
-      synthRef.current.triggerRelease(m2n(midi));
-      // visuel
-      el.classList.remove('active');
-    });
-    // reset du set clavier (pc)
+    synthRef.current?.releaseAll?.();
+
+    pointerMap.current.clear();
     kbdSet.current.clear();
+
+    if (keyMetaRef.current.size > 0) {
+      keyMetaRef.current.forEach((meta) => {
+        meta?.el?.classList.remove("active");
+      });
+    } else {
+      document.querySelectorAll(".active").forEach((el) => {
+        el.classList.remove("active");
+      });
+    }
+
+    queueVisualFrame();
   };
 
+  const resetPlaybackForIncomingMidi = () => {
+    stopScrub();
+
+    wasPlayingBeforeScrubRef.current = false;
+
+    if (visualRafRef.current != null) {
+      cancelAnimationFrame(visualRafRef.current);
+      visualRafRef.current = null;
+    }
+    visualFrameTimeRef.current = 0;
+
+    setPlaying(false);
+    playingRef.current = false;
+
+    Tone.Transport.stop();
+    Tone.Transport.cancel(0);
+    Tone.Transport.seconds = 0;
+
+    partRef.current?.dispose();
+    partRef.current = null;
+
+    midiDataRef.current = null;
+    durationRef.current = 0;
+    visualNotesRef.current = [];
+    visualMaxDurationRef.current = 0;
+
+    commitProgress(0);
+    clearAllActive();
+    drawBars();
+  };
 
   const preparePart = (midi) => {
     partRef.current?.dispose();
     const events = [];
-  
+    const visualNotes = [];
+    let maxDuration = 0;
+
     midi.tracks.forEach(track =>
       track.notes.forEach(n => {
         const transposedMidi = n.midi + transposeRef.current;
@@ -619,12 +895,23 @@ export default function App(){
             duration: n.duration,
             velocity: n.velocity
           });
+          if (n.duration > maxDuration) maxDuration = n.duration;
+          visualNotes.push({
+            time: n.time + LEAD,
+            duration: n.duration,
+            midi: transposedMidi
+          });
         }
       })
     );
-  
+
+    visualNotes.sort((a, b) => a.time - b.time);
+    visualNotesRef.current = visualNotes;
+    visualMaxDurationRef.current = maxDuration;
+
     partRef.current = new Tone.Part((time, note) => {
-      synthRef.current.triggerAttackRelease(note.name, note.duration, time, note.velocity);
+      const effectiveDuration = note.duration + (sustainRef.current ? MIDI_SUSTAIN_EXTRA : 0);
+      synthRef.current.triggerAttackRelease(note.name, effectiveDuration, time, note.velocity);
       Tone.Draw.schedule(() => highlight(n2m(note.name), true), time);
       Tone.Draw.schedule(() => highlight(n2m(note.name), false), time + note.duration);
     }, events.map(n => ({
@@ -636,141 +923,231 @@ export default function App(){
 
     partRef.current.start(0);
     Tone.Transport.seconds = 0;
-    setProgress(0);
+    syncVisualFromTransport(true);
+    queueVisualFrame();
   };
-  
-
-
-
-
 
   // play / pause --------------------------------------------------- ---------------------------------------------------
-  const togglePlay=()=>{if(!midiData)return;if(!playing){Tone.Transport.start("+0.1");setPlaying(true);}else{Tone.Transport.pause();setPlaying(false);} };
+  const togglePlay = () => {
+    if (!midiDataRef.current) return;
 
-  // progress tracking ---------------------------------------------
-  useEffect(()=>{
-    let id;
-    const loop=()=>{if(playing&&duration){const t=Tone.Transport.seconds;setProgress(Math.min(t/duration,1));}drawBars();id=requestAnimationFrame(loop);};
-    loop();return()=>cancelAnimationFrame(id);
-  },[playing,duration,midiData]);
+    if (!playingRef.current) {
+      Tone.Transport.start();
+      setPlaying(true);
+      playingRef.current = true;
+      syncVisualFromTransport();
+      queueVisualFrame();
+    } else {
+      const pausedAt = Tone.Transport.seconds;
+      Tone.Transport.pause();
+      Tone.Transport.seconds = pausedAt;
+      setPlaying(false);
+      playingRef.current = false;
+      commitProgress(transportSecondsToProgress(pausedAt));
+      drawBars();
+      queueVisualFrame();
+    }
+  };
 
-  // scrub ----------------------------------------------------------
-  const onScrub=(val)=>{if(!midiData) return;const newT=val*duration;Tone.Transport.seconds=newT;setProgress(val);drawBars();};
+  useEffect(() => {
+    queueVisualFrame();
+  }, [playing, duration, midiData]);
+
+  const onScrub = (val) => {
+    if (!midiDataRef.current || !durationRef.current) return;
+    const clamped = Math.max(0, Math.min(val, 1));
+    Tone.Transport.seconds = progressToTransportSeconds(clamped);
+    commitProgress(clamped);
+    drawBars();
+    queueVisualFrame();
+  };
+
+  const scrubFromClientX = (clientX) => {
+    const input = progressInputRef.current;
+    if (!input || !midiDataRef.current || !durationRef.current) return;
+    const rect = input.getBoundingClientRect();
+    if (!rect.width) return;
+    const ratio = (clientX - rect.left) / rect.width;
+    onScrub(ratio);
+  };
+
+  const beginScrub = (e) => {
+    if (!midiDataRef.current) return;
+    e.preventDefault();
+
+    wasPlayingBeforeScrubRef.current = playingRef.current;
+
+    if (playingRef.current) {
+      Tone.Transport.pause();
+      setPlaying(false);
+      playingRef.current = false;
+    }
+
+    isScrubbingRef.current = true;
+    scrubPointerIdRef.current = e.pointerId ?? null;
+    try {
+      e.currentTarget?.setPointerCapture?.(e.pointerId);
+    } catch {}
+    scrubFromClientX(e.clientX);
+    queueVisualFrame();
+  };
+
+  const moveScrub = (e) => {
+    if (!isScrubbingRef.current) return;
+    if (
+      scrubPointerIdRef.current != null &&
+      e.pointerId != null &&
+      scrubPointerIdRef.current !== e.pointerId
+    ) return;
+    scrubFromClientX(e.clientX);
+    queueVisualFrame();
+  };
+
+  const endScrub = (e) => {
+    stopScrub(e?.clientX ?? null, e?.pointerId ?? null);
+  };
+
+  useEffect(() => {
+    const onGlobalPointerUp = (e) => {
+      stopScrub(e?.clientX ?? null, e?.pointerId ?? null);
+    };
+    const onWindowBlur = () => {
+      stopScrub();
+    };
+
+    window.addEventListener("pointerup", onGlobalPointerUp, true);
+    window.addEventListener("pointercancel", onGlobalPointerUp, true);
+    window.addEventListener("blur", onWindowBlur);
+
+    return () => {
+      window.removeEventListener("pointerup", onGlobalPointerUp, true);
+      window.removeEventListener("pointercancel", onGlobalPointerUp, true);
+      window.removeEventListener("blur", onWindowBlur);
+    };
+  }, []);
 
   // ==== Falling bars =============================================
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
+  const MAX_VISIBLE_BARS = 500;
+
+  const progressToTransportSeconds = (ratio) => {
+    const trackDuration = durationRef.current;
+    if (!trackDuration) return 0;
+    return LEAD + Math.max(0, Math.min(ratio, 1)) * trackDuration;
+  };
+
+  const transportSecondsToProgress = (seconds) => {
+    const trackDuration = durationRef.current;
+    if (!trackDuration) return 0;
+    return Math.max(0, Math.min((seconds - LEAD) / trackDuration, 1));
+  };
+
+  const syncVisualFromTransport = (forceMeasure = false) => {
+    if (forceMeasure) {
+      measureScene();
+    }
+    commitProgress(transportSecondsToProgress(Tone.Transport.seconds));
+    drawBars();
+  };
 
   const drawBars = () => {
-    if (!canvasRef.current) return;       // on ne bloque plus sur midiData
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const W = canvas.width = window.innerWidth;
-    const H = canvas.height = window.innerHeight;
+    if (!canvas) return;
+
+    if (!canvasCtxRef.current) {
+      measureScene();
+    }
+
+    const ctx = canvasCtxRef.current;
+    if (!ctx) return;
+
+    const { width: W, height: H, pianoTop } = canvasMetricsRef.current;
     ctx.clearRect(0, 0, W, H);
 
-    // position du haut du piano
-    const pianoRect = pianoRef.current?.getBoundingClientRect();
-    const keysY = pianoRect
-      ? pianoRect.top
-      : (H - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
-    const path = keysY;
-
+    const path = pianoTop;
     const t = Tone.Transport.seconds;
+    const { barWhite, barBlack } = themeVisualRef.current;
 
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, 0, W, keysY);
+    ctx.rect(0, 0, W, pianoTop);
     ctx.clip();
 
-    // ─── GESTION DES BARRES MONTANTES ───
-    // on récupère toutes les notes enfoncées (clavier + tactile)
     const pressedMidis = [
       ...kbdSet.current,
       ...Array.from(pointerMap.current.values())
     ];
 
-    // si aucune musique n'est chargée ET qu'on a des touches pressées
-    if (!midiData && pressedMidis.length > 0) {
-      pressedMidis.forEach(midi => {
-        const keyEl = document.querySelector(`[data-midi="${midi}"]`);
-        if (!keyEl) return;
-        const rect = keyEl.getBoundingClientRect();
+    if (!midiDataRef.current && pressedMidis.length > 0) {
+      for (const midi of pressedMidis) {
+        const meta = keyMetaRef.current.get(midi);
+        if (!meta) continue;
 
-        // ajustements de largeur et position X
-        const barWidth = rect.width * 0.9;
-        const x = rect.left + (rect.width - barWidth) / 2;
-
-        // hauteur : du bas du clavier (rect.top) jusqu'en haut de l'écran
-        const yBottom = rect.top;
-        const barHeight = yBottom;
+        const barWidth = meta.width * 0.9;
+        const x = meta.left + (meta.width - barWidth) / 2;
+        const yBottom = pianoTop;
         const yTop = 0;
+        const baseColor = meta.isWhite ? barWhite : barBlack
 
-        // couleur selon note blanche ou noire
-        const baseColor = WHITE.includes(midi % 12)
-          ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
-          : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-
-        // dégradé opaque
         const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
         grad.addColorStop(0, baseColor);
         grad.addColorStop(1, "rgba(255,255,255,0)");
 
-        // ombre portée
-        ctx.shadowColor = baseColor;
-        ctx.shadowBlur  = 8;
-        ctx.globalAlpha = 0.8;
-
-        // dessin
+        ctx.shadowColor = "transparent";
+        ctx.globalAlpha = 0.78;
         ctx.fillStyle = grad;
-        ctx.fillRect(x, yTop, barWidth, barHeight);
-
-        // reset
-        ctx.shadowBlur  = 0;
+        ctx.fillRect(x, yTop, barWidth, yBottom);
         ctx.globalAlpha = 1;
-      });
+      }
 
       ctx.restore();
-      return;  // on sort avant de dessiner les barres MIDI
+      return;
     }
 
-    // ─── GESTION DES BARRES QUI TOMBENT (MIDI) ───
-    if (midiData) {
-      midiData.tracks.forEach(tr => {
-        tr.notes.forEach(n => {
-          const impact = n.time + LEAD;
-          const remaining = impact - t;
-          if (remaining < -n.duration || remaining > LEAD) return;
+    if (midiDataRef.current) {
+      const visualNotes = visualNotesRef.current;
+      const visibleUntil = t + LEAD;
+      const visibleFrom = t - visualMaxDurationRef.current;
+      let lo = 0;
+      let hi = visualNotes.length;
 
-          const transposedMidi = n.midi + transposeRef.current;
-          if (transposedMidi < NOTE_MIN || transposedMidi > NOTE_MAX) return;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (visualNotes[mid].time < visibleFrom) lo = mid + 1;
+        else hi = mid;
+      }
 
-          const keyEl = document.querySelector(`[data-midi='${transposedMidi}']`);
-          if (!keyEl) return;
-          const rect = keyEl.getBoundingClientRect();
+      let visibleCount = 0;
+      for (let i = lo; i < visualNotes.length; i++) {
+        const n = visualNotes[i];
+        if (n.time > visibleUntil) break;
+        if (n.time + n.duration < t) continue;
+        visibleCount += 1;
+        if (visibleCount > MAX_VISIBLE_BARS) break;
 
-          // ajustement largeur comme précédemment
-          const barWidth = rect.width * 0.9;
-          const x = rect.left + (rect.width - barWidth) / 2;
+        const meta = keyMetaRef.current.get(n.midi);
+        if (!meta) continue;
 
-          const yBottom = (1 - remaining / LEAD) * path;
-          const barHeight = n.duration * (path / LEAD);
-          const yTop = yBottom - barHeight;
+        const remaining = n.time - t;
+        const barWidth = meta.width * 0.9;
+        const x = meta.left + (meta.width - barWidth) / 2;
+        const yBottom = (1 - remaining / LEAD) * path;
+        const barHeight = n.duration * (path / LEAD);
+        const yTop = yBottom - barHeight;
 
-          // couleur et dégradé
-          const baseColor = WHITE.includes(transposedMidi % 12)
-            ? getComputedStyle(document.documentElement).getPropertyValue("--bar-w")
-            : getComputedStyle(document.documentElement).getPropertyValue("--bar-b");
-          const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-          grad.addColorStop(0, baseColor);
-          grad.addColorStop(1, "rgba(255,255,255,0.2)");
+        const baseColor = meta.isWhite ? barWhite : barBlack
 
-          // ombre et alpha
-          ctx.shadowColor = "rgba(0,0,0,0.4)";
-          ctx.shadowBlur  = 6;
-          ctx.globalAlpha = 0.9;
+        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+        grad.addColorStop(0, baseColor);
+        grad.addColorStop(1, "rgba(255,255,255,0.2)");
 
-          // coins arrondis
-          const radius = Math.min(barWidth / 2, barHeight / 2, 8);
+        ctx.globalAlpha = 0.9;
+
+        const radius = Math.min(barWidth / 2, barHeight / 2, 8);
+        if (typeof ctx.roundRect === "function") {
+          ctx.beginPath();
+          ctx.roundRect(x, yTop, barWidth, barHeight, radius);
+        } else {
           ctx.beginPath();
           ctx.moveTo(x + radius, yTop);
           ctx.lineTo(x + barWidth - radius, yTop);
@@ -782,30 +1159,37 @@ export default function App(){
           ctx.lineTo(x, yTop + radius);
           ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
           ctx.closePath();
+        }
 
-          ctx.fillStyle = grad;
-          ctx.fill();
-  
-          ctx.lineWidth   = borderWidth;
-          ctx.strokeStyle = borderColor;
-          ctx.stroke();
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.lineWidth = borderWidth;
+        ctx.strokeStyle = borderColor;
+        ctx.stroke();
 
-          // reset
-          ctx.shadowBlur  = 0;
-          ctx.globalAlpha = 1;
-        });
-      });
+        ctx.globalAlpha = 1;
+      }
     }
 
     ctx.restore();
   };
 
-
   // --- PC keyboard -------------------------------------------------
   useEffect(() => {
     const down = (e) => {
-      if(e.code === 'Space') { // Espace = Play/Pause si un fichier est chargé
-        if(midiData){ e.preventDefault(); togglePlay(); }
+      if (e.code === "Space") {
+        if (midiDataRef.current) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (playingRef.current) {
+            Tone.Transport.pause();
+            setPlaying(false);
+          } else {
+            Tone.Transport.start("+0.1");
+            setPlaying(true);
+          }
+          queueVisualFrame();
+        }
         return;
       }
       if (e.repeat) return;
@@ -816,6 +1200,7 @@ export default function App(){
       kbdSet.current.add(midi);
       playTransposedNote(note)
       highlight(midi, true);
+      queueVisualFrame();
     };
     const up = (e) => {
       const note = PC_MAP[e.code];
@@ -824,10 +1209,26 @@ export default function App(){
       kbdSet.current.delete(midi);
       releaseTransposedNote(note)
       highlight(midi, false);
+      queueVisualFrame();
+    };
+    const resetHeldNotes = () => {
+      if (document.visibilityState === "hidden") {
+        releaseHeldInteractiveNotes();
+      }
+    };
+    const resetHeldNotesOnBlur = () => {
+      releaseHeldInteractiveNotes();
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    window.addEventListener('blur', resetHeldNotesOnBlur);
+    document.addEventListener('visibilitychange', resetHeldNotes);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', resetHeldNotesOnBlur);
+      document.removeEventListener('visibilitychange', resetHeldNotes);
+    };
   }, []);
 
   // --- Web MIDI ----------------------------------------------------
@@ -846,17 +1247,15 @@ export default function App(){
             // NOTE ON
             playTransposedNote(m2n(note), vel / 127);
             highlight(note, true);
-  
-            // **Ajout** au set pour les barres montantes
             kbdSet.current.add(note);
+            queueVisualFrame();
           }
           else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
             // NOTE OFF
             releaseTransposedNote(m2n(note));
             highlight(note, false);
-  
-            // **Suppression** du set
             kbdSet.current.delete(note);
+            queueVisualFrame();
           }
         };
       });
@@ -864,11 +1263,112 @@ export default function App(){
   },[]);
 
   // pointer events (unchanged) ------------------------------------
-  const midiAt=(x,y)=>{const a=document.elementFromPoint(x,y)?.getAttribute("data-midi");return a?+a:null;};
-  const highlight=(m,on)=>document.querySelector(`[data-midi='${m}']`)?.classList.toggle("active",on);
-  const pDown=e=>{const m=midiAt(e.clientX,e.clientY);if(m==null)return;pointerMap.current.set(e.pointerId,m);playTransposedNote(m2n(m));highlight(m,true);pianoRef.current.setPointerCapture(e.pointerId);} ;
-  const pMove=e=>{if(!pointerMap.current.has(e.pointerId))return;const cur=pointerMap.current.get(e.pointerId);const n=midiAt(e.clientX,e.clientY);if(n===cur)return;pointerMap.current.delete(e.pointerId);synthRef.current.triggerRelease(m2n(cur));highlight(cur,false);if(n!=null){pointerMap.current.set(e.pointerId,n);synthRef.current.triggerAttack(m2n(n));highlight(n,true);} };
-  const pUp=e=>{const m=pointerMap.current.get(e.pointerId);pointerMap.current.delete(e.pointerId);if(m!=null){releaseTransposedNote(m2n(m));highlight(m,false);} };
+  const midiAt = (x, y) => {
+    const a = document.elementFromPoint(x, y)?.getAttribute("data-midi");
+    return a ? +a : null;
+  };
+
+  const highlight = (m, on) => {
+    const meta = keyMetaRef.current.get(m);
+    const el = meta?.el ?? document.querySelector(`[data-midi='${m}']`);
+    if (!el) return;
+    el.classList.toggle("active", on);
+    queueVisualFrame();
+  };
+
+  const releasePointerNote = (pointerId) => {
+    const m = pointerMap.current.get(pointerId);
+    pointerMap.current.delete(pointerId);
+    if (m != null) {
+      releaseTransposedNote(m2n(m));
+      highlight(m, false);
+      queueVisualFrame();
+    }
+  };
+
+  const releaseHeldInteractiveNotes = () => {
+    let changed = false;
+
+    pointerMap.current.forEach((m, pointerId) => {
+      pointerMap.current.delete(pointerId);
+      if (m != null) {
+        releaseTransposedNote(m2n(m));
+        highlight(m, false);
+        changed = true;
+      }
+    });
+
+    kbdSet.current.forEach((m) => {
+      releaseTransposedNote(m2n(m));
+      highlight(m, false);
+      changed = true;
+    });
+    kbdSet.current.clear();
+
+    if (changed) {
+      synthRef.current?.releaseAll?.();
+      queueVisualFrame();
+    }
+  };
+
+  const pDown = e => {
+    e.preventDefault();
+    releasePointerNote(e.pointerId);
+
+    const m = midiAt(e.clientX, e.clientY);
+    if (m == null) return;
+
+    pointerMap.current.set(e.pointerId, m);
+    playTransposedNote(m2n(m));
+    highlight(m, true);
+
+    try {
+      e.currentTarget?.setPointerCapture?.(e.pointerId);
+    } catch {}
+
+    queueVisualFrame();
+  };
+
+  const pMove = e => {
+    if (!pointerMap.current.has(e.pointerId)) return;
+    const cur = pointerMap.current.get(e.pointerId);
+    const n = midiAt(e.clientX, e.clientY);
+    if (n === cur) return;
+
+    pointerMap.current.delete(e.pointerId);
+    releaseTransposedNote(m2n(cur));
+    highlight(cur, false);
+
+    if (n != null) {
+      pointerMap.current.set(e.pointerId, n);
+      playTransposedNote(m2n(n));
+      highlight(n, true);
+    }
+
+    queueVisualFrame();
+  };
+
+  const pUp = e => {
+    releasePointerNote(e.pointerId);
+  };
+
+  useEffect(() => {
+    const endPointer = (e) => {
+      if (typeof e.pointerId === "number") {
+        releasePointerNote(e.pointerId);
+      } else {
+        releaseHeldInteractiveNotes();
+      }
+    };
+
+    window.addEventListener("pointerup", endPointer, true);
+    window.addEventListener("pointercancel", endPointer, true);
+
+    return () => {
+      window.removeEventListener("pointerup", endPointer, true);
+      window.removeEventListener("pointercancel", endPointer, true);
+    };
+  }, []);
 
   // Détection QWERTY vs AZERTY --------------------------------------------
 const isAzerty = navigator.language.startsWith("fr");
@@ -889,10 +1389,10 @@ const labelByMidi = useMemo(() => {
   }
   return map;
 }, [isAzerty]);
-  useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);},[]);
+  useEffect(()=>{const mq=matchMedia('(hover: hover) and (pointer: fine)');const f=()=>document.documentElement.classList.toggle('pc',mq.matches);f();mq.addEventListener('change',f);return()=>mq.removeEventListener('change',f);},[]);
 
   // keys render ----------------------------------------------------
-  const keys=KEYS.map(m=><div key={m} data-midi={m} className={WHITE.includes(m%12)?"white key":"black key"}>{labelByMidi[m]&&<span className="label">{labelByMidi[m]}</span>}</div>);
+  const keys = useMemo(() => KEYS.map(m => <div key={m} data-midi={m} className={WHITE.includes(m % 12) ? "white key" : "black key"}>{labelByMidi[m] && !isBarCollapsed && <span className="label">{labelByMidi[m]}</span>}</div>), [labelByMidi, isBarCollapsed]);
 
   return(<>
  <style>{`
@@ -949,7 +1449,6 @@ const labelByMidi = useMemo(() => {
   }
   .label{display:none;}html.pc .label{display:block;font-size:clamp(12px,calc(var(--white-w)*0.4),22px);pointer-events:none;color:#333;padding-bottom:2px;}html.pc .black .label{color:#ddd;}
   canvas{position:fixed;left:0;top:0;pointer-events:none;}
-
 
    /* widget About intégré dans .top */
   .details.about {
@@ -1059,6 +1558,103 @@ const labelByMidi = useMemo(() => {
     color:#fff;
   }
 
+.loading-pill {
+  --load-accent-a: #7c5cff;
+  --load-accent-b: #ff4fa6;
+  --load-accent-c: #6ecbff;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: min(100%, 300px);
+  height: 30px;
+  padding: 0 0.82rem 0 0.7rem;
+  border-radius: 11px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.045) 100%);
+  color: #f6f8ff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 20px rgba(0,0,0,0.16);
+  overflow: hidden;
+}
+
+.loading-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 11px 0 0 11px;
+  background: linear-gradient(180deg, var(--load-accent-a) 0%, var(--load-accent-b) 55%, var(--load-accent-c) 100%);
+  opacity: 0.95;
+}
+
+.loading-pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.07) 35%, transparent 62%);
+  background-size: 240% 100%;
+  animation: midi-loading-sheen 1.7s linear infinite;
+  pointer-events: none;
+}
+
+.loading-pill-text {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+.loading-dot {
+  position: relative;
+  z-index: 1;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ffd9ec 28%, var(--load-accent-b) 58%, var(--load-accent-a) 100%);
+  box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.18), 0 0 14px rgba(255, 79, 166, 0.35);
+  animation: midi-orb-pulse 1.2s ease-in-out infinite;
+}
+
+.progress-slider.is-loading {
+  opacity: 1;
+  filter: saturate(1.02);
+}
+
+.progress-slider.is-loading::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, rgba(124, 92, 255, 0.18) 0%, rgba(255, 79, 166, 0.24) 38%, rgba(110, 203, 255, 0.2) 70%, rgba(124, 92, 255, 0.18) 100%);
+  background-size: 220% 100%;
+  animation: midi-track-shimmer 1.5s linear infinite;
+}
+
+.progress-slider.is-loading::-moz-range-track {
+  background: linear-gradient(90deg, rgba(124, 92, 255, 0.18) 0%, rgba(255, 79, 166, 0.24) 38%, rgba(110, 203, 255, 0.2) 70%, rgba(124, 92, 255, 0.18) 100%);
+  background-size: 220% 100%;
+  animation: midi-track-shimmer 1.5s linear infinite;
+}
+
+@keyframes midi-orb-pulse {
+  0% { transform: scale(0.92); box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.16), 0 0 10px rgba(255, 79, 166, 0.25); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.26), 0 0 18px rgba(255, 79, 166, 0.42); }
+  100% { transform: scale(0.92); box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.16), 0 0 10px rgba(255, 79, 166, 0.25); }
+}
+
+@keyframes midi-track-shimmer {
+  from { background-position: 0% 0; }
+  to { background-position: 220% 0; }
+}
+
+@keyframes midi-loading-sheen {
+  from { background-position: 240% 0; }
+  to { background-position: -40% 0; }
+}
+
   /* 1) Bouton toggle, masqué par défaut */
   .toggle-bar {
     display: none;
@@ -1094,8 +1690,6 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-
-
   @media (pointer: coarse) and (orientation: portrait) {
     /* On cible les boutons, selects et inputs de la barre en mode portrait tactile */
     :root[data-mode="piano"] .top button,
@@ -1112,8 +1706,6 @@ const labelByMidi = useMemo(() => {
       font-size: 1rem !important;
     }
   }
-
-
 
   .top {
     display: flex;
@@ -1221,8 +1813,6 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-
-
   @media (max-width: 600px) {
     .about-content {
       position: fixed !important;            /* passe en fixed pour sortir du flow */
@@ -1243,93 +1833,54 @@ const labelByMidi = useMemo(() => {
     }
   }
 
-
   body {
-    transition: background 0.5s ease, color 0.5s ease;
+    transition: background 0.12s linear, color 0.12s linear;
   }
 
   /* Appliquer une transition sur les barres et les éléments actifs */
   .bar, .active-note, .top {
-    transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+    transition: background 0.12s linear, color 0.12s linear, border-color 0.12s linear;
   }
-
-
-
-  
   .kofi-link {
-    position: relative !important;  /* annule le absolute précédent */
-    top: 0 !important;              /* remet à zéro l’offset vertical */
-    right: 0 !important;            /* idem horizontal */
-    margin-left: auto;              /* pousse à l’extrémité droite */
-    align-self: center;             /* centre verticalement dans le flex */
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-left: auto;
+    align-self: center;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #67d2f7 0%, #45b9ea 100%);
+    border: 1px solid rgba(255,255,255,0.22);
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18);
+    opacity: 0.92;
+    overflow: hidden;
+    transition: opacity 0.12s linear, background 0.12s linear, border-color 0.12s linear;
   }
-  
-
 
   .kofi-link:hover {
-    opacity: 1;
+    opacity: 0.97;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.22);
   }
 
-
-
-
-  .kofi-mobile-button {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    width: 48px;
-    height: 48px;
-    background: url('https://cdn.ko-fi.com/cdn/kofi5.png?v=3') 
-                center center / contain no-repeat;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    z-index: 1000;
+  .kofi-link svg {
+    display: block;
+    width: 24px;
+    height: 24px;
   }
 
-  /* Hover un peu plus visible */
-  .kofi-mobile-button:hover {
-    opacity: 1;
-  }
-  
-  /* Par défaut on cache en paysage */
-  @media (orientation: landscape) {
-    .kofi-mobile-button {
-      display: none;
-    }
-  }
-  
-  /* On n’affiche que sur petits écrans en portrait */
-  @media (orientation: portrait) and (max-width: 768px) {
-    .kofi-mobile-button {
-      display: block;
-    }
-  }
-  
-  /* Optionnel : masquer sur desktop */
-  @media (min-width: 769px) {
-    .kofi-mobile-button {
-      display: none;
-    }
-  }
-  
-  
-  @media (orientation: portrait) and (max-width: 768px) {
+  @media (max-width: 768px) {
     .kofi-link {
-      display: none;
+      width: 30px;
+      height: 30px;
+    }
+
+    .kofi-link svg {
+      width: 20px;
+      height: 20px;
     }
   }
-
-
-  @media (orientation: landscape) and (max-width: 768px) {
-    .kofi-link {
-      display: none;
-    }
-  }
-
-
-
 
   .nav-toggle {
     position: fixed;
@@ -1344,7 +1895,7 @@ const labelByMidi = useMemo(() => {
     border: none;
     cursor: pointer;
     z-index: 30;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.12s linear, background 0.12s linear;
   }
   
   /* 2) Centre la flèche avec position absolue */
@@ -1359,13 +1910,12 @@ const labelByMidi = useMemo(() => {
   }
   
   .nav-toggle:hover {
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.34);
   }
   
 
   .nav-toggle.open {
-    transform: translateY(-50%) rotate(180deg) scale(1.1);
+    transform: translateY(-50%) rotate(180deg);
   }
   
   /* ────── BARRE LATERALE ────── */
@@ -1373,7 +1923,7 @@ const labelByMidi = useMemo(() => {
     position:fixed; top:0; left:0; height:100vh;
     width:220px; max-width:70vw;
     background:#1a1a1a; color:#fff; z-index:25;
-    transform:translateX(-100%); transition:transform .25s ease;
+    transform:translateX(-100%); transition:transform .12s linear;
     box-shadow:2px 0 6px rgba(0,0,0,.6);
     display:flex; flex-direction:column; padding:1rem 1.2rem;
   }
@@ -1467,48 +2017,702 @@ const labelByMidi = useMemo(() => {
     padding: 0 0.3rem !important;
   }
 
-
-
   
+
+  /* ===== Top bar redesign ===== */
+  .top.top-shell {
+    display: flex;
+    padding: 0.45rem 0.55rem;
+    background: var(--top-shell-bg, #15171b);
+    border-bottom: 1px solid var(--top-shell-border, rgba(255,255,255,0.08));
+    box-shadow: 0 6px 14px var(--top-shell-shadow, rgba(0,0,0,0.22));
+    gap: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    accent-color: var(--top-range-accent, #5b8cff);
+  }
+
+  .top-row {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.28fr) minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .top-group {
+    min-width: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.55rem;
+    min-height: 50px;
+    padding: 0.5rem 0.65rem;
+    border-radius: 14px;
+    background: var(--top-group-bg, #1d2127);
+    border: 1px solid var(--top-group-border, rgba(255,255,255,0.075));
+    box-sizing: border-box;
+  }
+
+  .top-group-status {
+    display: grid;
+    grid-template-columns: auto minmax(110px, 150px) minmax(170px, 1fr);
+    align-items: end;
+  }
+
+  .top-group-controls {
+    display: grid;
+    grid-template-columns: auto minmax(145px, 1fr) minmax(145px, 1fr);
+    align-items: end;
+  }
+
+  .top-group-actions {
+    justify-content: flex-end;
+    gap: 0.45rem;
+    padding-left: 0.55rem;
+    white-space: nowrap;
+  }
+
+  .top-progress-strip {
+    grid-column: 1 / -1;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .top-group-progress {
+    grid-column: auto;
+    width: auto;
+    flex: 1 1 auto;
+    padding-top: 0.4rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .top-progress-side-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.42rem;
+    flex: 0 0 auto;
+  }
+
+  .top-progress-toggle-slot,
+  .top-progress-kofi-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: var(--top-status-bg, rgba(255,255,255,0.055));
+    border: 1px solid var(--top-status-border, rgba(255,255,255,0.08));
+    white-space: nowrap;
+    font-size: 0.78rem;
+    color: #eef2fa;
+  }
+
+  .status-pill span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-pill img {
+    width: 18px;
+    height: 18px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .control-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .control-block-wide,
+  .control-block-slider,
+  .control-block-progress {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .control-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--top-label-color, #aeb7c7);
+    line-height: 1;
+  }
+
+  .control-input,
+  .top.top-shell select {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 0 0.65rem;
+    border-radius: 11px;
+    border: 1px solid var(--top-control-border, rgba(255,255,255,0.08));
+    background: var(--top-control-bg, rgba(255,255,255,0.065));
+    color: #fff;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .top.top-shell select:focus,
+  .top.top-shell button:focus,
+  .top.top-shell input:focus {
+    box-shadow: 0 0 0 2px var(--top-focus-ring, rgba(91, 140, 255, 0.22));
+  }
+
+  .toggle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 11px;
+    background: var(--top-toggle-bg, rgba(255,255,255,0.055));
+    border: 1px solid var(--top-toggle-border, rgba(255,255,255,0.08));
+    color: #fff;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .toggle-chip input {
+    margin: 0;
+    accent-color: var(--top-range-accent, #5b8cff);
+  }
+
+  .control-range {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .top.top-shell input[type="range"],
+  .top.top-shell input[type="checkbox"],
+  .top.top-shell select {
+    accent-color: var(--top-range-accent, #5b8cff);
+  }
+
+  .top.top-shell input[type="range"] {
+    filter: saturate(1.02);
+  }
+
+  .inline-slider-value {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .value-badge {
+    min-width: 34px;
+    height: 28px;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--top-value-bg, rgba(255,255,255,0.08));
+    border: 1px solid var(--top-value-border, rgba(255,255,255,0.08));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: nowrap;
+  }
+
+  .top.top-shell button {
+    height: 36px;
+    padding: 0 0.82rem;
+    border-radius: 11px;
+    border: 1px solid var(--top-button-border, rgba(255,255,255,0.08));
+    background: var(--top-button-bg, rgba(255,255,255,0.08));
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .top.top-shell button:hover {
+    background: var(--top-button-hover, rgba(255,255,255,0.13));
+  }
+
+  .top.top-shell button.primary-action {
+    min-width: 84px;
+    justify-content: center;
+    background: var(--top-play-bg, linear-gradient(135deg, #4b66ff 0%, #6f86ff 100%));
+    border-color: var(--top-play-border, rgba(125, 148, 255, 0.5));
+  }
+
+  .top.top-shell button.primary-action:hover {
+    background: var(--top-play-hover, linear-gradient(135deg, #5872ff 0%, #8094ff 100%));
+  }
+
+  .top.top-shell button.primary-action.is-playing {
+    background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.07) 100%);
+    border-color: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.96);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .top.top-shell button.primary-action.is-playing:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.09) 100%);
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  .top.top-shell button:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+    box-shadow: none;
+  }
+
+  .top.top-shell button.primary-action:disabled,
+  .top.top-shell button.primary-action.is-inactive {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.52);
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .top.top-shell button.primary-action:disabled:hover,
+  .top.top-shell button.primary-action.is-inactive:hover {
+    background: rgba(255,255,255,0.07);
+  }
+
+  .top-kofi {
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  .progress-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .progress-state {
+    color: var(--top-progress-text, #d0d6e3);
+    font-size: 0.76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .progress-wide {
+    width: 100%;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .progress-row .control-block-progress {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .progress-compact {
+    max-width: 100%;
+  }
+
+  .top-frame-toggle-inline {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .top-progress-toggle-slot .top-frame-toggle-inline {
+    align-self: center;
+  }
+
+  .top-frame-toggle-collapsed {
+    display: inline-flex;
+  }
+
+  @media (max-width: 1420px) {
+    .top-row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .top-group-actions {
+      grid-column: 1 / -1;
+      justify-content: space-between;
+      padding-left: 0.65rem;
+    }
+  }
+
+  @media (max-width: 980px) {
+    .top.top-shell {
+      padding: 0.45rem;
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .top-group {
+      width: 100%;
+      min-height: auto;
+      padding: 0.55rem 0.6rem;
+      border-radius: 13px;
+      flex-wrap: wrap;
+    }
+
+    .top-group-status,
+    .top-group-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .status-pill {
+      grid-column: 1 / -1;
+      justify-self: flex-start;
+    }
+
+    .top-group-actions {
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding-left: 0.6rem;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .top-group-status,
+    .top-group-controls {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .action-buttons {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .top.top-shell button {
+      flex: 1 1 31%;
+      min-width: 82px;
+      padding: 0 0.6rem;
+    }
+
+    .top-group-actions {
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 0.6rem;
+    }
+
+    .top-progress-strip {
+      align-items: stretch;
+    }
+
+    .progress-label-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .loading-pill {
+      max-width: 100%;
+    }
+
+    .top-progress-strip {
+      gap: 0.42rem;
+    }
+
+    .progress-row {
+      gap: 0.42rem;
+    }
+
+    .top-frame-toggle-inline,
+    .top-frame-toggle-collapsed,
+    .top.top-shell.collapsed .top-frame-toggle {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  /* ===== Overrides v10 ===== */
+  .top.top-shell {
+    position: fixed;
+    top: 0.55rem;
+    left: 50%;
+    right: auto;
+    width: min(1580px, calc(100vw - 1.1rem));
+    max-width: calc(100vw - 1rem);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.45rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    box-sizing: border-box;
+    transition: none;
+  }
+
+  .top-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .top-frame-toggle {
+    flex: 0 0 auto;
+    align-self: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--top-toggle-border, rgba(255,255,255,0.1));
+    border-radius: 12px;
+    background: var(--top-toggle-bg, rgba(255,255,255,0.05));
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: background 0.1s linear, border-color 0.1s linear;
+  }
+
+  .top-frame-toggle:hover {
+    background: var(--top-toggle-hover, rgba(255,255,255,0.09));
+    border-color: var(--top-toggle-border, rgba(255,255,255,0.16));
+  }
+
+  .top-frame-toggle .chevron {
+    font-size: 1rem;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+
+  .top.top-shell.collapsed {
+    width: auto;
+    max-width: none;
+    padding: 0.32rem;
+    border-radius: 999px;
+    transform: translateX(-50%);
+    opacity: 1;
+    pointer-events: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+  }
+
+  .top.top-shell.collapsed .top-content {
+    display: none;
+  }
+
+  .top.top-shell.collapsed .top-frame-toggle {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+  }
+
+  .control-block-transpose {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .control-block-transpose .control-label {
+    width: 100%;
+    display: block;
+    margin: 0 auto 0.2rem;
+    text-align: center;
+  }
+
+  .control-block-transpose .inline-slider-value {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+
+  .control-block-transpose .control-range {
+    max-width: 165px;
+  }
+
+  .top-kofi-inline {
+    width: 36px;
+    height: 36px;
+    margin-left: 0;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #67d2f7 0%, #45b9ea 100%);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.22);
+    opacity: 0.9;
+  }
+
+  .top-kofi-inline:hover {
+    opacity: 1;
+    border-color: rgba(255,255,255,0.26);
+    box-shadow: 0 7px 18px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.24);
+  }
+
+  .top-kofi-inline svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  @media (max-width: 980px) {
+    .top.top-shell {
+      width: calc(100vw - 0.9rem);
+      max-width: calc(100vw - 0.9rem);
+      top: 0.45rem;
+      gap: 0.42rem;
+      padding: 0.42rem;
+    }
+
+    .top-frame-toggle,
+    .top-kofi-inline {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .top.top-shell {
+      width: calc(100vw - 0.7rem);
+      max-width: calc(100vw - 0.7rem);
+      top: 0.35rem;
+      gap: 0.35rem;
+      padding: 0.35rem;
+      border-radius: 15px;
+    }
+
+    .top.top-shell.collapsed {
+      padding: 0.28rem;
+    }
+
+    .top-frame-toggle,
+    .top.top-shell.collapsed .top-frame-toggle {
+      width: 32px;
+      height: 32px;
+    }
+
+    .top-kofi-inline {
+      width: 32px;
+      height: 32px;
+      border-radius: 11px;
+    }
+
+    .top-kofi-inline svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+/* ===== Perf tune ===== */
+.top.top-shell,
+.top.top-shell *,
+.top-frame-toggle,
+.top-kofi-inline {
+  will-change: auto;
+}
+
+.top-content,
+.top-row,
+.top-group,
+.top-progress-strip,
+.top-progress-side-controls {
+  backface-visibility: hidden;
+}
+
+.midi-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--loading-bg);
+  backdrop-filter: blur(8px);
+}
+
+.midi-loading-card {
+  width: min(88vw, 290px);
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--loading-card-border);
+  background: var(--loading-card-bg);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.34),
+    0 1px 0 rgba(255,255,255,0.04) inset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.midi-loading-spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid var(--loading-spinner-track);
+  border-top-color: var(--loading-accent-a);
+  border-right-color: var(--loading-accent-b);
+  animation: midi-overlay-spin 0.9s linear infinite;
+}
+
+.midi-loading-name {
+  max-width: 100%;
+  padding: 0 2px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+@keyframes midi-overlay-spin {
+  to { transform: rotate(360deg); }
+}
+
 `}</style>
 
-
-  {/* ───────── BOUTON FLÈCHE ───────── */}
-  <button
-    className={`nav-toggle ${navOpen ? "open" : ""}`}
-    onClick={toggleNav}
-    aria-label="Menu"
+  {isMidiLoading && (
+    <div
+      className="midi-loading-overlay"
+      style={loadingOverlayStyle}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label={midiLoadingDisplay ? `Loading ${midiLoadingDisplay}` : "Loading MIDI"}
     >
-    <span className="chevron">&gt;</span>
-  </button>
-
-  {/* ───────── BARRE LATÉRALE ───────── */}
-  <nav className={`side-nav ${navOpen ? "show" : ""}`}>
-    <h3>Mini‑games</h3>
-    <ul>
-      <li><a href="/pianorhythm">🎹 Piano Rhythm</a></li>
-      <li><a href="/pianomemory">🟥 Piano Memory</a></li>
-      <li><span className="soon">More Coming Soon…</span></li>
-    </ul>
-
-    <div className="sidebar-footer">
-      <a
-        href={
-          navigator.language && navigator.language.startsWith("fr")
-            ? "/privacy-fr.html"
-            : "/privacy.html"
-        }
-        target="_blank"
-        rel="noopener"
-      >
-        {navigator.language && navigator.language.startsWith("fr")
-          ? "Politique de confidentialité"
-          : "Privacy Policy"}
-      </a>
+      <div className="midi-loading-card">
+        <div className="midi-loading-spinner" aria-hidden="true" />
+        <div className="midi-loading-name">{midiLoadingDisplay}</div>
+      </div>
     </div>
-  
-  </nav>
-
+  )}
 
   {showLibrary && (
     <div className="library-overlay" onClick={closeLibrary}>
@@ -1529,18 +2733,18 @@ const labelByMidi = useMemo(() => {
           onChange={e => {
             const file = e.target.files[0];
             if (!file) return;
-            console.log("Fichier sélectionné :", file.name);
             handleFile(file);
-            closeLibrary();
+            e.target.value = "";
           }}
         />
 
         {/* 4) Sélecteur de la bibliothèque */}
         <select
           defaultValue=""
+          disabled={isMidiLoading}
           onChange={e => {
             loadDemo(e.target.value);
-            closeLibrary();
+            e.target.value = "";
           }}
         >
           <option value="" disabled>Select a Song...</option>
@@ -1554,129 +2758,170 @@ const labelByMidi = useMemo(() => {
     </div>
   )}
 
-  <button
-    className="toggle-bar"
-    onClick={() => setIsBarCollapsed(b => !b)}
-    onClick={toggleFullScreenBar}
-    aria-label={isBarCollapsed ? "Show options" : "Hide options"}
-  >
-    {isBarCollapsed ? ">" : "<"}
-  </button>
-
-  <div className={`top${isBarCollapsed ? " collapsed" : ""}`}>
-
-
-
-
-
-
-    <div className="toolbar-item">
-      <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
-    </div>
-
-    <div className="toolbar-item">
-      <label>Theme</label>
-      <select value={theme} onChange={e => setTheme(e.target.value)}>
-        {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
-      </select>
-    </div>
-  
-    <div className="toolbar-item">
-      <label>Instrument</label>
-      <select value={instrument} onChange={e => setInstrument(e.target.value)}>
-        {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
-      </select>
-    </div>
-  
-    <div className="toolbar-item">
-      <label>
-        <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
-        Sustain
-      </label>
-    </div>
-  
-    <div className="toolbar-item">
-      <label>Vol</label>
-      <input
-        type="range"
-        min="0"
-        max="500"
-        value={volume}
-        onChange={e => setVolume(+e.target.value)}
-        className="slider volume-slider"
-      />
-    </div>
-  
-    <button onClick={togglePlay} disabled={!midiData}>
-      {playing ? "Pause" : "Play"}
-    </button>
-  
-    <button onClick={openLibrary}>Load…</button>
-    <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
-  
-    <input
-      type="range"
-      min="0"
-      max="1"
-      step="0.001"
-      value={progress}
-      onChange={e => onScrub(e.target.valueAsNumber)}
-      disabled={!midiData}
-      className="slider progress-slider"
-    />
-
-
-    <div className="toolbar-item">
-      <label style={{ marginRight: "0.3rem" }}>Transpose</label>
-      <input
-        type="range"
-        min="-12"
-        max="12"
-        step="1"
-        value={transpose}
-        onChange={e => setTranspose(+e.target.value)}
-        className="transpose-slider"
-      />
-      <span style={{ minWidth: "2ch", textAlign: "right" }}>
-        {transpose > 0 ? "+" : ""}{transpose}
-      </span>
-    </div>
-  
-    <details className="about" ref={aboutRef}>
-      <summary>{summary}</summary>
-      <div className="about-content">
-        <h4>{title}</h4>
-        {paragraphs.map((p,i) => <p key={i} dangerouslySetInnerHTML={{__html:p}} />)}
-      </div>
-    </details>
-
-
-    <div className="toolbar-item">
-      <a
-        href="https://ko-fi.com/pianovisual"
-        target="_blank"
-        rel="noopener"
-        className="kofi-link"
-        title="Support me on Ko-fi"
+  <div className={`top top-shell${isBarCollapsed ? " collapsed" : ""}`} style={topBarThemeStyle}>
+    {isBarCollapsed ? (
+      <button
+        className="top-frame-toggle top-frame-toggle-collapsed"
+        onClick={() => setIsBarCollapsed(false)}
+        aria-label="Show options"
+        title="Afficher la barre"
       >
-        <img src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3" alt="Ko-fi" />
-      </a>
-    </div>
+        <span className="chevron">▼</span>
+      </button>
+    ) : (
+      <div className="top-content">
+        <div className="top-row">
+        <div className="top-group top-group-status">
+          <div
+            className="status-pill"
+            title={midiConnected ? "MIDI keyboard connected" : "No MIDI keyboard connected"}
+          >
+            <img src={midiConnected ? "/midi_on.png" : "/midi_off.png"} width={24} height={24} />
+            <span>{midiConnected ? "MIDI connected" : "No MIDI"}</span>
+          </div>
 
-    <a
-      href="https://ko-fi.com/pianovisual"
-      target="_blank"
-      rel="noopener"
-      className="kofi-mobile-button"
-      title="Support me on Ko-fi"
-    />
+          <div className="control-block">
+            <span className="control-label">Theme</span>
+            <select value={theme} onChange={e => setTheme(e.target.value)} className="control-input">
+              {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
 
+          <div className="control-block control-block-wide">
+            <span className="control-label">Instrument</span>
+            <select value={instrument} onChange={e => setInstrument(e.target.value)} className="control-input">
+              {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+            </select>
+          </div>
+        </div>
 
+        <div className="top-group top-group-controls">
+          <label className="toggle-chip">
+            <input type="checkbox" checked={sustain} onChange={e => setSustain(e.target.checked)} />
+            <span>Sustain</span>
+          </label>
+
+          <div className="control-block control-block-slider">
+            <span className="control-label">Volume</span>
+            <input
+              type="range"
+              min="0"
+              max="500"
+              value={volume}
+              onChange={e => setVolume(+e.target.value)}
+              className="slider volume-slider control-range"
+            />
+          </div>
+
+          <div className="control-block control-block-slider control-block-transpose">
+            <span className="control-label">Transpose</span>
+            <div className="inline-slider-value">
+              <input
+                type="range"
+                min="-12"
+                max="12"
+                step="1"
+                value={transpose}
+                onChange={e => setTranspose(+e.target.value)}
+                className="transpose-slider control-range"
+              />
+              <span className="value-badge">{transpose > 0 ? "+" : ""}{transpose}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="top-group top-group-actions">
+          <div className="action-buttons">
+            <button
+              className={`primary-action${playing ? " is-playing" : ""}${(!midiData && !isMidiLoading) ? " is-inactive" : ""}`}
+              onClick={togglePlay}
+              disabled={!midiData}
+            >
+              {playing ? "Pause" : "Play"}
+            </button>
+            <button onClick={openLibrary} disabled={isMidiLoading}>Load…</button>
+            <button onClick={unloadMidi} disabled={!midiData}>Clear</button>
+          </div>
+        </div>
+
+        <div className="top-progress-strip">
+          <div className="top-group top-group-progress">
+            <div className="progress-row">
+              <div className="control-block control-block-progress">
+                <div className="progress-label-row">
+                  <span className="control-label">Track</span>
+                  <span className="progress-state">
+                    {midiData ? (playing ? "Playing" : "Ready") : "No MIDI loaded"}
+                  </span>
+                </div>
+                <input
+                  ref={progressInputRef}
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.001"
+                  defaultValue={0}
+                  onInput={e => onScrub(e.currentTarget.valueAsNumber)}
+                  onChange={e => onScrub(e.currentTarget.valueAsNumber)}
+                  onPointerDown={beginScrub}
+                  onPointerMove={moveScrub}
+                  onPointerUp={endScrub}
+                  onPointerCancel={endScrub}
+                  disabled={!midiData}
+                  className="slider progress-slider control-range progress-wide progress-compact"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="top-progress-side-controls">
+            <div className="top-progress-kofi-slot">
+              <a
+                href="https://ko-fi.com/pianovisual"
+                target="_blank"
+                rel="noopener"
+                className="kofi-link top-kofi-inline"
+                title="Support me on Ko-fi"
+                aria-label="Support me on Ko-fi"
+              >
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <path
+                    d="M11 20h33.5c3.1 0 5.5 2.4 5.5 5.5V38c0 10.4-8.4 18-18.8 18H18.2C15.3 56 13 53.7 13 50.8V22c0-1.1.9-2 2-2Z"
+                    fill="#ffffff"
+                  />
+                  <path
+                    d="M46 27h4.7c5.7 0 10.3 4.6 10.3 10.3S56.4 47.6 50.7 47.6H46v-5.2h4.1c2.8 0 5.1-2.3 5.1-5.1s-2.3-5.1-5.1-5.1H46V27Z"
+                    fill="#ffffff"
+                  />
+                  <path
+                    d="M26.8 43.2c-.7 0-1.4-.3-1.9-.8l-4.3-4.1c-2.1-2-2.3-5.2-.4-7.4 1.8-2.1 4.9-2.4 7.1-.7 2.2-1.7 5.4-1.4 7.1.7 1.9 2.2 1.7 5.4-.4 7.4l-4.3 4.1c-.5.5-1.2.8-1.9.8Z"
+                    fill="#ff5b7f"
+                    transform="translate(1.5 0)"
+                  />
+                </svg>
+              </a>
+            </div>
+
+            <div className="top-progress-toggle-slot">
+              <button
+                className="top-frame-toggle top-frame-toggle-inline"
+                onClick={() => setIsBarCollapsed(true)}
+                aria-label="Hide options"
+                title="Masquer la barre"
+              >
+                <span className="chevron">▲</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    )}
   </div>
-  
+
   <canvas ref={canvasRef}></canvas>
 
-  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp}>{keys}</div>
+  <div className="piano" ref={pianoRef} onPointerDown={pDown} onPointerMove={pMove} onPointerUp={pUp} onPointerCancel={pUp} onLostPointerCapture={pUp}>{keys}</div>
   
   </>);
 }
