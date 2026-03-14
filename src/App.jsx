@@ -324,9 +324,9 @@ export default function App(){
     .replace(/\s*[….]+$/u, "")
     .trim() || "MIDI";
   const loadingOverlayStyle = useMemo(() => ({
-    "--loading-bg": withAlpha(currentTheme.bg, 0.72),
-    "--loading-card-bg": withAlpha(currentTheme.bg, 0.94),
-    "--loading-card-border": withAlpha(currentTheme.actW, 0.22),
+    "--loading-bg": withAlpha(currentTheme.bg, 0.62),
+    "--loading-card-bg": withAlpha(currentTheme.bg, 0.95),
+    "--loading-card-border": withAlpha(currentTheme.actW, 0.18),
     "--loading-accent-a": currentTheme.actW,
     "--loading-accent-b": currentTheme.actB,
     "--loading-spinner-track": "rgba(255,255,255,0.12)",
@@ -359,6 +359,23 @@ export default function App(){
     "--top-progress-text": withAlpha("#ffffff", 0.86),
     "--top-range-accent": currentTheme.actW,
     "--top-range-track": withAlpha("#ffffff", 0.18),
+  }), [currentTheme]);
+
+  const libraryThemeStyle = useMemo(() => ({
+    "--library-overlay-bg": withAlpha(currentTheme.bg, 0.62),
+    "--library-card-bg": withAlpha(currentTheme.bg, 0.95),
+    "--library-card-border": withAlpha(currentTheme.actW, 0.18),
+    "--library-title-color": withAlpha("#ffffff", 0.96),
+    "--library-text-color": withAlpha("#ffffff", 0.94),
+    "--library-muted": withAlpha("#ffffff", 0.72),
+    "--library-control-bg": withAlpha(currentTheme.actW, 0.10),
+    "--library-control-hover": withAlpha(currentTheme.actW, 0.16),
+    "--library-control-border": withAlpha(currentTheme.actW, 0.20),
+    "--library-accent-bg": `linear-gradient(135deg, ${currentTheme.actW} 0%, ${currentTheme.actB} 100%)`,
+    "--library-accent-hover": `linear-gradient(135deg, ${withAlpha(currentTheme.actW, 0.92)} 0%, ${withAlpha(currentTheme.actB, 0.92)} 100%)`,
+    "--library-accent-border": withAlpha(currentTheme.actW, 0.40),
+    "--library-focus-ring": withAlpha(currentTheme.actW, 0.24),
+    "--library-select-accent": currentTheme.actW,
   }), [currentTheme]);
 
   const transposeRef = useRef(0);
@@ -1524,38 +1541,78 @@ const labelByMidi = useMemo(() => {
 
   /* ——— Styles pour la fenêtre Import/Librairie ——— */
   .library-overlay {
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.5);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:10;
+    position: fixed;
+    inset: 0;
+    background: var(--library-overlay-bg, rgba(0,0,0,0.56));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    padding: 1rem;
   }
+
   .library-menu {
-    position: relative;   /* <-- impératif ! */
-    background:#222;
-    padding:1rem;
-    border-radius:6px;
-    display:flex;
-    flex-direction:column;
-    gap:0.5rem;
-    width:90%;
-    max-width:320px;
+    position: relative;
+    width: min(92vw, 360px);
+    padding: 1rem;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    background: var(--library-card-bg, #222);
+    border: 1px solid var(--library-card-border, rgba(255,255,255,0.12));
+    color: var(--library-text-color, #fff);
+    box-shadow: none;
+    box-sizing: border-box;
   }
+
   .library-menu h3 {
-    margin:0 0 0.5rem;
-    color:#fff;
-    text-align:center;
+    margin: 0 0 0.25rem;
+    color: var(--library-title-color, #fff);
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
   }
+
   .library-menu button,
   .library-menu select {
-    width:100%;
-    font-size:1rem;
-    padding:0.5rem;
-    background:#333;
-    border:1px solid #555;
-    color:#fff;
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    font-size: 0.95rem;
+    padding: 0 0.8rem;
+    border-radius: 12px;
+    background: var(--library-control-bg, rgba(255,255,255,0.08));
+    border: 1px solid var(--library-control-border, rgba(255,255,255,0.12));
+    color: var(--library-text-color, #fff);
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .library-menu button:hover,
+  .library-menu select:hover {
+    background: var(--library-control-hover, rgba(255,255,255,0.12));
+  }
+
+  .library-menu button:focus,
+  .library-menu select:focus {
+    box-shadow: 0 0 0 2px var(--library-focus-ring, rgba(91, 140, 255, 0.22));
+  }
+
+  .library-menu button:first-of-type {
+    background: var(--library-accent-bg, linear-gradient(135deg, #4b66ff 0%, #6f86ff 100%));
+    border-color: var(--library-accent-border, rgba(125,148,255,0.5));
+    font-weight: 700;
+  }
+
+  .library-menu button:first-of-type:hover {
+    background: var(--library-accent-hover, linear-gradient(135deg, #5872ff 0%, #8094ff 100%));
+  }
+
+  .library-menu select {
+    appearance: none;
+    accent-color: var(--library-select-accent, #5b8cff);
   }
 
 .loading-pill {
@@ -2663,8 +2720,7 @@ const labelByMidi = useMemo(() => {
   border: 1px solid var(--loading-card-border);
   background: var(--loading-card-bg);
   box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.34),
-    0 1px 0 rgba(255,255,255,0.04) inset;
+    none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2715,7 +2771,7 @@ const labelByMidi = useMemo(() => {
   )}
 
   {showLibrary && (
-    <div className="library-overlay" onClick={closeLibrary}>
+    <div className="library-overlay" onClick={closeLibrary} style={libraryThemeStyle}>
       <div className="library-menu" onClick={e => e.stopPropagation()}>
 
         {/* 2) Titre */}
