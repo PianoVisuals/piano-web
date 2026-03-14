@@ -54,7 +54,6 @@
   <meta name="theme-color" content="#000000" />
 
   <style>
-    /* Styles globaux */
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
@@ -63,128 +62,12 @@
       text-align: center;
     }
     #root { padding-top: 2rem; }
-
-    /* Modal */
-    #modal {
-      display: flex;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.8);
-      justify-content: center; align-items: center;
-      padding: 1rem; z-index: 999;
-    }
-    .modal-content {
-      position: relative;
-      background: #222;
-      padding: 2rem;
-      border-radius: 8px;
-      max-width: 700px; width: 100%;
-      max-height: 80vh; overflow-y: auto;
-      text-align: left;
-    }
-    .modal-content h1 {
-      margin-top: 0; font-size: 2rem; color: #fff;
-    }
-    .modal-content p {
-      margin: 1rem 0; line-height: 1.5; color: #ddd;
-    }
-    .close-btn {
-      position: absolute; top: 1rem; right: 1rem;
-      background: transparent; border: none;
-      color: #fff; font-size: 1.5rem; cursor: pointer;
-    }
-    .modal-content .link-row {
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-    .modal-content .link-row a {
-      margin: 0 1rem;
-      color: #aaa;           /* liens gris */
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .modal-content .link-row a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 
 <body>
-  <!-- Modal affiché au chargement -->
-  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-content">
-      <button class="close-btn" aria-label="Close">×</button>
-      <h1 id="modal-title"></h1>
-      <div id="modal-body"></div>
-      <div class="link-row">
-        <a id="privacy-link" href="#"></a>
-        <a id="contact-link" href="#"></a>
-      </div>
-    </div>
-  </div>
-
   <!-- React monte ici -->
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
-
-  <script>
-    // Contenu EN / FR
-    const content = {
-      en: {
-        title: "About PianoVisual",
-        paragraphs: [
-          "PianoVisual brings a stunning virtual piano straight to your browser. Built with React and Tone.js, it supports touch gestures, keyboard shortcuts, and USB‑MIDI controllers to give you an authentic playing experience.",
-          "Load your own .mid files or pick from our selection of demos. Once a file is loaded, use the progress bar to scrub through the track and watch each key light up in sync with animated falling bars.",
-          "The interface adapts seamlessly to computer, tablet, and smartphone—portrait or landscape—so you can play wherever you are. Adjust volume and sustain with intuitive sliders, and choose from a variety of instrument sounds and custom themes.",
-          "Use the side menu (toggle with the arrow) to switch between the interactive piano and mini‑games like Piano Rhythm and Piano Memory for extra musical challenges.",
-          "Ready to play? Click “Load…” to import a MIDI file or select a demo, and let PianoVisual turn your music into an interactive visual performance."
-        ],
-        privacyText: "Privacy Policy",
-        privacyHref: "/privacy.html",
-        contactText: "Contact: pianovisualmidi@gmail.com",
-        contactHref: "mailto:pianovisualmidi@gmail.com"
-      },
-      fr: {
-        title: "À propos de PianoVisual",
-        paragraphs: [
-          "PianoVisual propose un piano virtuel époustouflant directement dans votre navigateur. Développé avec React et Tone.js, il gère les gestes tactiles, les raccourcis clavier et les contrôleurs USB‑MIDI pour une expérience de jeu fidèle.",
-          "Importez vos propres fichiers .mid ou choisissez l’une de nos démos intégrées. Une fois le fichier chargé, la barre de progression vous permet de naviguer dans le morceau, tandis que chaque touche s’illumine au rythme de barres animées.",
-          "L’interface s’adapte parfaitement à l’ordinateur, à la tablette et au smartphone, en modes portrait et paysage. Réglez le volume et le sustain avec des curseurs intuitifs, et choisissez parmi divers sons d’instrument et thèmes personnalisables.",
-          "Utilisez le menu latéral (à ouvrir avec la flèche) pour passer du piano aux mini‑jeux comme Piano Rhythm et Piano Memory et relever des défis musicaux amusants.",
-          "Prêt à jouer ? Cliquez sur « Load… » pour importer un fichier MIDI ou sélectionner une démo, et laissez PianoVisual transformer votre musique en spectacle visuel interactif."
-        ],
-        privacyText: "Politique de confidentialité",
-        privacyHref: "/privacy-fr.html",
-        contactText: "Contact : pianovisualmidi@gmail.com",
-        contactHref: "mailto:pianovisualmidi@gmail.com"
-      }
-    };
-
-
-    // Choix de la langue
-    const lang = navigator.language.startsWith("fr") ? "fr" : "en";
-    document.documentElement.lang = lang;
-
-    // Injecter titre & paragraphes
-    const { title, paragraphs, privacyText, privacyHref, contactText, contactHref } = content[lang];
-    document.getElementById("modal-title").textContent = title;
-    const body = document.getElementById("modal-body");
-    paragraphs.forEach(txt => {
-      const p = document.createElement("p");
-      p.textContent = txt;
-      body.appendChild(p);
-    });
-
-    // Configurer les liens
-    const priv = document.getElementById("privacy-link");
-    priv.textContent = privacyText;
-    priv.href = privacyHref;
-    const cont = document.getElementById("contact-link");
-    cont.textContent = contactText;
-    cont.href = contactHref;
-
-    // Bouton de fermeture
-    document.querySelector(".close-btn")
-      .addEventListener("click", () => document.getElementById("modal").remove());
-  </script>
 </body>
 </html>
