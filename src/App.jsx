@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useMemo } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 
@@ -67,7 +67,8 @@ const THEMES = {
   "Monochrome":   { bg: "#1c1c1c",  barW: "rgba(200,200,200,0.6)", barB: "rgba(100,100,100,0.6)", actW: "#c8c8c8", actB: "#646464" },
   "Desert":       { bg: "#3f2b1f",  barW: "rgba(232,170,95,0.7)",  barB: "rgba(194,123,40,0.7)",  actW: "#e8aa5f", actB: "#c27b28" },
   "Cyberpunk":    { bg: "#0f0f1a",  barW: "rgba(255,0,220,0.8)",   barB: "rgba(0,255,240,0.8)",   actW: "#ff00dc", actB: "#00fff0" },
-  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" }
+  "Aurora":       { bg: "#08133b",  barW: "rgba(106,255,237,0.7)", barB: "rgba(68,130,255,0.7)",  actW: "#6affed", actB: "#4482ff" },
+  "Pixelated":    { bg: "#081820",  barW: "rgba(139,172,15,0.92)", barB: "rgba(48,98,48,0.96)", actW: "#8bac0f", actB: "#306230" }
 
 };
 // ===== Constantes clavier ================================================= =================================================
@@ -214,10 +215,95 @@ const INSTR = {
   "FX 2 (soundtrack)":         "fx_2_soundtrack"
 };
 
+const getInitialSavedTheme = () => {
+  try {
+    const saved = localStorage.getItem("pv.theme");
+    return saved && (saved === "Pixelated" || Object.prototype.hasOwnProperty.call(THEMES, saved))
+      ? saved
+      : "Classic";
+  } catch {
+    return "Classic";
+  }
+};
+
+const INITIAL_THEME = getInitialSavedTheme();
+
+if (typeof document !== "undefined") {
+  const initialThemeDef = THEMES[INITIAL_THEME] ?? THEMES.Classic;
+  Object.entries({
+    bg: initialThemeDef.bg,
+    "bar-w": initialThemeDef.barW,
+    "bar-b": initialThemeDef.barB,
+    "act-w": initialThemeDef.actW,
+    "act-b": initialThemeDef.actB
+  }).forEach(([k, v]) => document.documentElement.style.setProperty(`--${k}`, v));
+  document.documentElement.classList.toggle("theme-pixelated", INITIAL_THEME === "Pixelated");
+}
+
 const URLS = { C3: "C3.mp3", G3: "G3.mp3", C4: "C4.mp3", G4: "G4.mp3", C5: "C5.mp3", G5: "G5.mp3" };
 const LONG_REL = 50; // sustain release seconds
 const MIDI_SUSTAIN_EXTRA = 0.45; // extra hold for imported MIDI playback when sustain is enabled
-const makeSampler = name => new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
+
+const PIXEL_INSTRUMENTS = [
+  "Pulse Lead",
+  "Pulse Keys",
+  "Triangle Bass",
+  "Bit Organ"
+];
+
+const PIXEL_INSTRUMENT_PRESETS = {
+  "Pulse Lead": {
+    synthType: Tone.Synth,
+    options: {
+      oscillator: { type: "square" },
+      envelope: { attack: 0.002, decay: 0.06, sustain: 0.16, release: 0.05 }
+    },
+    baseDb: -17
+  },
+  "Pulse Keys": {
+    synthType: Tone.Synth,
+    options: {
+      oscillator: { type: "sawtooth" },
+      envelope: { attack: 0.001, decay: 0.11, sustain: 0.05, release: 0.035 }
+    },
+    baseDb: -17
+  },
+  "Triangle Bass": {
+    synthType: Tone.FMSynth,
+    options: {
+      harmonicity: 1.5,
+      modulationIndex: 3,
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.003, decay: 0.12, sustain: 0.42, release: 0.1 },
+      modulation: { type: "square" },
+      modulationEnvelope: { attack: 0.002, decay: 0.08, sustain: 0.28, release: 0.1 }
+    },
+    baseDb: -13
+  },
+  "Bit Organ": {
+    synthType: Tone.AMSynth,
+    options: {
+      harmonicity: 1.01,
+      oscillator: { type: "square" },
+      envelope: { attack: 0.002, decay: 0.03, sustain: 1, release: 0.065 },
+      modulation: { type: "triangle" },
+      modulationEnvelope: { attack: 0.004, decay: 0.08, sustain: 0.75, release: 0.05 }
+    },
+    baseDb: -17
+  }
+};
+
+const makeSampler = name => {
+  if (document.documentElement.classList.contains("theme-pixelated")) {
+    const preset = PIXEL_INSTRUMENT_PRESETS[name] ?? PIXEL_INSTRUMENT_PRESETS["Pulse Lead"];
+    const synth = new Tone.PolySynth(preset.synthType, preset.options);
+    synth._pixelBaseDb = preset.baseDb ?? -20;
+    synth.release = preset.options?.envelope?.release ?? 0.08;
+    return synth;
+  }
+
+  return new Tone.Sampler({ urls: URLS, release: 1, baseUrl: `${BASE}${INSTR[name]}-mp3/` });
+};
 
 const hexToRgba = (hex, alpha = 1) => {
   if (typeof hex !== "string") return `rgba(8, 6, 18, ${alpha})`;
@@ -302,8 +388,21 @@ export default function App(){
   const synthRef=useRef(null); const partRef=useRef(null);
   const pointerMap=useRef(new Map()); const kbdSet=useRef(new Set());
   const [isBarCollapsed, setIsBarCollapsed] = useState(false);
-  const [instrument,setInstrument]=useState("Grand Piano");
-  const [theme,setTheme]=useState("Classic");
+  const [instrument,setInstrument]=useState(() => {
+    try {
+      return localStorage.getItem("pv.instrument") || "Grand Piano";
+    } catch {
+      return "Grand Piano";
+    }
+  });
+  const prevNonPixelInstrumentRef = useRef((() => {
+    try {
+      return localStorage.getItem("pv.instrument.normal") || "Grand Piano";
+    } catch {
+      return "Grand Piano";
+    }
+  })());
+  const [theme,setTheme]=useState(INITIAL_THEME);
   const [volume,setVolume]=useState(250);
   const [sustain,setSustain]=useState(false);
   const sustainRef = useRef(false);
@@ -319,64 +418,68 @@ export default function App(){
   const [midiLoadingText, setMidiLoadingText] = useState("Chargement du MIDI…");
 
   const currentTheme = THEMES[theme] ?? THEMES.Classic;
+  const isPixelated = theme === "Pixelated";
   const midiLoadingDisplay = (midiLoadingText || "MIDI")
     .replace(/^Chargement de\s*/i, "")
     .replace(/\s*[….]+$/u, "")
     .trim() || "MIDI";
   const loadingOverlayStyle = useMemo(() => ({
     "--loading-bg": withAlpha(currentTheme.bg, 0.62),
-    "--loading-card-bg": withAlpha(currentTheme.bg, 0.95),
-    "--loading-card-border": withAlpha(currentTheme.actW, 0.18),
+    "--loading-card-bg": isPixelated ? "#1a4d1a" : withAlpha(currentTheme.bg, 0.95),
+    "--loading-card-border": isPixelated ? "#9bbc0f" : withAlpha(currentTheme.actW, 0.18),
     "--loading-accent-a": currentTheme.actW,
     "--loading-accent-b": currentTheme.actB,
-    "--loading-spinner-track": "rgba(255,255,255,0.12)",
+    "--loading-spinner-track": isPixelated ? "rgba(15,56,15,0.55)" : "rgba(255,255,255,0.12)",
+    "--loading-name-color": isPixelated ? "#c7d68d" : withAlpha("#ffffff", 0.94),
   }), [currentTheme]);
 
   const topBarThemeStyle = useMemo(() => ({
-    "--top-shell-bg": withAlpha(currentTheme.bg, 0.96),
+    "--top-shell-bg": isPixelated ? "#0f380f" : withAlpha(currentTheme.bg, 0.96),
     "--top-shell-border": withAlpha(currentTheme.actW, 0.16),
     "--top-shell-shadow": withAlpha(currentTheme.bg, 0.34),
-    "--top-group-bg": `linear-gradient(180deg, ${withAlpha(currentTheme.bg, 0.88)} 0%, ${withAlpha(currentTheme.bg, 0.82)} 100%)`,
+    "--top-group-bg": isPixelated ? "#1a4d1a" : `linear-gradient(180deg, ${withAlpha(currentTheme.bg, 0.88)} 0%, ${withAlpha(currentTheme.bg, 0.82)} 100%)`,
     "--top-group-border": withAlpha(currentTheme.actW, 0.18),
     "--top-status-bg": withAlpha(currentTheme.actW, 0.08),
     "--top-status-border": withAlpha(currentTheme.actW, 0.18),
-    "--top-control-bg": withAlpha(currentTheme.actW, 0.10),
-    "--top-control-hover": withAlpha(currentTheme.actW, 0.14),
+    "--top-control-bg": isPixelated ? "#306230" : withAlpha(currentTheme.actW, 0.10),
+    "--top-control-hover": isPixelated ? "#3f6f3f" : withAlpha(currentTheme.actW, 0.14),
     "--top-control-border": withAlpha(currentTheme.actW, 0.18),
     "--top-toggle-bg": withAlpha(currentTheme.actW, 0.08),
     "--top-toggle-hover": withAlpha(currentTheme.actW, 0.14),
     "--top-toggle-border": withAlpha(currentTheme.actW, 0.18),
-    "--top-button-bg": withAlpha(currentTheme.actW, 0.10),
-    "--top-button-hover": withAlpha(currentTheme.actW, 0.16),
+    "--top-button-bg": isPixelated ? "#306230" : withAlpha(currentTheme.actW, 0.10),
+    "--top-button-hover": isPixelated ? "#3f6f3f" : withAlpha(currentTheme.actW, 0.16),
     "--top-button-border": withAlpha(currentTheme.actW, 0.20),
-    "--top-play-bg": `linear-gradient(135deg, ${currentTheme.actW} 0%, ${currentTheme.actB} 100%)`,
-    "--top-play-hover": `linear-gradient(135deg, ${withAlpha(currentTheme.actW, 0.92)} 0%, ${withAlpha(currentTheme.actB, 0.92)} 100%)`,
+    "--top-play-bg": isPixelated ? "linear-gradient(180deg, #9bbc0f 0%, #8bac0f 100%)" : `linear-gradient(135deg, ${currentTheme.actW} 0%, ${currentTheme.actB} 100%)`,
+    "--top-play-hover": isPixelated ? "linear-gradient(180deg, #a7c81b 0%, #90b10f 100%)" : `linear-gradient(135deg, ${withAlpha(currentTheme.actW, 0.92)} 0%, ${withAlpha(currentTheme.actB, 0.92)} 100%)`,
     "--top-play-border": withAlpha(currentTheme.actW, 0.42),
     "--top-focus-ring": withAlpha(currentTheme.actW, 0.24),
     "--top-value-bg": withAlpha(currentTheme.actW, 0.10),
     "--top-value-border": withAlpha(currentTheme.actW, 0.18),
-    "--top-label-color": withAlpha(currentTheme.actW, 0.82),
-    "--top-progress-text": withAlpha("#ffffff", 0.86),
+    "--top-label-color": isPixelated ? "#9bbc0f" : withAlpha(currentTheme.actW, 0.82),
+    "--top-progress-text": isPixelated ? "#c7d68d" : withAlpha("#ffffff", 0.86),
     "--top-range-accent": currentTheme.actW,
-    "--top-range-track": withAlpha("#ffffff", 0.18),
+    "--top-range-track": isPixelated ? "rgba(15,56,15,0.82)" : withAlpha("#ffffff", 0.18),
   }), [currentTheme]);
 
   const libraryThemeStyle = useMemo(() => ({
     "--library-overlay-bg": withAlpha(currentTheme.bg, 0.62),
-    "--library-card-bg": withAlpha(currentTheme.bg, 0.95),
-    "--library-card-border": withAlpha(currentTheme.actW, 0.18),
-    "--library-title-color": withAlpha("#ffffff", 0.96),
-    "--library-text-color": withAlpha("#ffffff", 0.94),
+    "--library-card-bg": isPixelated ? "#1a4d1a" : withAlpha(currentTheme.bg, 0.95),
+    "--library-card-border": isPixelated ? "#9bbc0f" : withAlpha(currentTheme.actW, 0.18),
+    "--library-title-color": isPixelated ? "#c7d68d" : withAlpha("#ffffff", 0.96),
+    "--library-text-color": isPixelated ? "#c7d68d" : withAlpha("#ffffff", 0.94),
     "--library-muted": withAlpha("#ffffff", 0.72),
-    "--library-control-bg": withAlpha(currentTheme.actW, 0.10),
-    "--library-control-hover": withAlpha(currentTheme.actW, 0.16),
+    "--library-control-bg": isPixelated ? "#306230" : withAlpha(currentTheme.actW, 0.10),
+    "--library-control-hover": isPixelated ? "#3f6f3f" : withAlpha(currentTheme.actW, 0.16),
     "--library-control-border": withAlpha(currentTheme.actW, 0.20),
-    "--library-accent-bg": `linear-gradient(135deg, ${currentTheme.actW} 0%, ${currentTheme.actB} 100%)`,
-    "--library-accent-hover": `linear-gradient(135deg, ${withAlpha(currentTheme.actW, 0.92)} 0%, ${withAlpha(currentTheme.actB, 0.92)} 100%)`,
+    "--library-accent-bg": isPixelated ? "linear-gradient(180deg, #9bbc0f 0%, #8bac0f 100%)" : `linear-gradient(135deg, ${currentTheme.actW} 0%, ${currentTheme.actB} 100%)`,
+    "--library-accent-hover": isPixelated ? "linear-gradient(180deg, #a7c81b 0%, #90b10f 100%)" : `linear-gradient(135deg, ${withAlpha(currentTheme.actW, 0.92)} 0%, ${withAlpha(currentTheme.actB, 0.92)} 100%)`,
     "--library-accent-border": withAlpha(currentTheme.actW, 0.40),
     "--library-focus-ring": withAlpha(currentTheme.actW, 0.24),
     "--library-select-accent": currentTheme.actW,
   }), [currentTheme]);
+
+  const getDisplayInstrumentName = (name) => name;
 
   const transposeRef = useRef(0);
   const [transpose, _setTranspose] = useState(0);
@@ -490,6 +593,9 @@ export default function App(){
   const keyMetaRef = useRef(new Map());
   const visualNotesRef = useRef([]);
   const visualMaxDurationRef = useRef(0);
+  const pixelSongStepRef = useRef(8);
+  const pixelSongStepTimeRef = useRef(0.1);
+  const pixelSongTimingRef = useRef({ minDuration: Infinity, minGap: Infinity });
   const canvasCtxRef = useRef(null);
   const canvasMetricsRef = useRef({ width: 0, height: 0, dpr: 1, pianoTop: 0 });
   const visualRafRef = useRef(null);
@@ -505,6 +611,7 @@ export default function App(){
     barBlack: currentTheme.barB,
     activeWhite: currentTheme.actW,
     activeBlack: currentTheme.actB,
+    pixelated: isPixelated,
   });
 
   const VISUAL_FRAME_MS = 1000 / 45;
@@ -621,6 +728,7 @@ export default function App(){
       ?? (height - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--white-h")));
 
     canvasMetricsRef.current = { width, height, dpr, pianoTop };
+    recomputePixelSongStep();
 
     const nextMeta = new Map();
     document.querySelectorAll("[data-midi]").forEach((el) => {
@@ -769,16 +877,48 @@ export default function App(){
   }, []);
 
   // appliquer thème -------------------------------------------------
-  useEffect(()=>{
-    const c = THEMES[theme];
+  useEffect(() => {
+    if (theme === "Pixelated") {
+      if (!PIXEL_INSTRUMENTS.includes(instrument)) {
+        prevNonPixelInstrumentRef.current = instrument;
+        try { localStorage.setItem("pv.instrument.normal", instrument); } catch {}
+        setInstrument("Pulse Lead");
+      }
+    } else if (PIXEL_INSTRUMENTS.includes(instrument)) {
+      const restored = prevNonPixelInstrumentRef.current || "Grand Piano";
+      if (instrument !== restored) {
+        setInstrument(restored);
+      }
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    if (!PIXEL_INSTRUMENTS.includes(instrument)) {
+      prevNonPixelInstrumentRef.current = instrument;
+      try { localStorage.setItem("pv.instrument.normal", instrument); } catch {}
+    }
+    try { localStorage.setItem("pv.instrument", instrument); } catch {}
+  }, [instrument]);
+
+  useEffect(() => {
+    try { localStorage.setItem("pv.theme", theme); } catch {}
+  }, [theme]);
+
+  useLayoutEffect(()=>{
+    const c = THEMES[theme] ?? THEMES.Classic;
     Object.entries({bg:c.bg,"bar-w":c.barW,"bar-b":c.barB,"act-w":c.actW,"act-b":c.actB}).forEach(([k,v])=>document.documentElement.style.setProperty(`--${k}`,v));
+    document.documentElement.classList.toggle("theme-pixelated", theme === "Pixelated");
     themeVisualRef.current = {
       barWhite: c.barW,
       barBlack: c.barB,
       activeWhite: c.actW,
       activeBlack: c.actB,
+      pixelated: theme === "Pixelated",
     };
     queueVisualFrame();
+    return () => {
+      document.documentElement.classList.remove("theme-pixelated");
+    };
   },[theme]);
 
   // inject AdSense auto‑ads once -----------------------------------
@@ -791,12 +931,13 @@ export default function App(){
   },[]);
 
   // create synth ---------------------------------------------------
-  useEffect(()=>{Tone.start();synthRef.current?.dispose();synthRef.current=makeSampler(instrument).toDestination();synthRef.current.volume.value=Tone.gainToDb(volume/100);
-    synthRef.current.release = sustain ? LONG_REL : 1;queueVisualFrame();return()=>synthRef.current?.dispose();},[instrument]);
+  useEffect(()=>{Tone.start();synthRef.current?.dispose();synthRef.current=makeSampler(instrument).toDestination();const baseDb = synthRef.current?._pixelBaseDb ?? 0;synthRef.current.volume.value=Tone.gainToDb(volume/100)+baseDb;
+    synthRef.current.release = sustain ? LONG_REL : 1;queueVisualFrame();return()=>synthRef.current?.dispose();},[instrument, theme]);
   useEffect(()=>{
     sustainRef.current = sustain;
     if(synthRef.current){
-      synthRef.current.volume.value=Tone.gainToDb(volume/100);
+      const baseDb = synthRef.current?._pixelBaseDb ?? 0;
+      synthRef.current.volume.value=Tone.gainToDb(volume/100)+baseDb;
       synthRef.current.release = sustain ? LONG_REL : 1;
     }
   },[volume,sustain]);
@@ -900,6 +1041,7 @@ export default function App(){
     const events = [];
     const visualNotes = [];
     let maxDuration = 0;
+    let minDuration = Infinity;
 
     midi.tracks.forEach(track =>
       track.notes.forEach(n => {
@@ -913,6 +1055,7 @@ export default function App(){
             velocity: n.velocity
           });
           if (n.duration > maxDuration) maxDuration = n.duration;
+          if (n.duration > 0 && n.duration < minDuration) minDuration = n.duration;
           visualNotes.push({
             time: n.time + LEAD,
             duration: n.duration,
@@ -923,6 +1066,22 @@ export default function App(){
     );
 
     visualNotes.sort((a, b) => a.time - b.time);
+
+    let minGap = Infinity;
+    let previousTime = null;
+    for (const note of visualNotes) {
+      if (previousTime != null && note.time > previousTime) {
+        minGap = Math.min(minGap, note.time - previousTime);
+      }
+      previousTime = note.time;
+    }
+
+    pixelSongTimingRef.current = {
+      minDuration,
+      minGap
+    };
+    recomputePixelSongStep();
+
     visualNotesRef.current = visualNotes;
     visualMaxDurationRef.current = maxDuration;
 
@@ -1047,6 +1206,28 @@ export default function App(){
   const LEAD = 8; // seconds it takes for a bar to fall from top to keys
   const MAX_VISIBLE_BARS = 500;
 
+  const recomputePixelSongStep = () => {
+    const path = canvasMetricsRef.current.pianoTop || 0;
+    if (!path) return;
+
+    const pixelsPerSecond = path / LEAD;
+    const { minDuration, minGap } = pixelSongTimingRef.current;
+
+    const limitingSeconds = Math.min(
+      Number.isFinite(minDuration) && minDuration > 0 ? minDuration : Infinity,
+      Number.isFinite(minGap) && minGap > 0 ? minGap : Infinity
+    );
+
+    if (!Number.isFinite(limitingSeconds)) {
+      pixelSongStepRef.current = 8;
+      pixelSongStepTimeRef.current = 0.1;
+      return;
+    }
+
+    pixelSongStepTimeRef.current = 0.1;
+    pixelSongStepRef.current = 8;
+  };
+
   const progressToTransportSeconds = (ratio) => {
     const trackDuration = durationRef.current;
     if (!trackDuration) return 0;
@@ -1082,7 +1263,9 @@ export default function App(){
     ctx.clearRect(0, 0, W, H);
 
     const path = pianoTop;
-    const t = Tone.Transport.seconds;
+    const rawT = Tone.Transport.seconds;
+    const renderT = rawT;
+    const cullLead = 0;
     const { barWhite, barBlack } = themeVisualRef.current;
 
     ctx.save();
@@ -1106,14 +1289,33 @@ export default function App(){
         const yTop = 0;
         const baseColor = meta.isWhite ? barWhite : barBlack
 
-        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-        grad.addColorStop(0, baseColor);
-        grad.addColorStop(1, "rgba(255,255,255,0)");
-
         ctx.shadowColor = "transparent";
-        ctx.globalAlpha = 0.78;
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, yTop, barWidth, yBottom);
+        if (themeVisualRef.current.pixelated) {
+          ctx.imageSmoothingEnabled = false;
+          ctx.globalAlpha = 0.9;
+          const px = Math.round(x);
+          const pw = Math.max(1, Math.round(barWidth));
+          const ph = Math.max(1, Math.round(yBottom - yTop));
+          ctx.fillStyle = baseColor;
+          ctx.fillRect(px, 0, pw, ph);
+
+          ctx.fillStyle = "rgba(255,255,255,0.18)";
+          for (let yy = 2; yy < ph; yy += 5) {
+            ctx.fillRect(px, yy, pw, 1);
+          }
+
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = borderColor;
+          ctx.strokeRect(px + 0.5, 0.5, Math.max(0, pw - 1), Math.max(0, ph - 1));
+        } else {
+          const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+          grad.addColorStop(0, baseColor);
+          grad.addColorStop(1, "rgba(255,255,255,0)");
+
+          ctx.globalAlpha = 0.78;
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, yTop, barWidth, yBottom);
+        }
         ctx.globalAlpha = 1;
       }
 
@@ -1123,8 +1325,8 @@ export default function App(){
 
     if (midiDataRef.current) {
       const visualNotes = visualNotesRef.current;
-      const visibleUntil = t + LEAD;
-      const visibleFrom = t - visualMaxDurationRef.current;
+      const visibleUntil = rawT + LEAD + cullLead;
+      const visibleFrom = rawT - visualMaxDurationRef.current - cullLead;
       let lo = 0;
       let hi = visualNotes.length;
 
@@ -1138,14 +1340,14 @@ export default function App(){
       for (let i = lo; i < visualNotes.length; i++) {
         const n = visualNotes[i];
         if (n.time > visibleUntil) break;
-        if (n.time + n.duration < t) continue;
+        if (n.time + n.duration < visibleFrom) continue;
         visibleCount += 1;
         if (visibleCount > MAX_VISIBLE_BARS) break;
 
         const meta = keyMetaRef.current.get(n.midi);
         if (!meta) continue;
 
-        const remaining = n.time - t;
+        const remaining = n.time - renderT;
         const barWidth = meta.width * 0.9;
         const x = meta.left + (meta.width - barWidth) / 2;
         const yBottom = (1 - remaining / LEAD) * path;
@@ -1154,35 +1356,55 @@ export default function App(){
 
         const baseColor = meta.isWhite ? barWhite : barBlack
 
-        const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
-        grad.addColorStop(0, baseColor);
-        grad.addColorStop(1, "rgba(255,255,255,0.2)");
-
         ctx.globalAlpha = 0.9;
 
-        const radius = Math.min(barWidth / 2, barHeight / 2, 8);
-        if (typeof ctx.roundRect === "function") {
-          ctx.beginPath();
-          ctx.roundRect(x, yTop, barWidth, barHeight, radius);
-        } else {
-          ctx.beginPath();
-          ctx.moveTo(x + radius, yTop);
-          ctx.lineTo(x + barWidth - radius, yTop);
-          ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
-          ctx.lineTo(x + barWidth, yBottom - radius);
-          ctx.quadraticCurveTo(x + barWidth, yBottom, x + barWidth - radius, yBottom);
-          ctx.lineTo(x + radius, yBottom);
-          ctx.quadraticCurveTo(x, yBottom, x, yBottom - radius);
-          ctx.lineTo(x, yTop + radius);
-          ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
-          ctx.closePath();
-        }
+        if (themeVisualRef.current.pixelated) {
+          ctx.imageSmoothingEnabled = false;
+          const px = Math.round(x);
+          const py = Math.round(yTop);
+          const ph = Math.max(1, Math.round(barHeight));
+          const pw = Math.max(1, Math.round(barWidth));
 
-        ctx.fillStyle = grad;
-        ctx.fill();
-        ctx.lineWidth = borderWidth;
-        ctx.strokeStyle = borderColor;
-        ctx.stroke();
+          ctx.fillStyle = baseColor;
+          ctx.fillRect(px, py, pw, ph);
+
+          ctx.fillStyle = "rgba(255,255,255,0.16)";
+          for (let yy = py + 2; yy < py + ph; yy += 5) {
+            ctx.fillRect(px, yy, pw, 1);
+          }
+
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = borderColor;
+          ctx.strokeRect(px + 0.5, py + 0.5, Math.max(0, pw - 1), Math.max(0, ph - 1));
+        } else {
+          const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+          grad.addColorStop(0, baseColor);
+          grad.addColorStop(1, "rgba(255,255,255,0.2)");
+
+          const radius = Math.min(barWidth / 2, barHeight / 2, 8);
+          if (typeof ctx.roundRect === "function") {
+            ctx.beginPath();
+            ctx.roundRect(x, yTop, barWidth, barHeight, radius);
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, yTop);
+            ctx.lineTo(x + barWidth - radius, yTop);
+            ctx.quadraticCurveTo(x + barWidth, yTop, x + barWidth, yTop + radius);
+            ctx.lineTo(x + barWidth, yBottom - radius);
+            ctx.quadraticCurveTo(x + barWidth, yBottom, x + barWidth - radius, yBottom);
+            ctx.lineTo(x + radius, yBottom);
+            ctx.quadraticCurveTo(x, yBottom, x, yBottom - radius);
+            ctx.lineTo(x, yTop + radius);
+            ctx.quadraticCurveTo(x, yTop, x + radius, yTop);
+            ctx.closePath();
+          }
+
+          ctx.fillStyle = grad;
+          ctx.fill();
+          ctx.lineWidth = borderWidth;
+          ctx.strokeStyle = borderColor;
+          ctx.stroke();
+        }
 
         ctx.globalAlpha = 1;
       }
@@ -2636,6 +2858,16 @@ const labelByMidi = useMemo(() => {
     height: 21px;
   }
 
+  .top-kofi-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .top-kofi-inline svg {
+    display: block;
+  }
+
   @media (max-width: 980px) {
     .top.top-shell {
       width: calc(100vw - 0.9rem);
@@ -2743,9 +2975,321 @@ const labelByMidi = useMemo(() => {
   padding: 0 2px;
   font-size: 0.92rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.92);
+  color: var(--loading-name-color, rgba(255,255,255,0.92));
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+
+.midi-loading-pixels {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 34px;
+}
+
+.midi-loading-pixel {
+  width: 10px;
+  height: 10px;
+  background: var(--loading-accent-a);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.38);
+  image-rendering: pixelated;
+  animation: pixel-load-step 0.72s steps(1, end) infinite;
+}
+
+.midi-loading-pixel.pixel-b {
+  background: var(--loading-accent-b);
+  animation-delay: 0.18s;
+}
+
+.midi-loading-pixel.pixel-c {
+  background: color-mix(in srgb, var(--loading-accent-a) 72%, var(--loading-accent-b));
+  animation-delay: 0.36s;
+}
+
+@keyframes pixel-load-step {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  33% { transform: translateY(-10px); opacity: 1; }
+  66% { transform: translateY(-4px); opacity: 0.82; }
+}
+
+.theme-pixelated html,
+html.theme-pixelated,
+html.theme-pixelated body {
+  image-rendering: pixelated;
+}
+
+html.theme-pixelated body,
+html.theme-pixelated select,
+html.theme-pixelated button,
+html.theme-pixelated input,
+html.theme-pixelated .control-label,
+html.theme-pixelated .progress-state,
+html.theme-pixelated .status-pill,
+html.theme-pixelated .midi-loading-name,
+html.theme-pixelated .library-menu,
+html.theme-pixelated .library-menu select,
+html.theme-pixelated .library-menu button {
+  font-family: "Courier New", "Lucida Console", monospace;
+  letter-spacing: 0.01em;
+}
+
+html.theme-pixelated .top.top-shell,
+html.theme-pixelated .top-group,
+html.theme-pixelated .library-menu,
+html.theme-pixelated .midi-loading-card {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+html.theme-pixelated .top.top-shell {
+  background: #0f380f;
+  border-bottom-width: 2px;
+}
+
+html.theme-pixelated .top-group {
+  background: #102a12;
+  border-width: 3px;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(139,172,15,0.08) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(90deg, rgba(139,172,15,0.05) 0 2px, transparent 2px 4px);
+}
+
+html.theme-pixelated .status-pill,
+html.theme-pixelated .toggle-chip,
+html.theme-pixelated .control-input,
+html.theme-pixelated .top.top-shell select,
+html.theme-pixelated .top.top-shell button,
+html.theme-pixelated .value-badge,
+html.theme-pixelated .library-menu button,
+html.theme-pixelated .library-menu select,
+html.theme-pixelated .midi-loading-card {
+  border-radius: 0 !important;
+  border-width: 2px !important;
+  box-shadow: none !important;
+}
+
+html.theme-pixelated .control-input,
+html.theme-pixelated .top.top-shell select,
+html.theme-pixelated .library-menu select {
+  background: #1a3a1a;
+  color: #c7d68d;
+  border-color: #8bac0f !important;
+}
+
+html.theme-pixelated .top.top-shell button,
+html.theme-pixelated .library-menu button {
+  background: #1a3a1a;
+  color: #c7d68d;
+  border-color: #8bac0f !important;
+}
+
+html.theme-pixelated .top.top-shell button.primary-action,
+html.theme-pixelated .library-menu button:first-of-type {
+  background: linear-gradient(180deg, #9bbc0f 0 50%, #8bac0f 50% 100%) !important;
+  color: #0f380f;
+  border-color: #0f380f !important;
+  text-shadow: none;
+}
+
+html.theme-pixelated .top.top-shell button.primary-action.is-playing {
+  background: linear-gradient(180deg, #306230 0 50%, #275227 50% 100%) !important;
+  color: #c7d68d;
+  border-color: #9bbc0f !important;
+}
+
+html.theme-pixelated .top.top-shell button:hover,
+html.theme-pixelated .library-menu button:hover,
+html.theme-pixelated .top.top-shell select:hover,
+html.theme-pixelated .library-menu select:hover {
+  filter: brightness(1.04);
+}
+
+html.theme-pixelated .status-pill,
+html.theme-pixelated .toggle-chip,
+html.theme-pixelated .value-badge {
+  background: #1a3a1a;
+  color: #c7d68d;
+  border-color: #8bac0f !important;
+}
+
+html.theme-pixelated .control-label,
+html.theme-pixelated .progress-state {
+  color: #9bbc0f;
+  text-shadow: none;
+}
+
+html.theme-pixelated .progress-state,
+html.theme-pixelated .status-pill span,
+html.theme-pixelated .midi-loading-name {
+  text-transform: uppercase;
+}
+
+html.theme-pixelated .white,
+html.theme-pixelated .black,
+html.theme-pixelated .label {
+  image-rendering: pixelated;
+}
+
+html.theme-pixelated .white {
+  border-left-width: 3px;
+  border-bottom-width: 3px;
+  background: #9bbc0f;
+  background-image: repeating-linear-gradient(0deg, rgba(202,220,159,0.28) 0 2px, rgba(15,56,15,0.06) 2px 4px);
+  border-color: #0f380f;
+}
+
+html.theme-pixelated .black {
+  border-width: 3px;
+  border-bottom-width: 4px;
+  background: #306230;
+  background-image: repeating-linear-gradient(0deg, rgba(139,172,15,0.08) 0 2px, transparent 2px 4px);
+  border-color: #0f380f;
+}
+
+html.theme-pixelated .active.white,
+html.theme-pixelated .active.black {
+  box-shadow: none !important;
+}
+
+html.theme-pixelated .active.white {
+  background: #e0f8cf !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(139,172,15,0.18) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #e0f8cf 0%, #b7d46a 100%) !important;
+  border-color: #0f380f !important;
+}
+
+html.theme-pixelated .active.black {
+  background: #e0f8cf !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(139,172,15,0.2) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #e0f8cf 0%, #b7d46a 100%) !important;
+  border-color: #0f380f !important;
+  filter: none;
+}
+
+html.theme-pixelated .library-overlay,
+html.theme-pixelated .midi-loading-overlay {
+  background: rgba(15, 56, 15, 0.82) !important;
+}
+
+html.theme-pixelated .library-menu {
+  background: #102a12;
+  background-image: repeating-linear-gradient(0deg, rgba(139,172,15,0.06) 0 2px, transparent 2px 4px);
+}
+
+html.theme-pixelated .midi-loading-card {
+  background: #102a12;
+  background-image: repeating-linear-gradient(0deg, rgba(139,172,15,0.06) 0 2px, transparent 2px 4px);
+  padding: 16px 18px 14px;
+}
+
+html.theme-pixelated .midi-loading-spinner {
+  border-radius: 0;
+  border-width: 4px;
+}
+
+html.theme-pixelated .top-frame-toggle,
+html.theme-pixelated .top-frame-toggle:hover {
+  border-radius: 0 !important;
+}
+
+html.theme-pixelated .top-kofi-inline {
+  border-radius: 0 !important;
+  background: #1a3a1a !important;
+  border: 2px solid #8bac0f !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  image-rendering: pixelated;
+}
+
+html.theme-pixelated .top-kofi-inline svg {
+  width: 23px !important;
+  height: 23px !important;
+  display: block !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-outline {
+  fill: #0f380f !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-body {
+  fill: #c7d68d !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-coffee {
+  fill: #8bac0f !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-heart {
+  fill: #306230 !important;
+}
+
+html.theme-pixelated .top-kofi-inline svg {
+  shape-rendering: crispEdges;
+  image-rendering: pixelated;
+}
+
+html.theme-pixelated .top-kofi-inline path,
+html.theme-pixelated .top-kofi-inline circle {
+  filter: none !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-body {
+  fill: #c7d68d !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-coffee {
+  fill: #8bac0f !important;
+}
+
+html.theme-pixelated .top-kofi-inline .pixel-kofi-heart {
+  fill: #306230 !important;
+}
+
+html.theme-pixelated .top-kofi-inline:hover {
+  background: #275227 !important;
+  transform: none !important;
+}
+
+html.theme-pixelated body,
+html.theme-pixelated .top.top-shell,
+html.theme-pixelated .library-menu,
+html.theme-pixelated .midi-loading-card {
+  text-shadow: 1px 1px 0 rgba(8,24,32,0.65);
+}
+
+html.theme-pixelated body {
+  background:
+    linear-gradient(180deg, #0f380f 0%, #081820 100%) !important;
+}
+
+html.theme-pixelated body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.28;
+  background:
+    repeating-linear-gradient(0deg, rgba(155,188,15,0.16) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(90deg, rgba(48,98,48,0.18) 0 2px, transparent 2px 6px),
+    linear-gradient(180deg, rgba(155,188,15,0.05) 0%, rgba(8,24,32,0.16) 100%);
+}
+
+html.theme-pixelated canvas,
+html.theme-pixelated .piano {
+  z-index: 1;
+}
+
+html.theme-pixelated canvas {
+  image-rendering: pixelated;
 }
 
 @keyframes midi-overlay-spin {
@@ -2764,7 +3308,15 @@ const labelByMidi = useMemo(() => {
       aria-label={midiLoadingDisplay ? `Loading ${midiLoadingDisplay}` : "Loading MIDI"}
     >
       <div className="midi-loading-card">
-        <div className="midi-loading-spinner" aria-hidden="true" />
+        {isPixelated ? (
+          <div className="midi-loading-pixels" aria-hidden="true">
+            <span className="midi-loading-pixel pixel-a" />
+            <span className="midi-loading-pixel pixel-b" />
+            <span className="midi-loading-pixel pixel-c" />
+          </div>
+        ) : (
+          <div className="midi-loading-spinner" aria-hidden="true" />
+        )}
         <div className="midi-loading-name">{midiLoadingDisplay}</div>
       </div>
     </div>
@@ -2820,7 +3372,6 @@ const labelByMidi = useMemo(() => {
         className="top-frame-toggle top-frame-toggle-collapsed"
         onClick={() => setIsBarCollapsed(false)}
         aria-label="Show options"
-        title="Afficher la barre"
       >
         <span className="chevron">▼</span>
       </button>
@@ -2839,14 +3390,14 @@ const labelByMidi = useMemo(() => {
           <div className="control-block">
             <span className="control-label">Theme</span>
             <select value={theme} onChange={e => setTheme(e.target.value)} className="control-input">
-              {Object.keys(THEMES).map(t => <option key={t}>{t}</option>)}
+              {(() => { const keys = Object.keys(THEMES); return [keys[0], "Pixelated", ...keys.filter(t => t !== keys[0] && t !== "Pixelated")]; })().map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
 
           <div className="control-block control-block-wide">
             <span className="control-label">Instrument</span>
             <select value={instrument} onChange={e => setInstrument(e.target.value)} className="control-input">
-              {Object.keys(INSTR).map(i => <option key={i}>{i}</option>)}
+              {(isPixelated ? PIXEL_INSTRUMENTS : Object.keys(INSTR)).map(i => <option key={i}>{getDisplayInstrumentName(i)}</option>)}
             </select>
           </div>
         </div>
@@ -2940,21 +3491,40 @@ const labelByMidi = useMemo(() => {
                 title="Support me on Ko-fi"
                 aria-label="Support me on Ko-fi"
               >
-                <svg viewBox="0 0 64 64" aria-hidden="true">
-                  <path
-                    d="M11 20h33.5c3.1 0 5.5 2.4 5.5 5.5V38c0 10.4-8.4 18-18.8 18H18.2C15.3 56 13 53.7 13 50.8V22c0-1.1.9-2 2-2Z"
-                    fill="#ffffff"
-                  />
-                  <path
-                    d="M46 27h4.7c5.7 0 10.3 4.6 10.3 10.3S56.4 47.6 50.7 47.6H46v-5.2h4.1c2.8 0 5.1-2.3 5.1-5.1s-2.3-5.1-5.1-5.1H46V27Z"
-                    fill="#ffffff"
-                  />
-                  <path
-                    d="M26.8 43.2c-.7 0-1.4-.3-1.9-.8l-4.3-4.1c-2.1-2-2.3-5.2-.4-7.4 1.8-2.1 4.9-2.4 7.1-.7 2.2-1.7 5.4-1.4 7.1.7 1.9 2.2 1.7 5.4-.4 7.4l-4.3 4.1c-.5.5-1.2.8-1.9.8Z"
-                    fill="#ff5b7f"
-                    transform="translate(1.5 0)"
-                  />
-                </svg>
+                {isPixelated ? (
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect className="pixel-kofi-outline" x="4" y="5" width="12" height="1" />
+                    <rect className="pixel-kofi-outline" x="3" y="6" width="14" height="1" />
+                    <rect className="pixel-kofi-outline" x="3" y="7" width="14" height="14" />
+                    <rect className="pixel-kofi-body" x="4" y="7" width="12" height="13" />
+                    <rect className="pixel-kofi-coffee" x="5" y="10" width="9" height="9" />
+                    <rect className="pixel-kofi-outline" x="16" y="10" width="3" height="1" />
+                    <rect className="pixel-kofi-outline" x="18" y="11" width="1" height="6" />
+                    <rect className="pixel-kofi-outline" x="16" y="17" width="3" height="1" />
+                    <rect className="pixel-kofi-body" x="17" y="11" width="1" height="6" />
+                    <rect className="pixel-kofi-heart" x="8" y="11" width="1" height="1" />
+                    <rect className="pixel-kofi-heart" x="11" y="11" width="1" height="1" />
+                    <rect className="pixel-kofi-heart" x="7" y="12" width="6" height="1" />
+                    <rect className="pixel-kofi-heart" x="8" y="13" width="4" height="1" />
+                    <rect className="pixel-kofi-heart" x="9" y="14" width="2" height="1" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <path
+                      d="M11 20h33.5c3.1 0 5.5 2.4 5.5 5.5V38c0 10.4-8.4 18-18.8 18H18.2C15.3 56 13 53.7 13 50.8V22c0-1.1.9-2 2-2Z"
+                      fill="#ffffff"
+                    />
+                    <path
+                      d="M46 27h4.7c5.7 0 10.3 4.6 10.3 10.3S56.4 47.6 50.7 47.6H46v-5.2h4.1c2.8 0 5.1-2.3 5.1-5.1s-2.3-5.1-5.1-5.1H46V27Z"
+                      fill="#ffffff"
+                    />
+                    <path
+                      d="M26.8 43.2c-.7 0-1.4-.3-1.9-.8l-4.3-4.1c-2.1-2-2.3-5.2-.4-7.4 1.8-2.1 4.9-2.4 7.1-.7 2.2-1.7 5.4-1.4 7.1.7 1.9 2.2 1.7 5.4-.4 7.4l-4.3 4.1c-.5.5-1.2.8-1.9.8Z"
+                      fill="#ff5b7f"
+                      transform="translate(1.5 0)"
+                    />
+                  </svg>
+                )}
               </a>
             </div>
 
@@ -2963,7 +3533,7 @@ const labelByMidi = useMemo(() => {
                 className="top-frame-toggle top-frame-toggle-inline"
                 onClick={() => setIsBarCollapsed(true)}
                 aria-label="Hide options"
-                title="Masquer la barre"
+               
               >
                 <span className="chevron">▲</span>
               </button>
